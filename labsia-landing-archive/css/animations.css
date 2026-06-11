@@ -1,0 +1,54 @@
+/* ============================================================
+   animations.css  ·  Keyframes + estados iniciales para GSAP
+   ------------------------------------------------------------
+   Estados iniciales: GSAP los anima a su estado final.
+   No tocar las propiedades animadas en otros archivos CSS
+   o se rompe el "from" del timeline.
+   ============================================================ */
+
+/* ─────────────────── KEYFRAMES ─────────────────── */
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50%      { opacity: 1;   transform: translateY(6px); }
+}
+
+@keyframes orbPulse {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%      { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes orbExpand {
+  0%   { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* ─────────────────── ESTADOS INICIALES (pre-GSAP) ─────────────────── */
+/* Hero — la timeline de hero.js anima estos a su estado final */
+.hero-eyebrow      { opacity: 0; transform: translateY(20px); }
+.hero-title .inner { transform: translateY(110%); }
+.hero-sub          { opacity: 0; transform: translateY(20px); }
+.hero-cta          { opacity: 0; transform: translateY(20px); }
+.scroll-indicator  { opacity: 0; }
+
+/* Compare — filas comienzan ocultas, scroll.js las revela */
+.compare-row       { opacity: 0; }
+
+/* will-change: pista al compositor de qué se va a animar.
+   Lo aplicamos vía CSS para que GSAP no tenga que setearlo en cada frame. */
+.stack-card,
+.gallery-card,
+.testimonial-card,
+.pricing-card-main,
+.timeline-step {
+  will-change: transform, opacity;
+}
+
+@keyframes typeCursorBlink {
+  0%, 45% { opacity: 1; }
+  46%, 100% { opacity: 0; }
+}
+
+@keyframes voiceWave {
+  0%, 100% { transform: scaleY(0.55); opacity: 0.45; }
+  50%      { transform: scaleY(2.2);  opacity: 1; }
+}

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+
+  <!-- ─── SEO básico ─── -->
+  <title>LabsIA · Cada mensaje, una venta cerrada · WhatsApp + IA</title>
+  <meta name="description" content="Plataforma de gestión de leads con WhatsApp Business + IA para PyMEs mexicanas. Captura, clasifica, responde y da seguimiento. Tu equipo deja de chatear, empieza a cerrar.">
+  <meta name="keywords" content="WhatsApp Business API, gestión de leads, CRM México, IA ventas, chatbot WhatsApp, multi-tenant SaaS">
+  <meta name="author" content="LabsIA">
+  <!-- TODO [CONTENT-11] · cambiar a https://labsia.mx cuando el dominio est\u00e9 activo -->
+  <link rel="canonical" href="https://labsia.mx/">
+
+  <!-- ─── Favicon ─── -->
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="apple-touch-icon" href="assets/favicon.svg">
+
+  <!-- ─── Open Graph (Facebook, LinkedIn, WhatsApp preview) ─── -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://labsia.mx/">
+  <meta property="og:title" content="LabsIA · Cada mensaje, una venta cerrada">
+  <meta property="og:description" content="Plataforma de gestión de leads con WhatsApp Business + IA para PyMEs mexicanas. Tu equipo deja de chatear, empieza a cerrar.">
+  <meta property="og:image" content="https://labsia.mx/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="LabsIA · Cada mensaje, una venta cerrada">
+  <meta property="og:locale" content="es_MX">
+  <meta property="og:site_name" content="LabsIA">
+
+  <!-- ─── Twitter Card ─── -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LabsIA · Cada mensaje, una venta cerrada">
+  <meta name="twitter:description" content="Gestión de leads con WhatsApp Business + IA para PyMEs mexicanas. Tu equipo deja de chatear, empieza a cerrar.">
+  <meta name="twitter:image" content="https://labsia.mx/assets/og-image.png">
+
+  <!-- ─── Structured data · SoftwareApplication + Organization (Google rich results) ─── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://labsia.mx/#org",
+        "name": "LabsIA",
+        "url": "https://labsia.mx/",
+        "logo": "https://labsia.mx/assets/favicon.svg",
+        "description": "Plataforma de gestión de leads con WhatsApp Business + IA para PyMEs mexicanas.",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "MX"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "LabsIA",
+        "operatingSystem": "Web",
+        "applicationCategory": "BusinessApplication",
+        "description": "Plataforma multi-tenant de gestión de leads con WhatsApp Business API oficial + IA clasificadora. Captura, clasifica, responde y da seguimiento automatizado.",
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "MXN",
+          "availability": "https://schema.org/InStock",
+          "priceSpecification": {
+            "@type": "PriceSpecification",
+            "priceCurrency": "MXN",
+            "description": "Pricing personalizado · agenda demo"
+          }
+        },
+        "publisher": { "@id": "https://labsia.mx/#org" },
+        "inLanguage": "es-MX"
+      }
+    ]
+  }
+  </script>
+
+  <!-- ─── Tipografías · Geist + Geist Mono (typeface oficial de Vercel) ─── -->
+  <!-- Utiliza Geist y Geist Mono auto-hospedados definidos en css/tokens.css -->
+
+  <!-- ─── CSS modular (orden = cascada) ─── -->
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <!-- ─── Librerías externas ─── -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+  <!-- Skip-to-content para usuarios de teclado/lectores de pantalla -->
+  <a href="#main" class="skip-link">Saltar al contenido</a>
+
+  <!-- ═══════════════════ CURSOR GLOW (overlay) ═══════════════════ -->
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <!-- ═══════════════════ TOP BAR ═══════════════════ -->
+  <header class="top-bar" role="banner">
+    <a class="logo" href="#" aria-label="LabsIA · inicio">labs<span class="dot" aria-hidden="true">.</span>ia</a>
+    <nav aria-label="Navegación principal">
+      <a href="#how">Cómo funciona</a>
+      <a href="#stack">Stack</a>
+      <a href="#sectores">Sectores</a>
+      <a href="#faq">FAQ</a>
+      <a href="#pricing">Demo</a>
+    </nav>
+  </header>
+
+  <!-- ═══════════════════ HERO ═══════════════════ -->
+  <!-- [CONTENT-01] · Hero — producto real: gestión de leads WhatsApp + IA -->
+  <main id="main">
+  <section class="hero">
+    <canvas id="three-canvas" aria-hidden="true"></canvas>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">GESTIÓN DE LEADS · WHATSAPP + IA</div>
+
+      <h1 class="hero-title">
+        <span class="line"><span class="inner">Cada mensaje,</span></span>
+        <span class="line"><span class="inner">una <span class="gradient-text">venta cerrada</span>.</span></span>
+      </h1>
+
+      <p class="hero-sub">
+        Captura, clasifica, responde y da seguimiento a tus leads de WhatsApp con IA.<br>
+        Tu equipo deja de chatear — empieza a cerrar.
+      </p>
+
+      <div class="hero-cta">
+        <a href="mailto:hola@labsia.mx?subject=Agenda%20demo%20LabsIA" class="btn btn-primary">Agenda una demo →</a>
+        <a href="#how" class="btn btn-secondary">Ver cómo funciona</a>
+      </div>
+    </div>
+
+    <div class="scroll-indicator">Desliza<span class="arrow"></span></div>
+  </section>
+
+  <!-- ═══════════════════ CÓMO FUNCIONA · pin 3 pasos ═══════════════════ -->
+  <!-- [CONTENT-02] · Los 3 pasos REALES del flujo: captura → IA → cierre -->
+  <section class="how-section" id="how">
+    <div class="how-pin" id="howPin">
+      <div class="how-sticky">
+        <div class="how-container">
+          <!-- LADO IZQUIERDO · texto -->
+          <div class="how-left">
+            <div class="how-step" data-step="1">
+              <div class="step-num">PASO 01 · CAPTURA</div>
+              <h3>Llega el lead, sin que muevas un dedo.</h3>
+              <p>WhatsApp Business API oficial. Formulario de tu landing. Instagram DM. Email. Todo entra al mismo embudo. Deduplicación atómica en Postgres — sin leads duplicados, sin importar qué tan rápido escriba el cliente.</p>
+            </div>
+            <div class="how-step" data-step="2">
+              <div class="step-num">PASO 02 · IA RESPONDE</div>
+              <h3><span class="gradient-text">La IA</span> contesta primero. En segundos.</h3>
+              <p>Clasifica intención y servicio. Detecta alto-ticket. Responde con tu tono, tus plantillas pre-aprobadas por Meta. Agenda al operador correcto. No espera a que tu equipo despierte un lunes a las 8am.</p>
+            </div>
+            <div class="how-step" data-step="3">
+              <div class="step-num">PASO 03 · TU EQUIPO CIERRA</div>
+              <h3>Kanban limpio. QuickReply de un clic.</h3>
+              <p>Dashboard con 5 columnas: nuevo · en gestión · sin respuesta · ganado · perdido. Tu operador responde WhatsApp desde el navegador, cambia el estado y baja del board. Métricas en tiempo real: tiempo de respuesta, ganados hoy, en gestión.</p>
+            </div>
+          </div>
+
+          <!-- LADO DERECHO · visual -->
+          <div class="how-right">
+            <div class="how-step" data-step="1">
+              <div class="step-visual step-1-visual">
+                <div class="step-1-form">
+                  <span class="label">canal</span>
+                  <span class="value">"whatsapp"</span>
+                </div>
+                <div class="step-1-form">
+                  <span class="label">telefono</span>
+                  <span class="value">"+52 55 1234 5678"</span>
+                </div>
+                <div class="step-1-form">
+                  <span class="label">texto_original</span>
+                  <span class="value">"Hola, ¿tienen consulta hoy?"</span>
+                </div>
+                <div class="step-1-form">
+                  <span class="label">estado</span>
+                  <span class="value">"nuevo" · dedupe OK</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="how-step" data-step="2">
+              <div class="step-visual step-2-visual">
+                <div class="ai-orb"></div>
+              </div>
+            </div>
+
+            <div class="how-step" data-step="3">
+              <div class="step-visual step-3-visual">
+                <div class="step-3-line"><span class="step-3-check">✓</span><span>Intención clasificada · cotización</span></div>
+                <div class="step-3-line"><span class="step-3-check">✓</span><span>Servicio detectado · consulta general</span></div>
+                <div class="step-3-line"><span class="step-3-check">✓</span><span>Plantilla enviada · labsia_seguimiento</span></div>
+                <div class="step-3-line"><span class="step-3-check">✓</span><span>Operador asignado · disponible</span></div>
+                <div class="step-3-line"><span class="step-3-check">✓</span><span>Estado · en_gestion</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="how-progress">
+          <div class="how-progress-dot active" data-dot="1"></div>
+          <div class="how-progress-dot"        data-dot="2"></div>
+          <div class="how-progress-dot"        data-dot="3"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ STACK TECNOLÓGICO ═══════════════════ -->
+  <!-- [CONTENT-03] · Stack real per DOC 27 (operaciones en producción) -->
+  <section class="stack-section" id="stack">
+    <div class="stack-wrap">
+      <div class="stack-intro">
+        <div class="section-eyebrow">STACK PRODUCTION-GRADE</div>
+        <h2 class="section-title">No improvisamos.<br>Mismo stack que usa Vercel.</h2>
+        <p class="section-sub">Cada componente es production-grade, con monitoreo y runbook documentado. Nada de scrapers ni "IA random".</p>
+      </div>
+
+      <div class="stack-grid">
+        <!-- WhatsApp Business API -->
+        <div class="stack-card">
+          <div class="stack-card-icon icon-whatsapp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2 C 6.5 2 2 6.5 2 12 C 2 14 2.5 15.8 3.5 17.3 L 2 22 L 6.8 20.5 C 8.3 21.5 10.1 22 12 22 C 17.5 22 22 17.5 22 12 C 22 6.5 17.5 2 12 2 Z"/>
+              <path d="M7.5 9 Q 7.5 12 9 13.5 Q 10.5 15 13.5 16.5 Q 15.5 17 16 15.5 L 16 14 L 14.5 13.5 L 13.5 14.5 Q 12 14 11 13 Q 10 12 9.5 10.5 L 10.5 9.5 L 10 8 L 8.5 8 Q 7.5 8.5 7.5 9 Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <span class="stack-tag">CANAL · OFICIAL</span>
+          <h4>Meta WhatsApp Business API</h4>
+          <p>Integración oficial. Templates pre-aprobados. Quality rating monitoreado. Circuit breaker si Meta cae. <strong>No es scraper de WhatsApp Web.</strong></p>
+        </div>
+
+        <!-- OpenAI -->
+        <div class="stack-card">
+          <div class="stack-card-icon icon-openai">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="5" y="5" width="14" height="14" rx="2"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+              <path d="M9 3 L9 5"/><path d="M15 3 L15 5"/>
+              <path d="M9 19 L9 21"/><path d="M15 19 L15 21"/>
+              <path d="M3 9 L5 9"/><path d="M3 15 L5 15"/>
+              <path d="M19 9 L21 9"/><path d="M19 15 L21 15"/>
+            </svg>
+          </div>
+          <span class="stack-tag">INTELIGENCIA</span>
+          <h4>OpenAI · GPT-4o-mini</h4>
+          <p>Clasifica intención, detecta alto-ticket, redacta respuestas con tu tono. Validación JSON estricta. Sin alucinaciones de precios o servicios que no ofreces.</p>
+        </div>
+
+        <!-- Postgres + RLS -->
+        <div class="stack-card">
+          <div class="stack-card-icon icon-postgres">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <ellipse cx="12" cy="5" rx="8" ry="2.5"/>
+              <path d="M4 5 V 12 Q 4 14.5 12 14.5 Q 20 14.5 20 12 V 5"/>
+              <path d="M4 12 V 19 Q 4 21.5 12 21.5 Q 20 21.5 20 19 V 12"/>
+            </svg>
+          </div>
+          <span class="stack-tag">DATOS · MULTI-TENANT</span>
+          <h4>PostgreSQL + RLS</h4>
+          <p>Row Level Security a nivel base de datos. Aislamiento perfecto entre clientes. Backups diarios a Cloudflare R2 con runbook de restauración probado mensualmente.</p>
+        </div>
+
+        <!-- BullMQ + Redis -->
+        <div class="stack-card">
+          <div class="stack-card-icon icon-redis">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="4" rx="1"/>
+              <rect x="3" y="10" width="18" height="4" rx="1"/>
+              <rect x="3" y="16" width="18" height="4" rx="1"/>
+              <circle cx="7" cy="6" r="0.8" fill="currentColor"/>
+              <circle cx="7" cy="12" r="0.8" fill="currentColor"/>
+              <circle cx="7" cy="18" r="0.8" fill="currentColor"/>
+            </svg>
+          </div>
+          <span class="stack-tag">ORQUESTACIÓN</span>
+          <h4>BullMQ + Redis</h4>
+          <p>Cola persistente para follow-ups A6/B1/B2 escalonados. Si Meta o tu CRM caen, los mensajes esperan — no se pierden. Cancelación automática al cambiar estado.</p>
+        </div>
+
+        <!-- Stripe -->
+        <div class="stack-card">
+          <div class="stack-card-icon icon-stripe">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="6" width="18" height="13" rx="2"/>
+              <path d="M3 10 L21 10"/>
+              <rect x="6" y="14" width="3.5" height="2.5" rx="0.5"/>
+              <path d="M14 15 L18 15"/>
+            </svg>
+          </div>
+          <span class="stack-tag">PAGOS · CFDI</span>
+          <h4>Stripe MXN</h4>
+          <p>Suscripción mensual en pesos · sin tipo de cambio. Webhooks firmados HMAC. Factura CFDI 4.0 automática a tu RFC. Modo LIVE auditado.</p>
+        </div>
+
+        <!-- Vercel + Railway -->
+        <div class="stack-card">
+          <div class="stack-card-icon icon-vercel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="2.5"/>
+              <circle cx="4" cy="6" r="1.5"/><circle cx="20" cy="6" r="1.5"/>
+              <circle cx="4" cy="18" r="1.5"/><circle cx="20" cy="18" r="1.5"/>
+              <path d="M10 11 L5 7"/><path d="M14 11 L19 7"/>
+              <path d="M10 13 L5 17"/><path d="M14 13 L19 17"/>
+            </svg>
+          </div>
+          <span class="stack-tag">INFRA · GLOBAL</span>
+          <h4>Vercel + Railway</h4>
+          <p>Dashboard en edge global · sub-50ms. Backend con health checks y auto-scaling. Sentry + Better Uptime monitoreando 24/7. SLA verificable en <code style="font-family:var(--font-mono);background:rgba(0,245,212,.08);color:var(--accent);padding:1px 6px;border-radius:3px;font-size:12px">status.labsia.mx</code>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ ANATOMÍA DE UN LEAD ═══════════════════ -->
+  <!-- [CONTENT-04] · Tiempos REALES del flujo (DOC 10 + 18) -->
+  <section class="timeline-section" id="timeline">
+    <div class="timeline-intro">
+      <div class="section-eyebrow">ANATOMÍA DE UN LEAD</div>
+      <h2 class="section-title">5 minutos que cambian todo.<br>Paso a paso.</h2>
+      <p class="section-sub">Esto es lo que pasa internamente desde que entra un mensaje hasta que tu equipo lo cierra. Cero adivinación, cada hito registrado.</p>
+    </div>
+
+    <div class="timeline-pin-wrap" id="timelinePin">
+      <div class="timeline-line"></div>
+      <div class="timeline-track" id="timelineTrack">
+
+        <div class="timeline-step">
+          <div class="time-badge">00:00</div>
+          <h4>Mensaje entra</h4>
+          <p>Webhook de Meta firmado HMAC. Validación de origen. Insertado en tabla de mensajes con `tenant_id` y RLS aplicado.</p>
+          <span class="tech-tag">webhook.verifyHmac</span>
+        </div>
+
+        <div class="timeline-step">
+          <div class="time-badge">00:01</div>
+          <h4>Deduplicación</h4>
+          <p>`INSERT ... ON CONFLICT (tenant_id, telefono) DO NOTHING`. Race condition imposible. Mismo número en 24h = mismo lead.</p>
+          <span class="tech-tag">leads.service · upsertLead</span>
+        </div>
+
+        <div class="timeline-step">
+          <div class="time-badge">00:03</div>
+          <h4>IA clasifica + responde</h4>
+          <p>GPT-4o-mini detecta intención, servicio y alto-ticket. Selecciona plantilla aprobada. Envía respuesta automática vía Meta.</p>
+          <span class="tech-tag">classifier.service</span>
+        </div>
+
+        <div class="timeline-step">
+          <div class="time-badge">02:00</div>
+          <h4>Operador notificado</h4>
+          <p>Si es alto-ticket o VIP, push al operador disponible. Dashboard refresca con React Query polling 30s.</p>
+          <span class="tech-tag">operadores.notify</span>
+        </div>
+
+        <div class="timeline-step">
+          <div class="time-badge">05:00</div>
+          <h4>Follow-up A6</h4>
+          <p>Job en BullMQ. Si el lead no respondió a la auto-respuesta, segunda interacción con plantilla `labsia_seguimiento`.</p>
+          <span class="tech-tag">followupQueue · A6</span>
+        </div>
+
+        <div class="timeline-step">
+          <div class="time-badge">24:00</div>
+          <h4>Follow-up B1</h4>
+          <p>Si silencio total, reactivación al día siguiente con plantilla `labsia_reactivacion`. Si responde, cancela todos los jobs pendientes.</p>
+          <span class="tech-tag">followupQueue · B1</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ SECTORES DONDE FUNCIONA ═══════════════════ -->
+  <!-- [CONTENT-05] · Sectores reales (no URLs de Web24h — eso era otro producto) -->
+  <section class="gallery-section" id="sectores">
+    <div class="gallery-intro">
+      <div class="section-eyebrow">SECTORES · BETA PRIVADA</div>
+      <h2 class="section-title">Negocios que viven<br>de leads de WhatsApp.</h2>
+      <p class="section-sub">LabsIA está diseñada para PyMEs mexicanas con volumen alto de mensajes y equipos de ventas pequeños. Sectores en beta privada actual.</p>
+    </div>
+
+    <div class="gallery-track-wrap">
+      <div class="gallery-track" id="galleryTrack">
+
+        <div class="gallery-card" style="cursor:default;">
+          <div class="gallery-card-thumb" style="background:linear-gradient(135deg,#0a2030 0%,#050507 100%); display:flex; align-items:center; justify-content:center;">
+            <div style="text-align:center;">
+              <div style="font-family:var(--font-mono); font-size:48px; color:var(--accent); line-height:1;">⌗</div>
+              <div style="font-family:var(--font-mono); color:var(--fg-soft); font-size:11px; letter-spacing:0.2em; margin-top:8px;">CLÍNICAS</div>
+            </div>
+            <div class="gallery-card-tag">Salud</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Clínicas dentales y dermatológicas</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> Volumen típico · 80-200 leads/mes</p>
+            <div class="gallery-card-meta"><span>Alto-ticket detectado</span><span class="open-link">Caso de uso →</span></div>
+          </div>
+        </div>
+
+        <div class="gallery-card" style="cursor:default;">
+          <div class="gallery-card-thumb" style="background:linear-gradient(135deg,#1a1430 0%,#050507 100%); display:flex; align-items:center; justify-content:center;">
+            <div style="text-align:center;">
+              <div style="font-family:var(--font-mono); font-size:48px; color:var(--accent); line-height:1;">◉</div>
+              <div style="font-family:var(--font-mono); color:var(--fg-soft); font-size:11px; letter-spacing:0.2em; margin-top:8px;">FOTOGRAFÍA</div>
+            </div>
+            <div class="gallery-card-tag">Servicios</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Estudios de fotografía y eventos</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> Volumen típico · 40-120 leads/mes</p>
+            <div class="gallery-card-meta"><span>Booking automático</span><span class="open-link">Caso de uso →</span></div>
+          </div>
+        </div>
+
+        <div class="gallery-card" style="cursor:default;">
+          <div class="gallery-card-thumb" style="background:linear-gradient(135deg,#102818 0%,#050507 100%); display:flex; align-items:center; justify-content:center;">
+            <div style="text-align:center;">
+              <div style="font-family:var(--font-mono); font-size:48px; color:var(--accent); line-height:1;">◐</div>
+              <div style="font-family:var(--font-mono); color:var(--fg-soft); font-size:11px; letter-spacing:0.2em; margin-top:8px;">VETERINARIAS</div>
+            </div>
+            <div class="gallery-card-tag">Mascotas</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Veterinarias con guardia 24h</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> Volumen típico · 100-300 mensajes/mes</p>
+            <div class="gallery-card-meta"><span>Urgencias clasificadas</span><span class="open-link">Caso de uso →</span></div>
+          </div>
+        </div>
+
+        <div class="gallery-card" style="cursor:default;">
+          <div class="gallery-card-thumb" style="background:linear-gradient(135deg,#2a1a10 0%,#050507 100%); display:flex; align-items:center; justify-content:center;">
+            <div style="text-align:center;">
+              <div style="font-family:var(--font-mono); font-size:48px; color:var(--accent); line-height:1;">▣</div>
+              <div style="font-family:var(--font-mono); color:var(--fg-soft); font-size:11px; letter-spacing:0.2em; margin-top:8px;">RESTAURANTES</div>
+            </div>
+            <div class="gallery-card-tag">Reservas</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Restaurantes con reserva alta</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> Volumen típico · 200-500 leads/mes</p>
+            <div class="gallery-card-meta"><span>Confirmación auto</span><span class="open-link">Caso de uso →</span></div>
+          </div>
+        </div>
+
+        <div class="gallery-card" style="cursor:default;">
+          <div class="gallery-card-thumb" style="background:linear-gradient(135deg,#2a1030 0%,#050507 100%); display:flex; align-items:center; justify-content:center;">
+            <div style="text-align:center;">
+              <div style="font-family:var(--font-mono); font-size:48px; color:var(--accent); line-height:1;">◈</div>
+              <div style="font-family:var(--font-mono); color:var(--fg-soft); font-size:11px; letter-spacing:0.2em; margin-top:8px;">ACADEMIAS</div>
+            </div>
+            <div class="gallery-card-tag">Educación</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Academias y cursos privados</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> Volumen típico · 60-180 leads/mes</p>
+            <div class="gallery-card-meta"><span>Nurturing por cohorte</span><span class="open-link">Caso de uso →</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ COMPARATIVA ═══════════════════ -->
+  <!-- [CONTENT-06] · Competencia real (no Wix — eso era para el otro producto) -->
+  <section class="compare-section" id="compare">
+    <div class="compare-wrap">
+      <div class="compare-intro">
+        <div class="section-eyebrow">VS COMPETENCIA</div>
+        <h2 class="section-title">No somos otro chatbot<br>de WhatsApp.</h2>
+        <p class="section-sub">Comparativa con las herramientas más comunes que usan PyMEs mexicanas para gestionar leads de WhatsApp hoy.</p>
+      </div>
+
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="featured">LabsIA</th>
+            <th>Whaticket / Trengo</th>
+            <th>HubSpot Service Hub</th>
+            <th>Operador manual</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="compare-row"><td>WhatsApp Business API oficial</td><td class="featured"><span class="check">●</span> Sí · cuenta verificada Meta</td><td><span class="check">●</span> Sí</td><td><span class="check">●</span> Sí</td><td><span class="cross">●</span> WhatsApp personal / Web</td></tr>
+          <tr class="compare-row"><td>IA clasificadora incluida</td><td class="featured"><span class="check">●</span> GPT-4o-mini · intención + alto-ticket</td><td><span class="cross">●</span> Bot manual con keywords</td><td><span class="check">●</span> Sí · pricing enterprise</td><td><span class="cross">●</span> No</td></tr>
+          <tr class="compare-row"><td>Multi-tenant con RLS</td><td class="featured"><span class="check">●</span> Postgres · aislamiento total</td><td><span class="cross">●</span> No aplica · single-tenant</td><td><span class="check">●</span> Sí</td><td>—</td></tr>
+          <tr class="compare-row"><td>Follow-ups automáticos escalonados</td><td class="featured"><span class="check">●</span> A6 · B1 · B2 sin código</td><td><span class="cross">●</span> Bot lineal</td><td><span class="check">●</span> Workflows ($$)</td><td><span class="cross">●</span> Tú te acuerdas</td></tr>
+          <tr class="compare-row"><td>Deduplicación atómica de leads</td><td class="featured"><span class="check">●</span> ON CONFLICT · race-safe</td><td><span class="cross">●</span> No</td><td><span class="cross">●</span> Parcial</td><td><span class="cross">●</span> No</td></tr>
+          <tr class="compare-row"><td>Pricing en MXN · factura CFDI</td><td class="featured"><span class="check">●</span> MXN + CFDI 4.0</td><td><span class="cross">●</span> USD</td><td><span class="cross">●</span> USD</td><td>—</td></tr>
+          <tr class="compare-row"><td>Soporte español MX</td><td class="featured">Equipo MX · WhatsApp directo</td><td>Inglés · ticket</td><td>Inglés · ticket</td><td>—</td></tr>
+          <tr class="compare-row"><td>Runbook + SLA + status page</td><td class="featured"><span class="check">●</span> Sí · status.labsia.mx</td><td><span class="cross">●</span> No público</td><td><span class="check">●</span> Sí · enterprise</td><td><span class="cross">●</span> No</td></tr>
+          <tr class="compare-row"><td>Tiempo respuesta a lead nuevo</td><td class="featured">~3 segundos · IA primero</td><td>Variable · si el bot pega</td><td>Workflow · 1-5 min</td><td>15 min - 24h</td></tr>
+          <tr class="compare-row"><td>Backups + recuperación de datos</td><td class="featured"><span class="check">●</span> Daily a R2 · probado mensual</td><td>Variable</td><td><span class="check">●</span> Enterprise</td><td><span class="cross">●</span> Tu Excel</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ TESTIMONIOS ═══════════════════ -->
+  <!-- TODO [CONTENT-07] · testimonios actuales son PLACEHOLDERS ilustrativos de beta privada -->
+  <section class="testimonials-section" id="testimonials">
+    <div class="testimonials-wrap">
+      <div class="testimonials-intro">
+        <div class="section-eyebrow">PRUEBAS · BETA</div>
+        <h2 class="section-title">Lo que dicen<br>los primeros equipos.</h2>
+        <p class="section-sub">Testimonios de la cohorte de beta privada · sectores reales, identidades reservadas hasta el lanzamiento público.</p>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat"><div class="stat-number">3</div><div class="stat-label">Segundos · respuesta IA</div></div>
+        <div class="stat"><div class="stat-number">99</div><div class="stat-label">% uptime objetivo</div></div>
+        <div class="stat"><div class="stat-number">24</div><div class="stat-label">/7 follow-ups</div></div>
+        <div class="stat"><div class="stat-number">0</div><div class="stat-label">Leads duplicados</div></div>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-quote-mark">"</div>
+          <p class="testimonial-text">Antes perdíamos clientes los fines de semana porque nadie contestaba el WhatsApp hasta el lunes. Con LabsIA la IA responde en segundos y agenda para el lunes. Nuestro porcentaje de conversión subió porque ningún lead se enfría.</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">D</div>
+            <div class="author-info">
+              <div class="author-name">Beta tester · Sector Dental</div>
+              <div class="author-role">Clínica · CDMX</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-quote-mark">"</div>
+          <p class="testimonial-text">Probamos Whaticket y nos pareció caro y mal documentado. LabsIA tiene un dashboard tipo Trello que mi equipo entendió en 5 minutos, y el soporte responde por WhatsApp en español. Eso vale más que cualquier feature.</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">F</div>
+            <div class="author-info">
+              <div class="author-name">Beta tester · Fotografía</div>
+              <div class="author-role">Estudio de bodas · GDL</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-quote-mark">"</div>
+          <p class="testimonial-text">Lo que más me convenció fue ver la página de status y el runbook de incidentes en su documentación. Cualquier proveedor te promete uptime — éstos te lo enseñan en tiempo real. Eso es serio.</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">V</div>
+            <div class="author-info">
+              <div class="author-name">Beta tester · Veterinaria 24h</div>
+              <div class="author-role">Hospital animal · MTY</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ FAQ ═══════════════════ -->
+  <!-- [CONTENT-08] · Preguntas REALES del producto (compliance, multi-tenant, Meta, datos) -->
+  <section class="faq-section" id="faq">
+    <div class="faq-wrap">
+      <div class="faq-intro">
+        <div class="section-eyebrow">PREGUNTAS FRECUENTES</div>
+        <h2 class="section-title">Lo que preguntan<br>antes de firmar.</h2>
+        <p class="section-sub">Si tu duda no está aquí, escríbenos por WhatsApp directo · respondemos en menos de 4 horas en horario hábil.</p>
+      </div>
+
+      <details class="faq-item">
+        <summary>¿Es WhatsApp Business API oficial o un scraper?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          <strong>WhatsApp Business API oficial de Meta.</strong> Tu cuenta queda verificada con palomita azul, tus templates pasan por aprobación de Meta, y tu quality rating es monitoreado. Esto significa cero riesgo de bloqueo permanente — algo que los scrapers de WhatsApp Web no pueden garantizar.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Mis datos están aislados de otros clientes?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Sí. Usamos <strong>Row Level Security (RLS) a nivel PostgreSQL</strong>: cada query lleva un `tenant_id` y la base de datos físicamente impide leer datos de otro tenant — incluso si hubiera un bug en el código. Es el mismo modelo que usan plataformas como Linear y Notion.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Qué pasa si Meta WhatsApp se cae?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Tenemos <strong>circuit breaker</strong> que detecta la caída y encola los mensajes salientes en BullMQ + Redis. Cuando Meta restablece, los mensajes pendientes se envían automáticamente. Te notificamos por email + dashboard. Ningún mensaje se pierde.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Quién es dueño de mis datos? ¿Puedo exportarlos?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          <strong>Tú.</strong> Exportación completa en CSV/JSON disponible desde el dashboard en cualquier momento, sin costo. Si cancelas, te entregamos backup completo y damos 30 días para migrar. Aviso de privacidad LFPDPPP, datos en México.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Cuánto tarda el onboarding?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          <strong>5 a 7 días</strong>, distribuidos así: verificación de tu número WhatsApp Business con Meta (2-3 días, depende de Meta), aprobación de 4 plantillas pre-configuradas (1-2 días), configuración de tu tono y servicios en LabsIA (1 día), capacitación de tu equipo en el dashboard (1 hora).
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Soporta varios operadores?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Sí. Cada operador tiene su login JWT, su disponibilidad (en línea / pausa / fuera) y se le asignan leads según reglas que tú defines. Auditoría completa de quién respondió qué, cuándo, y cuál fue el resultado.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Hay límite de leads o mensajes por mes?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          El límite real lo pone Meta WhatsApp con sus <code>messaging tiers</code> (1K, 10K, 100K, sin límite). Empiezas en Tier 1 y subes automáticamente según tu quality rating. LabsIA no añade límites artificiales — pagas por operador, no por mensaje.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Puedo cancelar cuando quiera?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Mes a mes. Cancelas desde tu portal sin llamadas ni retención. Te damos 30 días extra de acceso para exportar datos, retirar tu número WhatsApp si lo deseas, y migrar a otra plataforma si así lo decides. Sin contratos forzados.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Cómo se factura? ¿Pesos o dólares?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Pesos mexicanos via Stripe. <strong>Factura CFDI 4.0 mexicana</strong> a tu RFC emitida automáticamente. Sin tipo de cambio mensual sorpresa. Métodos: tarjeta, SPEI o transferencia (para enterprise).
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ PRICING ═══════════════════ -->
+  <!-- TODO [CONTENT-09] · pricing real PENDIENTE · ahora es "agenda demo" -->
+  <section class="pricing-section" id="pricing">
+    <div class="pricing-wrap">
+      <div class="pricing-intro">
+        <div class="section-eyebrow">PRICING · POR OPERADOR</div>
+        <h2 class="section-title">Sin sorpresas mensuales.<br>Sin límites por mensaje.</h2>
+        <p class="section-sub">Pagas por operador activo en el dashboard. Volumen de mensajes ilimitado (lo limita Meta, no nosotros).</p>
+      </div>
+
+      <div class="pricing-card-main">
+        <span class="pricing-badge">⚡ BETA PRIVADA · EARLY ACCESS</span>
+        <div class="pricing-grid">
+          <div>
+            <h3 class="pricing-name">Plan Empresa</h3>
+            <p class="pricing-desc">Toda la plataforma, todos los canales, todos los follow-ups. Por operador activo, sin límite de leads o mensajes.</p>
+            <ul class="pricing-features">
+              <li><span class="check-bullet">✓</span> WhatsApp Business API oficial verificada con Meta</li>
+              <li><span class="check-bullet">✓</span> IA clasificadora · GPT-4o-mini · intención + alto-ticket</li>
+              <li><span class="check-bullet">✓</span> 4 plantillas Meta pre-aprobadas + tu propia tono</li>
+              <li><span class="check-bullet">✓</span> Dashboard Kanban con 5 estados · QuickReply en un clic</li>
+              <li><span class="check-bullet">✓</span> Follow-ups automáticos A6 · B1 · B2 sin código</li>
+              <li><span class="check-bullet">✓</span> Multi-canal: WhatsApp + Instagram + formularios + email</li>
+              <li><span class="check-bullet">✓</span> Multi-operador con disponibilidad y auditoría</li>
+              <li><span class="check-bullet">✓</span> Aislamiento RLS · backups diarios a Cloudflare R2</li>
+              <li><span class="check-bullet">✓</span> Factura CFDI 4.0 mexicana automática</li>
+              <li><span class="check-bullet">✓</span> Soporte español MX · WhatsApp directo</li>
+              <li><span class="check-bullet">✓</span> SLA · runbook · status page pública</li>
+              <li><span class="check-bullet">✓</span> Exportación completa de datos cuando quieras</li>
+            </ul>
+          </div>
+          <div class="pricing-right">
+            <div class="pricing-amount" style="font-size:clamp(36px,4vw,52px); font-weight:600;">Demo</div>
+            <div class="pricing-currency">PRICING POR OPERADOR</div>
+            <div class="pricing-once">DESDE 2 OPERADORES · MENSAJES SIN LÍMITE</div>
+            <a href="mailto:hola@labsia.mx?subject=Agenda%20demo%20LabsIA" class="btn btn-primary pricing-cta">Agenda una demo →</a>
+            <div class="savings-note" style="background:rgba(0,245,212,0.08);border-color:rgba(0,245,212,0.2);color:#aef4e0;">
+              ⚡ <strong>Beta privada activa.</strong> Pricing congelado por 12 meses para clientes early-access.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pricing-addons">
+        <p class="pricing-addons-title">ADD-ONS DISPONIBLES</p>
+        <div class="addons-grid">
+          <div class="addon">
+            <div class="addon-name">Integración con tu CRM</div>
+            <div class="addon-price">Setup único</div>
+            <div class="addon-desc">HubSpot, Pipedrive, Salesforce, Excel/Google Sheets. Sincronización bidireccional de leads y estados.</div>
+          </div>
+          <div class="addon">
+            <div class="addon-name">SLA Enterprise</div>
+            <div class="addon-price">Mensual</div>
+            <div class="addon-desc">Respuesta &lt; 1h en incidentes críticos. On-call dedicado. 99.9% uptime garantizado contractualmente.</div>
+          </div>
+          <div class="addon">
+            <div class="addon-name">Capacitación + onboarding</div>
+            <div class="addon-price">Por sesión</div>
+            <div class="addon-desc">Sesiones en vivo con tu equipo · configuración de tono, plantillas, reglas de asignación.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ CTA FINAL ═══════════════════ -->
+  <!-- [CONTENT-10] · CTA alineado al producto real -->
+  <section class="cta-final">
+    <h2>Tu próximo lead llega<br>en 5 minutos.</h2>
+    <p>¿Tu equipo está listo? Agenda una demo de 20 minutos y te mostramos el dashboard con datos en vivo.</p>
+    <a href="mailto:hola@labsia.mx?subject=Agenda%20demo%20LabsIA" class="btn btn-primary">Agenda demo →</a>
+  </section>
+  </main>
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer>
+    <div style="max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;">
+      <div>© 2026 LabsIA · Plataforma de gestión de leads con IA · Hecho en México</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;">
+        <a href="https://labsia.mx/terminos" style="color:var(--fg-soft);">Términos</a>
+        <a href="https://labsia.mx/privacidad" style="color:var(--fg-soft);">Privacidad</a>
+        <a href="https://status.labsia.mx" style="color:var(--fg-soft);">Status</a>
+        <a href="mailto:hola@labsia.mx" style="color:var(--fg-soft);">hola@labsia.mx</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════ JS MODULAR — orden importa ═══════════════════
+       1. scene.js     →  window.LABSIA.initScene
+       2. hero.js      →  window.LABSIA.animateHero
+       3. cursor.js    →  window.LABSIA.initCursor
+       4. how.js       →  window.LABSIA.initHow
+       5. timeline.js  →  window.LABSIA.initTimeline
+       6. gallery.js   →  window.LABSIA.initGallery
+       7. counters.js  →  window.LABSIA.initCounters
+       8. scroll.js    →  window.LABSIA.initScrollAnimations (coordinator)
+       9. main.js      →  entry point (orquesta todo en DOMContentLoaded)
+  ════════════════════════════════════════════════════════════════════ -->
+  <script src="js/scene.js"></script>
+  <script src="js/hero.js"></script>
+  <script src="js/cursor.js"></script>
+  <script src="js/how.js"></script>
+  <script src="js/timeline.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/counters.js"></script>
+  <script src="js/scroll.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/tweaks.js"></script>
+
+</body>
+</html>

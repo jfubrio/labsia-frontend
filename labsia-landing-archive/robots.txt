@@ -1,0 +1,12 @@
+# labsia.mx · robots.txt
+# Indexación abierta — landing público
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://labsia.mx/sitemap.xml
+
+# Excluir directorios internos si los hubiera en el futuro
+# Disallow: /admin/
+# Disallow: /api/

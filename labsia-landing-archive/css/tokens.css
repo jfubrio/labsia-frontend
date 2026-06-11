@@ -1,0 +1,64 @@
+/* ============================================================
+   tokens.css  ·  Variables CSS (colores, tipografía, espaciado)
+   ------------------------------------------------------------
+   Fuente única de verdad para el design system.
+   Cualquier valor que se use 2+ veces vive aquí.
+   ============================================================ */
+
+@font-face {
+  font-family: 'Geist';
+  src: url('../assets/fonts/geist-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('../assets/fonts/geist-mono-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+:root {
+  /* ─── Colores · base ─── */
+  --bg:           #000000;
+  --bg-soft:      #0a0a0c;
+  --bg-card:      #0f0f12;
+
+  /* ─── Colores · texto ─── */
+  --fg:           #f5f5f7;
+  --fg-soft:      #a1a1a6;
+  --fg-faint:     #555555;
+
+  /* ─── Acentos ─── */
+  --accent:       #00f5d4;        /* teal — acento principal */
+  --accent-2:     #7c3aed;        /* purple — acento secundario */
+  --accent-glow:  rgba(0, 245, 212, 0.5);
+
+  /* ─── Bordes ─── */
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  /* ─── Tipografía — Geist (typeface de Vercel, alineado con stack) ─── */
+  --font-display: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* ─── Layout ─── */
+  --container:    1280px;
+  --section-pad-y: 120px;
+  --gutter:       32px;
+
+  /* ─── Animación ─── */
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:  cubic-bezier(0.87, 0, 0.13, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ─── Z-index ─── */
+  --z-canvas:     1;
+  --z-cursor:     2;
+  --z-content:    10;
+  --z-nav:        100;
+}

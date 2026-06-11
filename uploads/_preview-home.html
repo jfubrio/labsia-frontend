@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LabsIA · Inteligencia que escala tu negocio</title>
+  <meta name="description" content="Plataforma de IA aplicada al crecimiento. Landings con IA en 24h.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158/build/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #000000;
+      --bg-soft: #0a0a0c;
+      --bg-card: #0f0f12;
+      --fg: #f5f5f7;
+      --fg-soft: #a1a1a6;
+      --fg-faint: #555;
+      --accent: #00f5d4;
+      --accent-2: #7c3aed;
+      --accent-glow: rgba(0, 245, 212, 0.5);
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.15);
+    }
+    * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      overflow-x: hidden;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ────────────────── TOPBAR ────────────────── */
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 18px 32px;
+      display: flex; justify-content: space-between; align-items: center;
+      backdrop-filter: blur(20px);
+      background: rgba(0,0,0,0.4);
+      border-bottom: 1px solid var(--border);
+    }
+    .top-bar .logo { font-weight: 700; font-size: 19px; letter-spacing: -0.02em; }
+    .top-bar .logo .dot { color: var(--accent); }
+    .top-bar nav { display: flex; gap: 28px; font-size: 13px; color: var(--fg-soft); }
+    .top-bar nav a { transition: color 0.2s; cursor: pointer; }
+    .top-bar nav a:hover { color: var(--fg); }
+    @media (max-width: 768px) {
+      .top-bar nav { display: none; }
+      .top-bar { padding: 14px 20px; }
+    }
+
+    /* ────────────────── HERO ────────────────── */
+    .hero {
+      position: relative; width: 100%; min-height: 100vh; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #three-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+    .hero-content {
+      position: relative; z-index: 10;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 80px 24px 40px;
+      pointer-events: none; max-width: 1280px; width: 100%;
+    }
+    .hero-eyebrow {
+      font-size: clamp(11px, 1vw, 13px); letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--accent); font-weight: 500;
+      margin-bottom: 24px; opacity: 0; transform: translateY(20px);
+    }
+    .hero-title {
+      font-size: clamp(40px, 7vw, 92px); font-weight: 800;
+      line-height: 1.0; letter-spacing: -0.04em; text-align: center;
+      margin: 0; max-width: 1100px;
+    }
+    .hero-title .line { display: block; overflow: hidden; }
+    .hero-title .inner { display: inline-block; transform: translateY(110%); }
+    .gradient-text {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent; padding: 0 0.05em;
+    }
+    .hero-sub {
+      margin-top: 28px; font-size: clamp(16px, 1.5vw, 20px);
+      color: var(--fg-soft); max-width: 580px; text-align: center;
+      line-height: 1.5; font-weight: 300;
+      opacity: 0; transform: translateY(20px);
+    }
+    .hero-cta {
+      margin-top: 36px; display: flex; gap: 14px; pointer-events: auto;
+      opacity: 0; transform: translateY(20px); flex-wrap: wrap; justify-content: center;
+    }
+    .btn {
+      padding: 14px 28px; border-radius: 999px; font-weight: 500;
+      font-size: 15px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer; border: none; letter-spacing: 0.01em; font-family: inherit;
+    }
+    .btn-primary { background: var(--fg); color: var(--bg); }
+    .btn-primary:hover { box-shadow: 0 0 50px var(--accent-glow); }
+    .btn-secondary {
+      background: transparent; color: var(--fg);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .scroll-indicator {
+      position: absolute; bottom: 32px; left: 50%;
+      transform: translateX(-50%); color: var(--fg-soft);
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      z-index: 10; opacity: 0; pointer-events: none;
+    }
+    .scroll-indicator .arrow {
+      display: block; width: 1px; height: 24px;
+      background: linear-gradient(180deg, transparent, var(--fg-soft));
+      margin: 8px auto 0; animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(6px); }
+    }
+    .cursor-glow {
+      position: fixed; width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+      pointer-events: none; z-index: 2; transform: translate(-50%, -50%);
+      opacity: 0; transition: opacity 0.4s; mix-blend-mode: screen;
+    }
+
+    /* ────────────────── SECTION COMMON ────────────────── */
+    .section-eyebrow {
+      font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--accent); font-weight: 500; margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(36px, 5vw, 68px); font-weight: 800;
+      line-height: 1.05; letter-spacing: -0.03em; margin: 0 0 24px;
+      max-width: 900px;
+    }
+    .section-sub {
+      font-size: clamp(16px, 1.5vw, 20px); color: var(--fg-soft);
+      max-width: 640px; font-weight: 300; line-height: 1.5; margin: 0;
+    }
+
+    /* ────────────────── COMO FUNCIONA (3 pasos pin) ────────────────── */
+    .how-section {
+      position: relative;
+      background: linear-gradient(180deg, #000 0%, #050507 100%);
+    }
+    .how-pin {
+      position: relative;
+      height: 300vh; /* 3 viewports · 1 por step */
+    }
+    .how-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .how-container {
+      max-width: 1280px;
+      width: 100%;
+      padding: 0 32px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    @media (max-width: 968px) {
+      .how-container { grid-template-columns: 1fr; gap: 40px; padding: 80px 24px; }
+    }
+    .how-left { position: relative; min-height: 200px; }
+    .how-right { position: relative; min-height: 400px; }
+    .how-step {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .how-step.active { opacity: 1; }
+    .how-step .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      margin-bottom: 24px;
+    }
+    .how-step h3 {
+      font-size: clamp(32px, 4vw, 56px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin: 0 0 24px;
+    }
+    .how-step p {
+      font-size: 18px;
+      color: var(--fg-soft);
+      line-height: 1.6;
+      font-weight: 300;
+      margin: 0;
+    }
+    /* Visual del step (lado derecho) */
+    .step-visual {
+      width: 100%;
+      max-width: 500px;
+      aspect-ratio: 1;
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+    .step-1-visual {
+      background: linear-gradient(135deg, #0a1f2a 0%, #050507 100%);
+      border: 1px solid var(--border);
+      padding: 40px;
+    }
+    .step-1-form {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+    .step-1-form .label { color: var(--fg-faint); display: block; margin-bottom: 6px; }
+    .step-1-form .value { color: var(--accent); }
+    .step-2-visual {
+      background: radial-gradient(circle at center, rgba(0,245,212,0.15) 0%, transparent 70%), #050507;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .ai-orb {
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,245,212,0.6) 0%, rgba(124,58,237,0.3) 50%, transparent 80%);
+      animation: orbPulse 3s ease-in-out infinite;
+      position: relative;
+    }
+    .ai-orb::before, .ai-orb::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(0,245,212,0.3);
+      animation: orbExpand 3s ease-out infinite;
+    }
+    .ai-orb::after { animation-delay: 1.5s; }
+    @keyframes orbPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+    @keyframes orbExpand {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+    .step-3-visual {
+      background: linear-gradient(135deg, #0a1410 0%, #050507 100%);
+      border: 1px solid var(--border);
+      padding: 40px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .step-3-line {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0;
+      font-size: 14px;
+      color: var(--fg-soft);
+      border-bottom: 1px dashed var(--border);
+    }
+    .step-3-line:last-child { border-bottom: none; }
+    .step-3-check {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(0,245,212,0.2);
+      border: 1px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    /* Progress dots */
+    .how-progress {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .how-progress-dot {
+      width: 30px; height: 3px;
+      background: rgba(255,255,255,0.15);
+      transition: background 0.4s;
+    }
+    .how-progress-dot.active { background: var(--accent); }
+
+    /* ────────────────── STACK TECNOLÓGICO ────────────────── */
+    .stack-section {
+      padding: 120px 32px;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+    .stack-section::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .stack-wrap { max-width: 1280px; margin: 0 auto; position: relative; }
+    .stack-intro { text-align: center; margin-bottom: 80px; }
+    .stack-intro .section-title { margin-left: auto; margin-right: auto; }
+    .stack-intro .section-sub { margin-left: auto; margin-right: auto; }
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .stack-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .stack-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stack-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(0,245,212,0.08) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .stack-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0,245,212,0.3);
+    }
+    .stack-card:hover::before { opacity: 1; }
+    .stack-card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(0,245,212,0.08) 0%, rgba(124,58,237,0.08) 100%);
+      border: 1px solid rgba(0,245,212,0.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 0 24px rgba(0,245,212,0.06);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 22px;
+      color: var(--accent);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stack-card-icon::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 14px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(0,245,212,0.4) 0%, transparent 50%, rgba(124,58,237,0.4) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .stack-card:hover .stack-card-icon {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 32px rgba(0,245,212,0.18);
+    }
+    .stack-card:hover .stack-card-icon::after { opacity: 1; }
+    .stack-card-icon svg,
+    .stack-card-icon img {
+      width: 26px;
+      height: 26px;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      filter: drop-shadow(0 0 8px rgba(0,245,212,0.4));
+    }
+    .stack-card:hover .stack-card-icon svg,
+    .stack-card:hover .stack-card-icon img {
+      transform: scale(1.08) rotate(2deg);
+      filter: drop-shadow(0 0 12px rgba(0,245,212,0.7));
+    }
+    /* Variante de color sutil por brand */
+    .stack-card-icon.icon-openai { color: #f5f5f7; }
+    .stack-card-icon.icon-stripe { color: #00f5d4; }
+    .stack-card-icon.icon-resend { color: #00f5d4; }
+    .stack-card-icon.icon-make { color: #00f5d4; }
+    .stack-card h4 {
+      font-size: 20px; font-weight: 700;
+      margin: 0 0 8px;
+      letter-spacing: -0.01em;
+    }
+    .stack-card .stack-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .stack-card p {
+      font-size: 14px; color: var(--fg-soft);
+      line-height: 1.5; margin: 0;
+      font-weight: 300;
+    }
+
+    /* ────────────────── TIMELINE 24H ────────────────── */
+    .timeline-section {
+      position: relative;
+      background: linear-gradient(180deg, #000 0%, #050507 100%);
+      overflow: hidden;
+    }
+    .timeline-intro {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 120px 32px 60px;
+      text-align: left;
+    }
+    .timeline-pin-wrap {
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+    .timeline-track {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 80px;
+      padding: 0 10vw;
+      will-change: transform;
+    }
+    .timeline-step {
+      flex: 0 0 auto;
+      width: 360px;
+      position: relative;
+    }
+    .timeline-step .time-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 64px;
+      font-weight: 500;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 24px;
+    }
+    .timeline-step h4 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 12px;
+      letter-spacing: -0.02em;
+    }
+    .timeline-step p {
+      font-size: 15px;
+      color: var(--fg-soft);
+      line-height: 1.6;
+      font-weight: 300;
+      margin: 0 0 16px;
+    }
+    .timeline-step .tech-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(0,245,212,0.08);
+      border: 1px solid rgba(0,245,212,0.2);
+      border-radius: 4px;
+    }
+    /* Línea conectora animada */
+    .timeline-line {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-strong) 10%, var(--border-strong) 90%, transparent);
+      transform: translateY(-50%);
+      z-index: -1;
+    }
+    .timeline-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 20px var(--accent);
+      pointer-events: none;
+    }
+
+    /* ────────────────── GALERÍA ────────────────── */
+    .gallery-section {
+      position: relative;
+      padding: 120px 0;
+      background: linear-gradient(180deg, #050507 0%, #0a0a0c 100%);
+      overflow: hidden;
+    }
+    .gallery-intro {
+      max-width: 1280px; margin: 0 auto 80px; padding: 0 32px;
+      text-align: left;
+    }
+    .gallery-track-wrap { width: 100%; overflow: hidden; padding-bottom: 40px; }
+    .gallery-track { display: flex; gap: 32px; padding: 0 32px; will-change: transform; }
+    .gallery-card {
+      flex: 0 0 auto;
+      width: clamp(280px, 28vw, 380px);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+    }
+    .gallery-card:hover { transform: translateY(-8px); border-color: rgba(0, 245, 212, 0.4); }
+    .gallery-card-thumb { width: 100%; aspect-ratio: 16/10; background: #1a1a1f; position: relative; overflow: hidden; }
+    .gallery-card-thumb img {
+      width: 100%; height: 100%; object-fit: cover; object-position: top center;
+      filter: saturate(1.1); transition: transform 0.6s ease;
+    }
+    .gallery-card:hover .gallery-card-thumb img { transform: scale(1.05); }
+    .gallery-card-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.7) 100%);
+      pointer-events: none;
+    }
+    .gallery-card-tag {
+      position: absolute; top: 14px; left: 14px;
+      padding: 5px 10px; border-radius: 6px;
+      background: rgba(0, 245, 212, 0.15); color: var(--accent);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 245, 212, 0.3);
+    }
+    .gallery-card-body { padding: 24px; }
+    .gallery-card-headline {
+      font-size: 18px; font-weight: 700; line-height: 1.3;
+      margin: 0 0 8px; color: var(--fg);
+    }
+    .gallery-card-biz {
+      font-size: 13px; color: var(--fg-soft); margin: 0 0 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .gallery-card-biz .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+    }
+    .gallery-card-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 16px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--fg-faint);
+    }
+    .gallery-card-meta .open-link {
+      color: var(--accent); font-weight: 500; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 4px;
+      transition: gap 0.3s;
+    }
+
+    /* ────────────────── COMPARATIVA ────────────────── */
+    .compare-section { padding: 120px 32px; background: var(--bg); }
+    .compare-wrap { max-width: 1280px; margin: 0 auto; }
+    .compare-intro { margin-bottom: 64px; }
+    .compare-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 24px; overflow: hidden;
+    }
+    .compare-table th, .compare-table td {
+      padding: 20px 24px; text-align: left; vertical-align: middle;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table thead th {
+      background: rgba(255,255,255,0.02);
+      font-size: 14px; font-weight: 600;
+      color: var(--fg-soft); text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .compare-table thead th.featured {
+      background: linear-gradient(135deg, rgba(0, 245, 212, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%);
+      color: var(--accent); position: relative;
+    }
+    .compare-table thead th.featured::after {
+      content: 'TÚ AQUÍ'; position: absolute; top: 4px; right: 8px;
+      font-size: 9px; padding: 2px 6px;
+      background: var(--accent); color: #000;
+      border-radius: 4px; font-weight: 700;
+    }
+    .compare-table tbody td:first-child { font-weight: 500; color: var(--fg); }
+    .compare-table tbody td { font-size: 14px; color: var(--fg-soft); }
+    .compare-table tbody td.featured {
+      background: linear-gradient(135deg, rgba(0, 245, 212, 0.06) 0%, rgba(124, 58, 237, 0.06) 100%);
+      color: var(--fg); font-weight: 500;
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .check { color: var(--accent); }
+    .cross { color: #555; }
+    .compare-row { opacity: 0; }
+    @media (max-width: 768px) {
+      .compare-table { font-size: 12px; }
+      .compare-table th, .compare-table td { padding: 12px 10px; }
+    }
+
+    /* ────────────────── CIERRE ────────────────── */
+    .cta-final {
+      padding: 160px 32px;
+      background: radial-gradient(ellipse at center, rgba(0, 245, 212, 0.08) 0%, transparent 70%), var(--bg);
+      text-align: center;
+    }
+    .cta-final h2 {
+      font-size: clamp(42px, 6vw, 80px); font-weight: 800;
+      line-height: 1.05; letter-spacing: -0.03em; margin: 0 0 32px;
+    }
+    .cta-final p { font-size: 18px; color: var(--fg-soft); max-width: 540px; margin: 0 auto 40px; }
+    .cta-final .btn-primary { padding: 18px 36px; font-size: 16px; }
+
+    footer {
+      padding: 40px 32px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--fg-faint);
+      font-size: 13px;
+    }
+  
+    /* ────────────────── TESTIMONIOS ────────────────── */
+    .testimonials-section {
+      padding: 120px 32px;
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 50%, var(--bg) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .testimonials-wrap { max-width: 1280px; margin: 0 auto; }
+    .testimonials-intro { text-align: center; margin-bottom: 64px; }
+    .testimonials-intro .section-title,
+    .testimonials-intro .section-sub { margin-left: auto; margin-right: auto; }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 80px;
+      padding: 40px 32px;
+      background: linear-gradient(135deg, rgba(0,245,212,0.04) 0%, rgba(124,58,237,0.04) 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+    }
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+    }
+    .stat { text-align: center; }
+    .stat-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 500;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--fg-soft);
+    }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 968px) {
+      .testimonials-grid { grid-template-columns: 1fr; }
+    }
+    .testimonial-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .testimonial-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0,245,212,0.25);
+    }
+    .testimonial-quote-mark {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 64px;
+      line-height: 0.6;
+      color: var(--accent);
+      opacity: 0.6;
+      margin-bottom: 16px;
+    }
+    .testimonial-text {
+      font-size: 16px;
+      color: var(--fg);
+      line-height: 1.6;
+      font-weight: 300;
+      margin: 0 0 24px;
+    }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .author-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      color: var(--bg);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .author-info { flex: 1; }
+    .author-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 2px;
+    }
+    .author-role {
+      font-size: 12px;
+      color: var(--fg-faint);
+    }
+
+    /* ────────────────── FAQ ────────────────── */
+    .faq-section {
+      padding: 120px 32px;
+      background: var(--bg);
+    }
+    .faq-wrap { max-width: 900px; margin: 0 auto; }
+    .faq-intro { margin-bottom: 64px; }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      transition: border-color 0.3s;
+    }
+    .faq-item:hover { border-bottom-color: rgba(0,245,212,0.2); }
+    .faq-item summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 28px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      font-size: clamp(17px, 1.6vw, 22px);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      transition: color 0.3s;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary:hover { color: var(--accent); }
+    .faq-item .faq-plus {
+      width: 28px; height: 28px;
+      flex-shrink: 0;
+      position: relative;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      background: rgba(0,245,212,0.06);
+      border: 1px solid rgba(0,245,212,0.18);
+    }
+    .faq-item .faq-plus::before,
+    .faq-item .faq-plus::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 11px; height: 1.5px;
+      background: var(--accent);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .faq-item .faq-plus::before { transform: translate(-50%, -50%); }
+    .faq-item .faq-plus::after { transform: translate(-50%, -50%) rotate(90deg); }
+    .faq-item[open] .faq-plus { transform: rotate(135deg); background: rgba(0,245,212,0.18); }
+    .faq-content {
+      padding-bottom: 28px;
+      font-size: 16px;
+      color: var(--fg-soft);
+      line-height: 1.6;
+      font-weight: 300;
+      max-width: 720px;
+    }
+    .faq-content code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(0,245,212,0.08);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    /* ────────────────── PRICING ────────────────── */
+    .pricing-section {
+      padding: 140px 32px;
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .pricing-section::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1000px; height: 1000px;
+      background: radial-gradient(circle, rgba(0,245,212,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .pricing-wrap { max-width: 1100px; margin: 0 auto; position: relative; }
+    .pricing-intro { text-align: center; margin-bottom: 64px; }
+    .pricing-intro .section-title,
+    .pricing-intro .section-sub { margin-left: auto; margin-right: auto; }
+    .pricing-card-main {
+      background: linear-gradient(180deg, var(--bg-card) 0%, #0c0c10 100%);
+      border: 1px solid rgba(0,245,212,0.3);
+      border-radius: 28px;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 80px rgba(0,245,212,0.08), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .pricing-card-main::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      padding: 1px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, var(--accent) 0%, transparent 50%, var(--accent-2) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0.5;
+    }
+    @media (max-width: 768px) { .pricing-card-main { padding: 32px 24px; } }
+    .pricing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(0,245,212,0.12);
+      border: 1px solid rgba(0,245,212,0.25);
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 24px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    @media (max-width: 768px) { .pricing-grid { grid-template-columns: 1fr; gap: 32px; } }
+    .pricing-name {
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin: 0 0 16px;
+    }
+    .pricing-desc {
+      font-size: 17px;
+      color: var(--fg-soft);
+      line-height: 1.5;
+      font-weight: 300;
+      margin: 0 0 32px;
+    }
+    .pricing-features {
+      list-style: none;
+      padding: 0; margin: 0 0 32px;
+    }
+    .pricing-features li {
+      display: flex; gap: 12px;
+      padding: 10px 0;
+      font-size: 15px;
+      color: var(--fg);
+      align-items: flex-start;
+    }
+    .pricing-features .check-bullet {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(0,245,212,0.12);
+      border: 1px solid rgba(0,245,212,0.3);
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      margin-top: 1px;
+    }
+    .pricing-right {
+      text-align: center;
+      padding: 32px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+    .pricing-amount {
+      font-size: clamp(48px, 6vw, 80px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .pricing-currency {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--fg-soft);
+      letter-spacing: 0.2em;
+      margin-top: 8px;
+    }
+    .pricing-once {
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 500;
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+    }
+    .pricing-cta {
+      margin-top: 32px;
+      width: 100%;
+      padding: 16px 32px;
+      font-size: 16px;
+    }
+    .savings-note {
+      margin-top: 20px;
+      padding: 14px;
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 10px;
+      font-size: 12px;
+      color: #c4a5ff;
+      line-height: 1.4;
+    }
+    .pricing-addons {
+      margin-top: 48px;
+      padding: 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+    }
+    .pricing-addons-title {
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 20px;
+      font-weight: 500;
+    }
+    .addons-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 768px) { .addons-grid { grid-template-columns: 1fr; gap: 16px; } }
+    .addon {
+      padding: 16px;
+      border-left: 2px solid var(--accent);
+    }
+    .addon-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+    .addon-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .addon-desc {
+      font-size: 12px;
+      color: var(--fg-soft);
+      line-height: 1.4;
+      font-weight: 300;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="cursor-glow" id="cursorGlow"></div>
+
+  <header class="top-bar">
+    <div class="logo">labs<span class="dot">.</span>ia</div>
+    <nav>
+      <a href="#how">Cómo funciona</a>
+      <a href="#cases">Casos</a>
+      <a href="#faq">FAQ</a>
+      <a href="#pricing">Precios</a>
+    </nav>
+  </header>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <section class="hero">
+    <canvas id="three-canvas"></canvas>
+    <div class="hero-content">
+      <div class="hero-eyebrow">PLATAFORMA DE IA APLICADA</div>
+      <h1 class="hero-title">
+        <span class="line"><span class="inner">Inteligencia que</span></span>
+        <span class="line"><span class="inner"><span class="gradient-text">escala</span> tu negocio.</span></span>
+      </h1>
+      <p class="hero-sub">
+        Generamos tu landing con IA en 24 horas.<br>
+        Sin agencia, sin meses, sin fricción.
+      </p>
+      <div class="hero-cta">
+        <button class="btn btn-primary">Empieza ahora →</button>
+        <button class="btn btn-secondary">Ver casos reales</button>
+      </div>
+    </div>
+    <div class="scroll-indicator">Desliza<span class="arrow"></span></div>
+  </section>
+
+  <!-- ═══════════════ CÓMO FUNCIONA · 3 pasos pin ═══════════════ -->
+  <section class="how-section" id="how">
+    <div class="how-pin" id="howPin">
+      <div class="how-sticky">
+        <div class="how-container">
+          <div class="how-left">
+            <div class="how-step" data-step="1">
+              <div class="step-num">PASO 01</div>
+              <h3>Cuéntanos tu negocio.</h3>
+              <p>Llenas un formulario de 5 minutos. Datos de tu empresa, audiencia, objetivos. Tu IA personal aprende qué hace único a tu negocio.</p>
+            </div>
+            <div class="how-step" data-step="2">
+              <div class="step-num">PASO 02</div>
+              <h3><span class="gradient-text">Nuestra IA</span> genera tu landing.</h3>
+              <p>GPT-4o orquesta copy persuasivo. FLUX genera imágenes brand-aligned. Todo en ~10 segundos. Tu landing toma forma en tiempo real.</p>
+            </div>
+            <div class="how-step" data-step="3">
+              <div class="step-num">PASO 03</div>
+              <h3>Aprueba y publicamos.</h3>
+              <p>Revisas la landing en tu portal privado. Apruebas o pides cambios. Una vez OK, va al aire en cliente.labsia.mx en menos de 60 segundos.</p>
+            </div>
+          </div>
+
+          <div class="how-right">
+            <div class="how-step" data-step="1">
+              <div class="step-visual step-1-visual">
+                <div class="step-1-form">
+                  <span class="label">biz_name</span>
+                  <span class="value">"Café Quinta Avenida"</span>
+                </div>
+                <div class="step-1-form">
+                  <span class="label">biz_industry</span>
+                  <span class="value">"servicios"</span>
+                </div>
+                <div class="step-1-form">
+                  <span class="label">biz_audience</span>
+                  <span class="value">"Profesionales 25-40, foodies..."</span>
+                </div>
+                <div class="step-1-form">
+                  <span class="label">biz_goal</span>
+                  <span class="value">"Atraer clientela recurrente"</span>
+                </div>
+              </div>
+            </div>
+            <div class="how-step" data-step="2">
+              <div class="step-visual step-2-visual">
+                <div class="ai-orb"></div>
+              </div>
+            </div>
+            <div class="how-step" data-step="3">
+              <div class="step-visual step-3-visual">
+                <div class="step-3-line">
+                  <span class="step-3-check">✓</span>
+                  <span>Copy generado · 8.6s</span>
+                </div>
+                <div class="step-3-line">
+                  <span class="step-3-check">✓</span>
+                  <span>Imágenes brand-aligned · listas</span>
+                </div>
+                <div class="step-3-line">
+                  <span class="step-3-check">✓</span>
+                  <span>Landing renderizada · HTML 31KB</span>
+                </div>
+                <div class="step-3-line">
+                  <span class="step-3-check">✓</span>
+                  <span>Subdominio activo · cliente.labsia.mx</span>
+                </div>
+                <div class="step-3-line">
+                  <span class="step-3-check">✓</span>
+                  <span>SSL provisionado · HTTPS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="how-progress">
+          <div class="how-progress-dot active" data-dot="1"></div>
+          <div class="how-progress-dot" data-dot="2"></div>
+          <div class="how-progress-dot" data-dot="3"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ STACK TECNOLÓGICO ═══════════════ -->
+  <section class="stack-section" id="stack">
+    <div class="stack-wrap">
+      <div class="stack-intro">
+        <div class="section-eyebrow">STACK TECNOLÓGICO</div>
+        <h2 class="section-title">No improvisamos.<br>Usamos lo mejor del mercado.</h2>
+        <p class="section-sub">Cada componente es production-grade. Nada de plantillas baratas ni IA random.</p>
+      </div>
+
+      <div class="stack-grid">
+        <div class="stack-card">
+          <div class="stack-card-icon icon-vercel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="2.5"/>
+        <circle cx="4" cy="6" r="1.5"/>
+        <circle cx="20" cy="6" r="1.5"/>
+        <circle cx="4" cy="18" r="1.5"/>
+        <circle cx="20" cy="18" r="1.5"/>
+        <path d="M10 11 L5 7"/>
+        <path d="M14 11 L19 7"/>
+        <path d="M10 13 L5 17"/>
+        <path d="M14 13 L19 17"/>
+        </svg></div>
+          <span class="stack-tag">CÓMPUTO</span>
+          <h4>Vercel</h4>
+          <p>Edge network global. Functions con Fluid Compute. CDN automático. Sub-50ms desde cualquier punto.</p>
+        </div>
+        <div class="stack-card">
+          <div class="stack-card-icon icon-openai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="5" y="5" width="14" height="14" rx="2"/>
+        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        <path d="M9 3 L9 5"/>
+        <path d="M15 3 L15 5"/>
+        <path d="M9 19 L9 21"/>
+        <path d="M15 19 L15 21"/>
+        <path d="M3 9 L5 9"/>
+        <path d="M3 15 L5 15"/>
+        <path d="M19 9 L21 9"/>
+        <path d="M19 15 L21 15"/>
+        </svg></div>
+          <span class="stack-tag">INTELIGENCIA</span>
+          <h4>OpenAI · GPT-4o</h4>
+          <p>Modelo state-of-the-art para copy persuasivo en español mexicano. Validación JSON estricta.</p>
+        </div>
+        <div class="stack-card">
+          <div class="stack-card-icon icon-stripe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="6" width="18" height="13" rx="2"/>
+        <path d="M3 10 L21 10"/>
+        <rect x="6" y="14" width="3.5" height="2.5" rx="0.5"/>
+        <path d="M14 15 L18 15"/>
+        </svg></div>
+          <span class="stack-tag">PAGOS</span>
+          <h4>Stripe</h4>
+          <p>Webhooks firmados HMAC. Test mode + live mode. Soporta cualquier tarjeta mexicana e internacional.</p>
+        </div>
+        <div class="stack-card">
+          <div class="stack-card-icon icon-resend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="6" width="18" height="13" rx="2"/>
+        <path d="M3 8 L12 14 L21 8"/>
+        <path d="M16 19 L20 19 L20 15"/>
+        </svg></div>
+          <span class="stack-tag">EMAIL</span>
+          <h4>Resend</h4>
+          <p>DKIM verificado · transaccional desde ordenes@labsia.mx. Apertura 95%+ confirmada.</p>
+        </div>
+        <div class="stack-card">
+          <div class="stack-card-icon icon-sheets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M3 9 L21 9"/>
+        <path d="M3 15 L21 15"/>
+        <path d="M9 3 L9 21"/>
+        <path d="M15 3 L15 21"/>
+        <rect x="9" y="9" width="6" height="6" fill="currentColor" fill-opacity="0.2" stroke="none"/>
+        </svg></div>
+          <span class="stack-tag">DATOS</span>
+          <h4>Google Sheets API</h4>
+          <p>Service Account directo. Auditable, exportable, sin DB compleja. Tú controlas tus datos.</p>
+        </div>
+        <div class="stack-card">
+          <div class="stack-card-icon icon-make"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="5" cy="6" r="2"/>
+        <circle cx="19" cy="6" r="2"/>
+        <circle cx="12" cy="18" r="2"/>
+        <path d="M7 6 L17 6"/>
+        <path d="M5.5 8 Q5.5 13 10.5 17"/>
+        <path d="M18.5 8 Q18.5 13 13.5 17"/>
+        </svg></div>
+          <span class="stack-tag">ORQUESTACIÓN</span>
+          <h4>Make</h4>
+          <p>Scenarios visuales · 10K ops/mes. Conecta IA, Sheets, email, webhooks. Sin servidores que mantener.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ TIMELINE 24H ═══════════════ -->
+  <section class="timeline-section" id="timeline">
+    <div class="timeline-intro">
+      <div class="section-eyebrow">PROCESO 24 HORAS</div>
+      <h2 class="section-title">De pago a publicación.<br>En tiempo real.</h2>
+      <p class="section-sub">Cada hito es automático. Cada paso registrado. Cero adivinación.</p>
+    </div>
+
+    <div class="timeline-pin-wrap" id="timelinePin">
+      <div class="timeline-line"></div>
+      <div class="timeline-track" id="timelineTrack">
+        <div class="timeline-step">
+          <div class="time-badge">00:00</div>
+          <h4>Pago confirmado</h4>
+          <p>Stripe webhook verificado con firma HMAC. Order_id propagado. Sheet actualizado en <300ms.</p>
+          <span class="tech-tag">stripe.webhooks.constructEvent</span>
+        </div>
+        <div class="timeline-step">
+          <div class="time-badge">00:01</div>
+          <h4>IA arranca</h4>
+          <p>Make scenario dispara · llama a tu endpoint /api/internal/generate-content. OpenAI recibe prompt estructurado.</p>
+          <span class="tech-tag">gpt-4o-mini</span>
+        </div>
+        <div class="timeline-step">
+          <div class="time-badge">00:09</div>
+          <h4>Copy listo</h4>
+          <p>Hero, services, FAQ generados. Validados con JSON schema. Guardados en sheet automáticamente.</p>
+          <span class="tech-tag">draft_ready_at</span>
+        </div>
+        <div class="timeline-step">
+          <div class="time-badge">06:00</div>
+          <h4>Revisión interna</h4>
+          <p>Operador LabsIA revisa en panel admin. Ajusta tipografía, valida copy. Aprueba o regenera.</p>
+          <span class="tech-tag">/admin-review</span>
+        </div>
+        <div class="timeline-step">
+          <div class="time-badge">12:00</div>
+          <h4>Cliente revisa</h4>
+          <p>Email automático con link único · token HMAC. Cliente revisa, aprueba o pide cambios desde su portal.</p>
+          <span class="tech-tag">/paginas-web/revisar</span>
+        </div>
+        <div class="timeline-step">
+          <div class="time-badge">24:00</div>
+          <h4>Landing live</h4>
+          <p>HTML renderizado · subido a Vercel Blob público. Subdomain SSL provisionado. cliente.labsia.mx activo.</p>
+          <span class="tech-tag">render-landing.ts</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ GALERÍA ═══════════════ -->
+  <section class="gallery-section" id="cases">
+    <div class="gallery-intro">
+      <div class="section-eyebrow">CASOS REALES</div>
+      <h2 class="section-title">Negocios reales.<br>Landings generadas en 24h.</h2>
+      <p class="section-sub">Cada una creada por nuestra IA + revisión humana. Clic en cualquiera para ver el output completo.</p>
+    </div>
+
+    <div class="gallery-track-wrap">
+      <div class="gallery-track" id="galleryTrack">
+        <a href="https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/cafe-quinta-avenida-2c79df.html" target="_blank" rel="noopener" class="gallery-card">
+          <div class="gallery-card-thumb">
+            <img loading="lazy" src="https://image.thum.io/get/width/800/crop/600/wait/3/https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/cafe-quinta-avenida-2c79df.html" alt="Café Quinta Avenida">
+            <div class="gallery-card-overlay"></div>
+            <div class="gallery-card-tag">Servicios</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Disfruta café de especialidad en Monterrey</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> MTY · 2026</p>
+            <div class="gallery-card-meta"><span>Generada en 11s</span><span class="open-link">Ver landing →</span></div>
+          </div>
+        </a>
+        <a href="https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/estudio-lente-eterno-365937.html" target="_blank" rel="noopener" class="gallery-card">
+          <div class="gallery-card-thumb">
+            <img loading="lazy" src="https://image.thum.io/get/width/800/crop/600/wait/3/https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/estudio-lente-eterno-365937.html" alt="Estudio Lente Eterno">
+            <div class="gallery-card-overlay"></div>
+            <div class="gallery-card-tag">Fotografía</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Captura tu historia de amor con estilo</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> CDMX · 2026</p>
+            <div class="gallery-card-meta"><span>Generada en 10s</span><span class="open-link">Ver landing →</span></div>
+          </div>
+        </a>
+        <a href="https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/skin-lab-coreano-mx-311778.html" target="_blank" rel="noopener" class="gallery-card">
+          <div class="gallery-card-thumb">
+            <img loading="lazy" src="https://image.thum.io/get/width/800/crop/600/wait/3/https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/skin-lab-coreano-mx-311778.html" alt="Skin Lab Coreano MX">
+            <div class="gallery-card-overlay"></div>
+            <div class="gallery-card-tag">Comercio</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Transforma tu piel con productos coreanos</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> Skin Lab Coreano MX · GDL</p>
+            <div class="gallery-card-meta"><span>Generada en 9s</span><span class="open-link">Ver landing →</span></div>
+          </div>
+        </a>
+        <a href="https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/codeflow-academy-758045.html" target="_blank" rel="noopener" class="gallery-card">
+          <div class="gallery-card-thumb">
+            <img loading="lazy" src="https://image.thum.io/get/width/800/crop/600/wait/3/https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/codeflow-academy-758045.html" alt="CodeFlow Academy">
+            <div class="gallery-card-overlay"></div>
+            <div class="gallery-card-tag">Digital</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Transforma tu carrera en 12 semanas</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> CodeFlow Academy · Online</p>
+            <div class="gallery-card-meta"><span>Generada en 5s</span><span class="open-link">Ver landing →</span></div>
+          </div>
+        </a>
+        <a href="https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/petcare-24-veterinaria-d6b9e6.html" target="_blank" rel="noopener" class="gallery-card">
+          <div class="gallery-card-thumb">
+            <img loading="lazy" src="https://image.thum.io/get/width/800/crop/600/wait/3/https://dbci6xxm7upvywwn.public.blob.vercel-storage.com/deliveries/petcare-24-veterinaria-d6b9e6.html" alt="PetCare 24 Veterinaria">
+            <div class="gallery-card-overlay"></div>
+            <div class="gallery-card-tag">Veterinaria</div>
+          </div>
+          <div class="gallery-card-body">
+            <h3 class="gallery-card-headline">Cuida a tu mascota las 24 horas</h3>
+            <p class="gallery-card-biz"><span class="dot"></span> Saltillo · 2026</p>
+            <div class="gallery-card-meta"><span>Generada en 8s</span><span class="open-link">Ver landing →</span></div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ COMPARATIVA ═══════════════ -->
+  <section class="compare-section" id="compare">
+    <div class="compare-wrap">
+      <div class="compare-intro">
+        <div class="section-eyebrow">VS COMPETENCIA</div>
+        <h2 class="section-title">No somos lo mismo<br>que los demás.</h2>
+        <p class="section-sub">Comparativa real con las plataformas IA más conocidas y agencias web tradicionales.</p>
+      </div>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="featured">LabsIA</th>
+            <th>Durable / Mixo</th>
+            <th>Wix / Squarespace</th>
+            <th>Agencia local</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="compare-row"><td>Precio</td><td class="featured">$2,500 MXN único</td><td>$15 USD/mes</td><td>$14-30 USD/mes</td><td>$15,000-50,000 MXN</td></tr>
+          <tr class="compare-row"><td>Costo a 2 años</td><td class="featured">~$2,500 MXN</td><td>~$7,200 MXN</td><td>~$8,400 MXN</td><td>$15K-50K MXN</td></tr>
+          <tr class="compare-row"><td>Entrega</td><td class="featured">24h draft · IA + humano</td><td>30 segundos · 100% IA</td><td>Tú lo haces · días</td><td>4-12 semanas</td></tr>
+          <tr class="compare-row"><td>Curaduría humana</td><td class="featured"><span class="check">●</span> Sí · revisión antes de publicar</td><td><span class="cross">●</span> No</td><td><span class="cross">●</span> No</td><td><span class="check">●</span> Sí · pero lento</td></tr>
+          <tr class="compare-row"><td>Idioma · soporte</td><td class="featured">Español MX · chat humano</td><td>Inglés · solo chat IA</td><td>Multi-idioma · ticket</td><td>Español · directo</td></tr>
+          <tr class="compare-row"><td>Factura mexicana CFDI</td><td class="featured"><span class="check">●</span> Sí</td><td><span class="cross">●</span> No</td><td><span class="cross">●</span> No</td><td><span class="check">●</span> Sí</td></tr>
+          <tr class="compare-row"><td>Hosting incluido</td><td class="featured">12 meses incluidos</td><td>Mientras pagues mes</td><td>Mientras pagues mes</td><td>Aparte · variable</td></tr>
+          <tr class="compare-row"><td>Pago en MXN</td><td class="featured"><span class="check">●</span> Sin tipo de cambio</td><td><span class="cross">●</span> USD · cambia mes a mes</td><td><span class="cross">●</span> USD · cambia mes a mes</td><td><span class="check">●</span> MXN</td></tr>
+          <tr class="compare-row"><td>Optimizado mercado MX</td><td class="featured"><span class="check">●</span> Sí · LFPDPPP · CFDI · WhatsApp</td><td><span class="cross">●</span> No</td><td><span class="cross">●</span> Parcial</td><td><span class="check">●</span> Sí</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  
+  <!-- ═══════════════ TESTIMONIOS ═══════════════ -->
+  <section class="testimonials-section" id="testimonials">
+    <div class="testimonials-wrap">
+      <div class="testimonials-intro">
+        <div class="section-eyebrow">CONFIANZA</div>
+        <h2 class="section-title">Negocios mexicanos<br>que ya escalan con IA.</h2>
+        <p class="section-sub">Métricas y testimonios mostrados como ejemplos ilustrativos hasta validar casos públicos reales.</p>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-number">5</div>
+          <div class="stat-label">Demos auditables</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">24h</div>
+          <div class="stat-label">SLA real</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">QA</div>
+          <div class="stat-label">Revisión humana</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">$0</div>
+          <div class="stat-label">Renta mensual</div>
+        </div>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-quote-mark">"</div>
+          <p class="testimonial-text">Necesitábamos algo rápido y profesional. La cotización de la agencia local era 18,000 pesos y 6 semanas. Con LabsIA fue 2,500 y al día siguiente teníamos el draft. El copy estaba mejor escrito que el del brief que les mandamos.</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">F</div>
+            <div class="author-info">
+              <div class="author-name">Beta Tester · Sector Fotografía</div>
+              <div class="author-role">Estudio Lente Eterno · CDMX</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-quote-mark">"</div>
+          <p class="testimonial-text">Llevaba 4 meses queriendo lanzar mi cafetería online. Wix me cobraba en dólares y me sentía estafado. LabsIA un solo pago, factura mexicana, y la landing carga rapidísimo en celular. Mis ventas online subieron 35% el primer mes.</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">C</div>
+            <div class="author-info">
+              <div class="author-name">Beta Tester · Sector Cafetería</div>
+              <div class="author-role">Café Quinta Avenida · MTY</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-quote-mark">"</div>
+          <p class="testimonial-text">El proceso de revisión es lo que más me gustó. No te entregan algo random de IA y se acaba. Hay una persona real revisando antes de publicar y le puedes pedir ajustes específicos. Sentí que sí entendieron mi negocio.</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">V</div>
+            <div class="author-info">
+              <div class="author-name">Beta Tester · Sector Veterinaria</div>
+              <div class="author-role">PetCare 24 · Saltillo</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FAQ ═══════════════ -->
+  <section class="faq-section" id="faq">
+    <div class="faq-wrap">
+      <div class="faq-intro">
+        <div class="section-eyebrow">PREGUNTAS FRECUENTES</div>
+        <h2 class="section-title">Lo que ya nos<br>han preguntado.</h2>
+        <p class="section-sub">Si tu duda no está aquí, escríbenos por WhatsApp directo.</p>
+      </div>
+
+      <details class="faq-item">
+        <summary>¿Realmente entregan en 24 horas?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Sí, pero con un matiz: en 24 horas entregamos el <strong>draft listo para tu revisión</strong>. Una vez lo apruebas, lo publicamos en menos de 1 hora. Si pides cambios, generamos una nueva versión y vuelve a tu revisión. El timer de 24h aplica desde la confirmación de tu pago.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Qué incluye el precio de $2,500 MXN?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Incluye: landing completa generada con IA + curaduría humana, hosting en <code>cliente.labsia.mx</code> durante 12 meses, certificado SSL, 3 ciclos de revisión, factura CFDI mexicana, soporte por email en español. Sin renta mensual el primer año.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Cuál es la diferencia con Wix o Squarespace?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Tres diferencias clave. <strong>Uno:</strong> pago único de $2,500 vs suscripción mensual en USD que te cobra de por vida. <strong>Dos:</strong> nosotros lo hacemos por ti con IA + humano vs tú armándolo tú mismo. <strong>Tres:</strong> factura mexicana CFDI 4.0 vs facturación gringa sin RFC.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Y si la IA genera algo que no me gusta?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Tienes 3 ciclos de regeneración incluidos en el precio. Cada vez que pides cambios, la IA reescribe el copy y/o las imágenes considerando tu feedback. Si después de 3 ciclos sigues sin sentirte conforme, costo de regeneración adicional: $200 MXN por ciclo.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Puedo usar mi propio dominio?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Sí. Tu landing arranca en <code>cliente.labsia.mx</code> sin costo adicional. Si quieres migrarla a tu dominio propio (ej. <code>tunegocio.com</code>), es un upgrade de $500 MXN único que incluye la configuración DNS + certificado SSL.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Cómo se hace el pago?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Stripe Checkout · tarjeta de crédito o débito, Visa, Mastercard, Amex. Pago seguro 3D Secure. Factura CFDI 4.0 emitida automáticamente a tu RFC en máximo 24h. Si necesitas SPEI o transferencia, escríbenos por WhatsApp para coordinar.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Qué pasa después del año 1 de hosting?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          Te avisamos 30 días antes del vencimiento. Renovación de hosting: $200 MXN/año (solo si decides seguir con nosotros). También puedes migrar el HTML a cualquier hosting que prefieras · te entregamos el código fuente sin costo.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Es seguro confiar mi negocio a una IA?<span class="faq-plus"></span></summary>
+        <div class="faq-content">
+          La IA genera el contenido inicial, pero ningún sitio se publica sin <strong>revisión humana de nuestro equipo</strong> y tu aprobación final. Tú apruebas el copy y las imágenes antes de que la landing sea visible públicamente. Aviso de privacidad LFPDPPP compliant, datos en México.
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PRICING ═══════════════ -->
+  <section class="pricing-section" id="pricing">
+    <div class="pricing-wrap">
+      <div class="pricing-intro">
+        <div class="section-eyebrow">PRECIOS · UNA SOLA VEZ</div>
+        <h2 class="section-title">Un pago.<br>Sin suscripción. Sin sorpresas.</h2>
+        <p class="section-sub">Tu landing lista en 24 horas con todo incluido el primer año.</p>
+      </div>
+
+      <div class="pricing-card-main">
+        <span class="pricing-badge">⚡ PLAN ÚNICO · WEB24H</span>
+        <div class="pricing-grid">
+          <div>
+            <h3 class="pricing-name">Web24h</h3>
+            <p class="pricing-desc">La landing completa que tu negocio necesita. Generada con IA, curada por humanos, publicada en menos de 24 horas.</p>
+            <ul class="pricing-features">
+              <li><span class="check-bullet">✓</span> Landing completa diseñada con IA + curaduría humana</li>
+              <li><span class="check-bullet">✓</span> Copy persuasivo en español mexicano · GPT-4o</li>
+              <li><span class="check-bullet">✓</span> Imágenes brand-aligned generadas para tu negocio</li>
+              <li><span class="check-bullet">✓</span> Hosting incluido 12 meses · cliente.labsia.mx</li>
+              <li><span class="check-bullet">✓</span> Certificado SSL automático · CDN global Vercel</li>
+              <li><span class="check-bullet">✓</span> 3 ciclos de regeneración incluidos</li>
+              <li><span class="check-bullet">✓</span> Factura CFDI 4.0 mexicana</li>
+              <li><span class="check-bullet">✓</span> Soporte en español por email</li>
+              <li><span class="check-bullet">✓</span> Optimizada para mobile + SEO básico</li>
+              <li><span class="check-bullet">✓</span> Código fuente entregable si lo pides</li>
+            </ul>
+          </div>
+          <div class="pricing-right">
+            <div class="pricing-amount">$2,500</div>
+            <div class="pricing-currency">MXN · IVA INCLUIDO</div>
+            <div class="pricing-once">PAGO ÚNICO · NO RECURRENTE</div>
+            <button class="btn btn-primary pricing-cta">Empieza ahora →</button>
+            <div class="savings-note">
+              💡 <strong>Ahorras ~$5,700 MXN</strong> vs una suscripción Wix a 2 años en USD al tipo de cambio actual.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pricing-addons">
+        <p class="pricing-addons-title">ADD-ONS OPCIONALES</p>
+        <div class="addons-grid">
+          <div class="addon">
+            <div class="addon-name">Dominio propio</div>
+            <div class="addon-price">$500 MXN único</div>
+            <div class="addon-desc">Migración a tunegocio.com con DNS y SSL configurado.</div>
+          </div>
+          <div class="addon">
+            <div class="addon-name">Ciclo de regeneración extra</div>
+            <div class="addon-price">$200 MXN por ciclo</div>
+            <div class="addon-desc">Después de los 3 ciclos incluidos en el precio base.</div>
+          </div>
+          <div class="addon">
+            <div class="addon-name">Renovación de hosting año 2+</div>
+            <div class="addon-price">$200 MXN / año</div>
+            <div class="addon-desc">Solo si quieres seguir hospedado con nosotros.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- ═══════════════ CTA FINAL ═══════════════ -->
+  <section class="cta-final">
+    <h2>Lista en 24 horas.<br>Tu negocio lista para crecer.</h2>
+    <p>$2,500 MXN único · sin renta mensual · entrega garantizada.</p>
+    <button class="btn btn-primary">Empieza ahora →</button>
+  </section>
+
+  <footer>
+    © 2026 LabsIA · Plataforma de IA aplicada al crecimiento · Hecho en México
+  </footer>
+
+  <script>
+    window.addEventListener('error', (e) => { console.error('[ERR]', e.message, e.filename, e.lineno); });
+
+    // ────── Three.js Hero ──────
+    (function initThree() {
+      if (typeof THREE === 'undefined') return console.error('THREE missing');
+      const canvas = document.getElementById('three-canvas');
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.z = 4.5;
+      const PARTICLE_COUNT = 8000;
+      const radius = 2;
+      const positions = new Float32Array(PARTICLE_COUNT * 3);
+      const colors = new Float32Array(PARTICLE_COUNT * 3);
+      const scales = new Float32Array(PARTICLE_COUNT);
+      const color1 = new THREE.Color('#00f5d4');
+      const color2 = new THREE.Color('#7c3aed');
+      const color3 = new THREE.Color('#ffffff');
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+        const r = radius * (0.92 + Math.random() * 0.16);
+        positions[i * 3] = r * Math.cos(theta) * Math.sin(phi);
+        positions[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
+        positions[i * 3 + 2] = r * Math.cos(phi);
+        const t = Math.random();
+        const c = t < 0.5 ? color1 : (t < 0.8 ? color2 : color3);
+        colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+        scales[i] = Math.random() * 0.6 + 0.6;
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      geometry.setAttribute('scale', new THREE.BufferAttribute(scales, 1));
+      const material = new THREE.ShaderMaterial({
+        uniforms: { time: { value: 0 }, pixelRatio: { value: renderer.getPixelRatio() } },
+        vertexShader: `uniform float time; uniform float pixelRatio; attribute float scale; varying vec3 vColor; void main() { vColor = color; vec3 pos = position; float wave = sin(time * 1.2 + pos.x * 2.5 + pos.y * 2.0) * 0.06; pos += normalize(pos) * wave; vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0); gl_PointSize = scale * 14.0 * pixelRatio * (1.0 / -mvPosition.z); gl_Position = projectionMatrix * mvPosition; }`,
+        fragmentShader: `varying vec3 vColor; void main() { vec2 c = gl_PointCoord - 0.5; float d = length(c); if (d > 0.5) discard; float alpha = smoothstep(0.5, 0.0, d); gl_FragColor = vec4(vColor * 1.4, alpha); }`,
+        vertexColors: true, transparent: true,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      });
+      const particles = new THREE.Points(geometry, material);
+      scene.add(particles);
+      const innerGeo = new THREE.SphereGeometry(0.3, 32, 32);
+      const innerMat = new THREE.ShaderMaterial({
+        uniforms: { time: { value: 0 } },
+        vertexShader: `varying vec3 vNormal; void main() { vNormal = normal; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: `uniform float time; varying vec3 vNormal; void main() { float pulse = sin(time * 2.0) * 0.2 + 0.8; vec3 col = mix(vec3(0.0, 0.96, 0.83), vec3(0.49, 0.23, 0.93), 0.5); float a = pow(1.0 - abs(vNormal.z), 2.0) * pulse; gl_FragColor = vec4(col, a * 0.6); }`,
+        transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+      });
+      const innerSphere = new THREE.Mesh(innerGeo, innerMat);
+      scene.add(innerSphere);
+      let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+      window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+        const glow = document.getElementById('cursorGlow');
+        glow.style.left = e.clientX + 'px';
+        glow.style.top = e.clientY + 'px';
+        glow.style.opacity = '1';
+      });
+      window.addEventListener('mouseleave', () => { document.getElementById('cursorGlow').style.opacity = '0'; });
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+      const clock = new THREE.Clock();
+      function animate() {
+        const elapsed = clock.getElapsedTime();
+        material.uniforms.time.value = elapsed;
+        innerMat.uniforms.time.value = elapsed;
+        targetX += (mouseX - targetX) * 0.04;
+        targetY += (mouseY - targetY) * 0.04;
+        particles.rotation.y = elapsed * 0.08 + targetX * 0.4;
+        particles.rotation.x = targetY * 0.25;
+        innerSphere.rotation.y = elapsed * 0.15;
+        innerSphere.rotation.x = elapsed * 0.1;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      animate();
+      window.__three = { particles };
+    })();
+
+    // ────── GSAP ──────
+    (function initGsap() {
+      if (typeof gsap === 'undefined') return;
+      if (typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+
+      // Hero entrance
+      const tl = gsap.timeline({ delay: 0.2 });
+      tl.to('.hero-eyebrow', { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' })
+        .to('.hero-title .inner', { y: 0, duration: 1.1, stagger: 0.12, ease: 'power4.out' }, '-=0.4')
+        .to('.hero-sub', { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.6')
+        .to('.hero-cta', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, '-=0.3')
+        .to('.scroll-indicator', { opacity: 0.7, duration: 1 }, '-=0.2');
+
+      // Hero scroll rotation
+      if (window.__three) {
+        gsap.to(window.__three.particles.rotation, {
+          y: '+=3.14',
+          scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1 },
+        });
+      }
+
+      // ━━ COMO FUNCIONA · 3 pasos pin ━━
+      const howPin = document.getElementById('howPin');
+      const steps = document.querySelectorAll('.how-step');
+      const dots = document.querySelectorAll('.how-progress-dot');
+      // Active first step at start
+      document.querySelectorAll('.how-step[data-step="1"]').forEach(s => s.classList.add('active'));
+
+      ScrollTrigger.create({
+        trigger: howPin,
+        start: 'top top',
+        end: 'bottom bottom',
+        onUpdate: (self) => {
+          const progress = self.progress; // 0 → 1
+          let activeStep;
+          if (progress < 0.33) activeStep = 1;
+          else if (progress < 0.66) activeStep = 2;
+          else activeStep = 3;
+
+          steps.forEach(s => {
+            if (parseInt(s.dataset.step) === activeStep) s.classList.add('active');
+            else s.classList.remove('active');
+          });
+          dots.forEach(d => {
+            if (parseInt(d.dataset.dot) === activeStep) d.classList.add('active');
+            else d.classList.remove('active');
+          });
+        },
+      });
+
+      // ━━ STACK cards reveal ━━
+      gsap.utils.toArray('.stack-card').forEach((card, i) => {
+        gsap.from(card, {
+          opacity: 0, y: 40, duration: 0.8,
+          delay: (i % 3) * 0.1,
+          scrollTrigger: { trigger: '.stack-section', start: 'top 70%' },
+        });
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          card.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100) + '%');
+          card.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
+        });
+      });
+
+      // ━━ TIMELINE horizontal scroll ━━
+      const timelinePin = document.getElementById('timelinePin');
+      const timelineTrack = document.getElementById('timelineTrack');
+      if (timelineTrack && window.innerWidth > 768) {
+        const trackWidth = timelineTrack.scrollWidth;
+        const distance = trackWidth - window.innerWidth + 64;
+        if (distance > 0) {
+          gsap.to(timelineTrack, {
+            x: -distance,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: timelinePin,
+              start: 'top top',
+              end: () => '+=' + distance,
+              pin: true,
+              scrub: 1,
+              anticipatePin: 1,
+            },
+          });
+        }
+      }
+      // Timeline steps reveal
+      gsap.utils.toArray('.timeline-step').forEach((step, i) => {
+        gsap.from(step, {
+          opacity: 0, y: 30, duration: 0.6, delay: i * 0.08,
+          scrollTrigger: { trigger: '.timeline-section', start: 'top 70%' },
+        });
+      });
+
+      // ━━ GALLERY horizontal scroll ━━
+      const track = document.getElementById('galleryTrack');
+      const cards = track.querySelectorAll('.gallery-card');
+      if (window.innerWidth > 768 && cards.length > 0) {
+        const cardWidth = cards[0].offsetWidth + 32;
+        const totalWidth = cards.length * cardWidth;
+        const distance = totalWidth - window.innerWidth + 64;
+        if (distance > 0) {
+          gsap.to(track, {
+            x: -distance, ease: 'none',
+            scrollTrigger: {
+              trigger: '.gallery-section',
+              start: 'center center',
+              end: () => '+=' + distance,
+              pin: true, scrub: 1, anticipatePin: 1,
+            },
+          });
+        }
+      }
+      gsap.utils.toArray('.gallery-card').forEach((card, i) => {
+        gsap.from(card, {
+          opacity: 0, y: 60, duration: 1, delay: i * 0.05,
+          scrollTrigger: { trigger: '.gallery-section', start: 'top 80%' },
+        });
+      });
+
+      // Compare rows reveal
+      gsap.utils.toArray('.compare-row').forEach((row, i) => {
+        gsap.to(row, {
+          opacity: 1, y: 0, duration: 0.6, ease: 'power2.out',
+          delay: i * 0.06,
+          scrollTrigger: { trigger: '.compare-table', start: 'top 75%' },
+        });
+      });
+
+
+      // ━━ TESTIMONIALS reveal ━━
+      gsap.utils.toArray('.stat').forEach((stat, i) => {
+        gsap.from(stat, {
+          opacity: 0, y: 30, duration: 0.8,
+          delay: i * 0.1, ease: 'power3.out',
+          scrollTrigger: { trigger: '.stats-row', start: 'top 75%' },
+        });
+      });
+      gsap.utils.toArray('.testimonial-card').forEach((card, i) => {
+        gsap.from(card, {
+          opacity: 0, y: 50, duration: 0.9,
+          delay: i * 0.12, ease: 'power3.out',
+          scrollTrigger: { trigger: '.testimonials-grid', start: 'top 75%' },
+        });
+      });
+
+      // ━━ FAQ items reveal ━━
+      gsap.utils.toArray('.faq-item').forEach((item, i) => {
+        gsap.from(item, {
+          opacity: 0, x: -30, duration: 0.6,
+          delay: i * 0.05, ease: 'power2.out',
+          scrollTrigger: { trigger: '.faq-wrap', start: 'top 80%' },
+        });
+      });
+
+      // ━━ PRICING reveal ━━
+      gsap.from('.pricing-card-main', {
+        opacity: 0, y: 60, duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: '.pricing-section', start: 'top 70%' },
+      });
+      gsap.utils.toArray('.pricing-features li').forEach((li, i) => {
+        gsap.from(li, {
+          opacity: 0, x: -20, duration: 0.4,
+          delay: 0.4 + i * 0.06, ease: 'power2.out',
+          scrollTrigger: { trigger: '.pricing-card-main', start: 'top 70%' },
+        });
+      });
+      gsap.utils.toArray('.addon').forEach((addon, i) => {
+        gsap.from(addon, {
+          opacity: 0, y: 20, duration: 0.6,
+          delay: i * 0.1, ease: 'power2.out',
+          scrollTrigger: { trigger: '.pricing-addons', start: 'top 85%' },
+        });
+      });
+
+      // ━━ Counter animation para stats ━━
+      const counters = [
+        { el: document.querySelectorAll('.stat-number')[0], target: 5, suffix: '' },
+        { el: document.querySelectorAll('.stat-number')[1], target: 24, suffix: 'h' },
+      ];
+      counters.forEach(c => {
+        if (!c.el) return;
+        const obj = { val: 0 };
+        gsap.to(obj, {
+          val: c.target, duration: 2, ease: 'power2.out',
+          onUpdate: () => { c.el.textContent = Math.round(obj.val) + c.suffix; },
+          scrollTrigger: { trigger: c.el, start: 'top 85%' },
+        });
+      });
+
+      // Magnetic buttons
+      document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          gsap.to(btn, { x: x * 0.25, y: y * 0.25, duration: 0.3, ease: 'power2.out' });
+        });
+        btn.addEventListener('mouseleave', () => {
+          gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
