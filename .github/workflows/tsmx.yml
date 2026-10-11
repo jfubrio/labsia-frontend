@@ -27,7 +27,14 @@ jobs:
           ruff format --check .
       - name: Pruebas del MVP y de los scripts de las skills
         working-directory: tsmx
-        run: PYTHONPATH=src python -W error::ResourceWarning -m unittest discover -s tests -t . -v
+        shell: bash
+        run: |
+          set -o pipefail
+          PYTHONPATH=src python -X dev -m unittest discover -s tests -t . -v 2>&1 | tee pruebas.log
+          if grep -q "ResourceWarning" pruebas.log; then
+            echo "::error::Hay recursos sin cerrar (ResourceWarning); revisa pruebas.log"
+            exit 1
+          fi
       - name: Scripts de las skills
         run: |
           python .claude/skills/tsmx-matriz/scripts/matriz.py > /dev/null
