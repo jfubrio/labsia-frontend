@@ -5,6 +5,7 @@ import { listProducts, getProductBySlug } from '../db/repositories/products.repo
 import { connectorsFor } from '../connectors/factory.js'
 import { runWatch } from './run-watch.js'
 import type { ComparisonConfig } from '../engines/international-comparison.js'
+import type { Notifier } from '../notify/notifier.js'
 
 export const WATCH_QUEUE = 'caza-watch'
 
@@ -53,13 +54,13 @@ export async function syncSchedulers(
 }
 
 /** Worker: cada job ejecuta un ciclo de vigilancia para su producto. Concurrencia 1: las tiendas no se martillan. */
-export function startWatchWorker(db: Db, redisUrl: string, comparison: ComparisonConfig): Worker<WatchJobData> {
+export function startWatchWorker(db: Db, redisUrl: string, comparison: ComparisonConfig, notifiers: Notifier[] = []): Worker<WatchJobData> {
   return new Worker<WatchJobData>(
     WATCH_QUEUE,
     async (job: Job<WatchJobData>) => {
       const product = await getProductBySlug(db, job.data.productSlug)
       const connectors = connectorsFor(product.mercados)
-      const result = await runWatch(product, { db, connectors, comparison, disparador: 'scheduler' })
+      const result = await runWatch(product, { db, connectors, comparison, disparador: 'scheduler', notifiers })
       return { observaciones: result.observaciones, veredictos: result.veredictos, propuestas: result.propuestas }
     },
     { connection: redisClient(redisUrl), concurrency: 1 },

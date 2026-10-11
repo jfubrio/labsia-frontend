@@ -3,6 +3,7 @@ import type { Env } from '../config/env.js'
 import type { PriceObservation, PurchaseAuthorization, PurchaseOrder, AuditEvent } from '../types.js'
 import { checkAuthorization } from './authorization.js'
 import { isConnectorUsable } from '../connectors/registry.js'
+import { checkSpendLimit, type SpendLimit, type SpendState } from './spend-limits.js'
 
 export const ACTIVE_STATUSES: ReadonlySet<PurchaseOrder['status']> = new Set(['pending', 'authorized', 'placed'])
 
@@ -67,6 +68,7 @@ export type ExecuteResult =
  *  3. autorización vigente para esta oferta y precio
  *  4. conector validado y habilitado
  *  5. ninguna orden activa para el producto
+ *  6. límite de gasto mensual (si se proporciona el estado)
  */
 export function executePurchase(
   env: Env,
@@ -75,6 +77,8 @@ export function executePurchase(
   obs: PriceObservation,
   precioFinal: number,
   now: Date = new Date(),
+  /** Límite de gasto vigente y lo comprometido en el mes; si se pasa, se aplica antes de crear la orden. */
+  spend?: { limit: SpendLimit; state: SpendState; montoBase: number },
 ): ExecuteResult {
   if (!env.PURCHASES_ENABLED || env.CAZA_PHASE < 6) {
     return { status: 'disabled', razon: new PurchasesDisabledError(env.CAZA_PHASE).message }
@@ -93,6 +97,11 @@ export function executePurchase(
 
   const active = store.activeForProduct(auth.productSlug)
   if (active) return { status: 'duplicate', order: active }
+
+  if (spend) {
+    const check = checkSpendLimit(spend.limit, spend.state, spend.montoBase)
+    if (!check.ok) return { status: 'rejected', razon: check.razon }
+  }
 
   const order: PurchaseOrder = {
     id: randomUUID(),

@@ -3,13 +3,17 @@ import { withTransaction } from '../db/client.js'
 import { getProposal, type ProposalRow } from '../db/repositories/proposals.repo.js'
 import { listProducts, buzonIdByClave } from '../db/repositories/products.repo.js'
 import { insertAuthorization } from '../db/repositories/authorizations.repo.js'
+import { getSpendLimit, getSpendState } from '../db/repositories/spend-limits.repo.js'
+import { checkSpendLimit } from '../engines/spend-limits.js'
 import { decideAuthorization, type PurchaseProposal } from '../engines/authorization.js'
 import type { AuthorizationDecision, PurchaseAuthorization, Currency, DiscountVerdict } from '../types.js'
 
 export class ApprovalError extends Error {
   constructor(
-    public readonly code: 'not_found' | 'not_pending' | 'expired' | 'invalid',
+    public readonly code: 'not_found' | 'not_pending' | 'expired' | 'invalid' | 'spend_limit',
     message: string,
+    /** Datos para auditar el rechazo fuera de la transacción (que se revierte al lanzar). */
+    public readonly audit?: { productId: string; payload: Record<string, unknown> },
   ) {
     super(message)
     this.name = 'ApprovalError'
@@ -74,6 +78,20 @@ export async function decideProposal(db: Db, input: DecideProposalInput): Promis
   const now = input.now ?? new Date()
   if (!input.decididoPor?.trim()) throw new ApprovalError('invalid', 'Falta la identidad de quien decide')
 
+  try {
+    return await decideInTransaction(db, input, now)
+  } catch (err) {
+    // La transacción ya se revirtió: el rechazo por límite de gasto se audita aquí para que no se pierda.
+    if (err instanceof ApprovalError && err.code === 'spend_limit' && err.audit) {
+      await db.query(`INSERT INTO caza_audit_log (ocurrido_en, actor, evento, product_id, payload) VALUES ($1,$2,'spend.limit',$3,$4)`, [
+        now, input.decididoPor, err.audit.productId, JSON.stringify(err.audit.payload),
+      ])
+    }
+    throw err
+  }
+}
+
+async function decideInTransaction(db: Db, input: DecideProposalInput, now: Date): Promise<{ proposal: ProposalRow; authorization: PurchaseAuthorization }> {
   return withTransaction(db, async (client) => {
     const { rows } = await client.query(`SELECT id, estado, expira_en, product_id FROM caza_purchase_proposals WHERE id = $1 FOR UPDATE`, [input.proposalId])
     const locked = rows[0]
@@ -87,6 +105,21 @@ export async function decideProposal(db: Db, input: DecideProposalInput): Promis
     const row = (await getProposal(client as unknown as Db, input.proposalId))!
     const product = (await listProducts(client as unknown as Db)).find((p) => p.id === row.product_id)
     if (!product) throw new ApprovalError('invalid', 'El producto de la propuesta ya no está activo')
+
+    // Límite de gasto: una aprobación compromete presupuesto aunque la compra aún no se ejecute.
+    if (input.decision === 'approve') {
+      const limit = await getSpendLimit(client)
+      if (limit) {
+        const state = await getSpendState(client, now)
+        const check = checkSpendLimit(limit, state, Number(row.precio_aterrizado_base))
+        if (!check.ok) {
+          throw new ApprovalError('spend_limit', check.razon, {
+            productId: row.product_id,
+            payload: { proposalId: row.id, razon: check.razon, disponibleBase: check.disponibleBase, monto: Number(row.precio_aterrizado_base) },
+          })
+        }
+      }
+    }
 
     const { authorization, audit } = decideAuthorization({
       proposal: toEngineProposal(row),

@@ -6,6 +6,8 @@ import { listProducts, getProductBySlug, setWatchActive } from '../db/repositori
 import { latestProfile } from '../db/repositories/profiles.repo.js'
 import { listRuns } from '../db/repositories/runs.repo.js'
 import { decideProposal, ApprovalError } from '../services/approvals.service.js'
+import { getSpendLimit, setSpendLimit, getSpendState } from '../db/repositories/spend-limits.repo.js'
+import { listNotifications } from '../db/repositories/notifications.repo.js'
 import { operatorPage } from './ui.js'
 
 export interface ApiOptions {
@@ -99,6 +101,22 @@ export function buildApp(opts: ApiOptions): FastifyInstance {
     return p ?? reply.code(404).send({ error: 'propuesta no encontrada' })
   })
 
+  app.get('/api/v1/caza/limits', async () => {
+    const limit = await getSpendLimit(db)
+    const state = await getSpendState(db)
+    return { limit, state, disponibleBase: limit ? Math.round((limit.presupuestoMensualBase - state.comprometidoMesBase) * 100) / 100 : null }
+  })
+
+  app.put('/api/v1/caza/limits', async (req, reply) => {
+    const body = z.object({ presupuestoMensualBase: z.number().positive(), maxOrdenesMes: z.number().int().positive(), actualizadoPor: z.string().min(1) }).safeParse(req.body)
+    if (!body.success) return reply.code(400).send({ error: 'body inválido', detalles: body.error.issues })
+    await setSpendLimit(db, body.data)
+    await db.query(`INSERT INTO caza_audit_log (actor, evento, payload) VALUES ($1, 'spend.limit.updated', $2)`, [body.data.actualizadoPor, JSON.stringify(body.data)])
+    return getSpendLimit(db)
+  })
+
+  app.get('/api/v1/caza/notifications', async () => listNotifications(db, 50))
+
   for (const decision of ['approve', 'reject'] as const) {
     app.post<{ Params: { id: string } }>(`/api/v1/caza/proposals/:id/${decision}`, async (req, reply) => {
       const body = decideBody.safeParse(req.body ?? {})
@@ -108,7 +126,7 @@ export function buildApp(opts: ApiOptions): FastifyInstance {
         return { proposal: r.proposal, authorization: r.authorization }
       } catch (err) {
         if (err instanceof ApprovalError) {
-          const status = err.code === 'not_found' ? 404 : err.code === 'invalid' ? 400 : 409
+          const status = err.code === 'not_found' ? 404 : err.code === 'invalid' ? 400 : err.code === 'spend_limit' ? 422 : 409
           return reply.code(status).send({ error: err.message, code: err.code })
         }
         if (err instanceof Error && err.message.startsWith('CAZA:')) return reply.code(400).send({ error: err.message })

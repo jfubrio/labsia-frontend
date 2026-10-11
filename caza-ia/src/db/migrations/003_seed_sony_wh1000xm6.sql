@@ -44,3 +44,7 @@ INSERT INTO caza_audit_log (actor, evento, product_id, payload)
 SELECT 'sistema', 'product.configured', id,
        jsonb_build_object('fase', 1, 'vigilancia_activa', false, 'purchases_enabled', false)
 FROM caza_products WHERE slug = 'sony-wh1000xm6';
+
+-- Límites de gasto iniciales (por confirmar): 20,000 MXN al mes y 2 órdenes al mes.
+INSERT INTO caza_spend_limits (presupuesto_mensual_base, max_ordenes_mes, actualizado_por)
+VALUES (20000.00, 2, 'sistema');

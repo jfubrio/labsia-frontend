@@ -5,7 +5,8 @@
  * vigilancia y verifica que el scheduler se retira. Uso: npm run phase2:worker-check
  */
 import { createDb } from '../db/client.js'
-import { loadEnv } from '../config/env.js'
+import { loadEnv, notifierConfigFrom } from '../config/env.js'
+import { createNotifiers } from '../notify/notifier.js'
 import { setWatchActive, getProductBySlug, connectorIdsByClave } from '../db/repositories/products.repo.js'
 import { insertObservation } from '../db/repositories/observations.repo.js'
 import { listRuns } from '../db/repositories/runs.repo.js'
@@ -34,7 +35,7 @@ const s2 = await syncSchedulers(db, env.REDIS_URL, { everyMsOverride: 5_000 })
 console.log(`sync 2 (idempotente): programados=${s2.programados} retirados=${s2.retirados}`)
 if (s1.programados.length !== 1 || s2.programados.length !== 1 || s2.retirados.length !== 0) fail('la sincronización no es idempotente')
 
-const worker = startWatchWorker(db, env.REDIS_URL, defaultComparisonConfig(env.USD_MXN_RATE))
+const worker = startWatchWorker(db, env.REDIS_URL, defaultComparisonConfig(env.USD_MXN_RATE), createNotifiers(notifierConfigFrom(env)))
 await new Promise<void>((resolve, reject) => {
   worker.on('completed', (job, result) => {
     console.log(`job completado para ${job.data.productSlug}: ${JSON.stringify(result)}`)

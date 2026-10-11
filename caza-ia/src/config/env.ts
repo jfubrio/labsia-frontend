@@ -21,6 +21,10 @@ const schema = z.object({
   /** Fase 5: token compartido de la API del operador (cabecera X-CAZA-Token). Obligatorio para levantar la API. */
   CAZA_API_TOKEN: z.string().default(''),
   CAZA_API_PORT: z.coerce.number().int().positive().default(3080),
+  /** Fase 7: alertas. Webhook JSON genérico (Apprise /notify, ntfy, Slack/Discord incoming webhook, Make) y/o Telegram. */
+  CAZA_NOTIFY_WEBHOOK_URL: z.string().default(''),
+  TELEGRAM_BOT_TOKEN: z.string().default(''),
+  TELEGRAM_CHAT_ID: z.string().default(''),
 })
 
 export type Env = z.infer<typeof schema>
@@ -36,3 +40,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
 }
 
 export const env: Env = loadEnv()
+
+/** Configuración de canales de alerta a partir del entorno. */
+export function notifierConfigFrom(e: Env) {
+  return {
+    webhookUrl: e.CAZA_NOTIFY_WEBHOOK_URL || undefined,
+    telegramBotToken: e.TELEGRAM_BOT_TOKEN || undefined,
+    telegramChatId: e.TELEGRAM_CHAT_ID || undefined,
+  }
+}

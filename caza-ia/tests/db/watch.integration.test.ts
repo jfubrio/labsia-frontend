@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createDb, type Db } from '../../src/db/client.js'
+import { resetTestState } from './reset.js'
 import { getProductBySlug, connectorIdsByClave } from '../../src/db/repositories/products.repo.js'
 import { insertObservation, countObservations, listHistory } from '../../src/db/repositories/observations.repo.js'
 import { countPendingProposals } from '../../src/db/repositories/proposals.repo.js'
@@ -24,11 +25,7 @@ d('vigilancia persistida (fase 2)', () => {
 
   beforeAll(async () => {
     db = createDb(url)
-    const product = await getProductBySlug(db, 'sony-wh1000xm6')
-    const mockId = (await connectorIdsByClave(db)).get('mock')!
-    for (const raw of await new MockConnector().fetchHistory('sony-wh1000xm6', 90, NOW)) {
-      await insertObservation(db, product.id, mockId, toObservation('sony-wh1000xm6', raw))
-    }
+    await resetTestState(db, NOW)
   })
   afterAll(async () => {
     await db.end()

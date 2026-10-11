@@ -245,6 +245,31 @@ CREATE TABLE caza_purchase_orders (
   actualizado_en     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Alertas enviadas al operador (evidencia de que las alertas disparan y de qué pasó con cada una)
+CREATE TABLE caza_notifications (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  enviado_en    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  canal         TEXT NOT NULL,                       -- console | webhook | telegram
+  evento        TEXT NOT NULL,                       -- proposal.created | proposal.expired | watch.error | spend.limit
+  product_id    UUID REFERENCES caza_products(id),
+  titulo        TEXT NOT NULL,
+  cuerpo        TEXT NOT NULL,
+  estado        TEXT NOT NULL,                       -- enviada | fallida
+  error         TEXT,
+  CHECK (estado IN ('enviada', 'fallida'))
+);
+CREATE INDEX idx_notifications_time ON caza_notifications (enviado_en DESC);
+
+-- Límites de gasto (una sola fila). Se aplican al aprobar y en el ejecutor; el tope por producto vive en caza_watch_configs.
+CREATE TABLE caza_spend_limits (
+  id                         INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  moneda_base                CHAR(3) NOT NULL DEFAULT 'MXN',
+  presupuesto_mensual_base   NUMERIC(12,2) NOT NULL,   -- suma de autorizaciones approve vigentes + órdenes activas del mes
+  max_ordenes_mes            INTEGER NOT NULL,
+  actualizado_en             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  actualizado_por            TEXT
+);
+
 -- Audit log inmutable
 CREATE TABLE caza_audit_log (
   id          BIGSERIAL PRIMARY KEY,

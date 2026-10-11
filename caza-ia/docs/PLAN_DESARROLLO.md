@@ -167,6 +167,8 @@ Esquema lógico implementado en `src/db/migrations/001_caza_ia_schema.sql` y `00
 | `caza_discount_verdicts` | Veredicto por observación contra el perfil de precio real |
 | `caza_purchase_proposals` | Propuestas generadas por la vigilancia, pendientes de `approve`/`reject`; una sola pendiente por producto (índice único parcial) |
 | `caza_watch_runs` | Una fila por ciclo de vigilancia: disparador, conectores, conteos, estado y error |
+| `caza_notifications` | Cada alerta enviada al operador: canal, evento, estado (enviada o fallida) y error |
+| `caza_spend_limits` | Presupuesto mensual en moneda base y máximo de órdenes al mes (una fila) |
 | `caza_purchase_authorizations` | `approve`/`reject` del operador, vigencia, vínculo con observación; tope en moneda de la oferta, aterrizado en base y buzón |
 | `caza_purchase_orders` | Órdenes (ninguna se crea con compras deshabilitadas); índice único parcial anti-duplicados |
 | `caza_audit_log` | Todo evento relevante, inmutable |
@@ -219,12 +221,20 @@ Prevención de duplicados, en este orden:
 | 4 | Compra en EE. UU. en vivo | 3 | Conectores US, tipo de cambio diario (Banxico), tarifa real del buzón, franquicia y tasa de excedente confirmadas | Precio aterrizado reproducible con la fórmula documentada contra un ticket real de compra y cruce | pendiente de fase 0 |
 | 5 | Panel y flujo `approve` | 2 | API Fastify del operador (propuestas, approve/reject con tope y vigencia, activar vigilancia, resumen por producto), página mínima `/ui`, expiración de propuestas | Aprobación registrada en audit log; rechazo bloquea orden | cerrada (`npm run phase5:check`); la UI final del panel queda para cuando exista el dashboard de LABSIA |
 | 6 | Ejecución de compra (habilitable) | 3, 5 | Ejecutor por conector, `PURCHASES_ENABLED` configurable | Prueba de duplicado concurrente: 2 intentos → 1 orden | pendiente |
-| 7 | Pruebas de extremo a extremo y hardening | 6 | Suite E2E, alertas, límites de gasto | Simulacro completo sin compra real, alertas disparan | pendiente |
+| 7 | Pruebas de extremo a extremo y hardening | 6 | Suite E2E, alertas, límites de gasto | Simulacro completo sin compra real, alertas disparan | parcial: alertas (consola, webhook genérico, Telegram) y límites de gasto (presupuesto mensual y máximo de órdenes) cerrados con `npm run phase7:check`; la E2E con compra simulada espera a la fase 6 |
 | 8 | Operación | 7 | Runbook, backups, monitoreo | Primera compra real aprobada manualmente y documentada | pendiente |
 
 `[PENDIENTE: texto original — detalle de cada fase]`
 
 ## 7. Pruebas
+
+### 7.1 Alertas y límites de gasto (implementados)
+
+- **Alertas** (`src/notify/notifier.ts`): cada evento se envía a todos los canales configurados y cada envío queda en `caza_notifications` como `enviada` o `fallida`. Canales: consola (siempre), webhook JSON genérico (`CAZA_NOTIFY_WEBHOOK_URL`: sirve para Apprise `/notify`, ntfy, incoming webhooks de Slack o Discord, o un escenario de Make) y Telegram (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`). Eventos: propuesta creada (con precio, aterrizado, veredicto y vencimiento), propuesta expirada, error de vigilancia, límite de gasto. Una alerta fallida nunca detiene la vigilancia.
+- **Límites de gasto** (`src/engines/spend-limits.ts`, `caza_spend_limits`): presupuesto mensual en moneda base y máximo de órdenes al mes. Se mide lo **comprometido**: autorizaciones `approve` vigentes y no consumidas más órdenes activas del mes. Se aplica al aprobar (la API responde 422 y lo audita) y en el ejecutor. Valores iniciales por confirmar: 20,000 MXN y 2 órdenes al mes. Se cambian por `PUT /api/v1/caza/limits`, auditado.
+- **Simulacro** (`npm run phase7:check`): vigilancia → propuesta → alerta al receptor webhook falso y registro → aprobación por la API → segunda aprobación bloqueada por presupuesto y por máximo de órdenes → ninguna orden.
+
+### 7.2 Resto de la suite
 
 - Unitarias (Vitest) para cada motor: validación de descuentos, comparación internacional, autorización, anti-duplicados.
 - Prueba de concurrencia (fase 6) con dos intentos simultáneos contra Postgres, siguiendo el patrón de LABSIA DOC 10.
@@ -244,6 +254,8 @@ Prevención de duplicados, en este orden:
 - [ ] Autenticación de la API del operador: hoy token compartido en `X-CAZA-Token`; al integrarse en el dashboard de LABSIA debe pasar al JWT de `dashboard_users` (DOC 18).
 - [ ] Intervalo de vigilancia por producto: 6 h por defecto; el arrastre de precio vigente del motor (7 días) debe acortarse al activar vigilancia real.
 - [ ] Tramos de importación por paquetería desde EE. UU. (ruta alternativa): confirmar vigencia en DOF/SAT.
+- [ ] Límites de gasto iniciales: 20,000 MXN y 2 órdenes al mes. Confirmar y, si aplica, un tope por producto distinto de `precioMaximo`.
+- [ ] Canal de alertas definitivo: webhook (Apprise, ntfy, Slack, Make) o Telegram; hoy ambos están implementados y ninguno configurado.
 - [ ] Alcance de tiendas de EE. UU. tras la fase 0: Amazon US, Best Buy, Walmart, eBay confirmadas como candidatas; B&H y Newegg dependen de términos.
 - [ ] Qué tiendas quedan en el alcance tras la fase 0.
 

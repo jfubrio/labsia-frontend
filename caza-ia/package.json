@@ -18,7 +18,8 @@
     "phase2:check": "bash scripts/phase2-check.sh",
     "phase2:worker-check": "bash scripts/phase2-worker-check.sh",
     "api": "tsx src/scripts/api-server.ts",
-    "phase5:check": "bash scripts/phase5-check.sh"
+    "phase5:check": "bash scripts/phase5-check.sh",
+    "phase7:check": "bash scripts/phase7-check.sh"
   },
   "dependencies": {
     "bullmq": "^6.3.12",

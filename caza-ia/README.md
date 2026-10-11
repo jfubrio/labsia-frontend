@@ -3,7 +3,15 @@
 Vigilancia de precios, **precio real de mercado a partir del comportamiento de la oferta competitiva en el tiempo**, validación de descuentos, comparación internacional y compras con autorización humana. El precio de lista, el de lanzamiento y el "antes" que anuncia una tienda nunca son referencia.
 Este directorio contiene la **fase 1** del plan ([docs/PLAN_DESARROLLO.md](docs/PLAN_DESARROLLO.md)).
 
-**Estado:** fases 1, 2 y 5 cerradas. Compras deshabilitadas, vigilancia implementada pero no activada en ningún producto, conectores reales pendientes de validación (fase 0).
+**Estado:** fases 1, 2 y 5 cerradas; fase 7 parcial (alertas y límites de gasto). Compras deshabilitadas, vigilancia implementada pero no activada en ningún producto, conectores reales pendientes de validación (fase 0).
+
+## Qué incluye la fase 7 (parcial: alertas y límites de gasto)
+
+| Pieza | Ruta | Notas |
+| --- | --- | --- |
+| Alertas al operador | `src/notify/notifier.ts` | Consola siempre; webhook JSON genérico (`CAZA_NOTIFY_WEBHOOK_URL`, compatible con Apprise, ntfy, Slack/Discord, Make) y Telegram (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`). Eventos: propuesta creada, propuesta expirada, error de vigilancia, límite de gasto. Cada envío queda en `caza_notifications` |
+| Límites de gasto | `src/engines/spend-limits.ts`, `caza_spend_limits` | Presupuesto mensual en moneda base y máximo de órdenes; mide lo comprometido (approve vigentes + órdenes activas). Bloquea la aprobación (422, auditado) y el ejecutor. `GET`/`PUT /api/v1/caza/limits` |
+| Simulacro | `scripts/phase7-check.sh` | Vigilancia → propuesta → alerta a un webhook falso → aprobación → bloqueo por presupuesto y por máximo de órdenes → 0 órdenes |
 
 ## Qué incluye la fase 5 (flujo approve / reject)
 
@@ -51,6 +59,7 @@ npm run test:db       # pruebas de integración de la vigilancia contra un Postg
 npm run phase2:check  # criterio de aceptación de la fase 2: dos ciclos de vigilancia persistidos
 npm run phase2:worker-check  # programador BullMQ + worker contra Redis y PostgreSQL temporales (usa REDIS_URL si existe)
 npm run phase5:check  # criterio de aceptación de la fase 5: approve en audit log, reject bloquea orden
+npm run phase7:check  # simulacro: alertas disparan a un webhook falso, límite de gasto bloquea, 0 órdenes
 npm run profile       # imprime el perfil de precio real de mercado del fixture y su serie diaria
 npm run demo          # recorre los nueve escenarios sin red ni base de datos
 ```

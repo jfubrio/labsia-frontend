@@ -6,7 +6,8 @@
  * Imprime observaciones, perfiles por mercado, veredictos, propuestas y las últimas corridas.
  */
 import { createDb } from '../db/client.js'
-import { loadEnv } from '../config/env.js'
+import { loadEnv, notifierConfigFrom } from '../config/env.js'
+import { createNotifiers } from '../notify/notifier.js'
 import { getProductBySlug, setWatchActive, connectorIdsByClave } from '../db/repositories/products.repo.js'
 import { insertObservation, countObservations } from '../db/repositories/observations.repo.js'
 import { countPendingProposals } from '../db/repositories/proposals.repo.js'
@@ -39,8 +40,8 @@ try {
     console.log('vigilancia_activa = true')
   }
 
-  const result = await runWatch(product, { db, connectors: connectorsFor(product.mercados), comparison: defaultComparisonConfig(env.USD_MXN_RATE), now, disparador: 'manual' })
-  console.log(`corrida ${result.runId}: ${result.observaciones} observaciones, ${result.veredictos} veredictos, ${result.propuestas} propuestas`)
+  const result = await runWatch(product, { db, connectors: connectorsFor(product.mercados), comparison: defaultComparisonConfig(env.USD_MXN_RATE), now, disparador: 'manual', notifiers: createNotifiers(notifierConfigFrom(env)) })
+  console.log(`corrida ${result.runId}: ${result.observaciones} observaciones, ${result.veredictos} veredictos, ${result.propuestas} propuestas, ${result.alertas} alertas enviadas`)
   for (const [market, p] of Object.entries(result.perfiles)) {
     console.log(`  perfil ${market}: precio real ${p.precioReal} ${p.currency}, piso ${p.piso}, régimen ${p.regimen}, confianza ${p.confianza}, días observados ${p.diasObservados}, tiendas ${p.tiendas.length}`)
   }
