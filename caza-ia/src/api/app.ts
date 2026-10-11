@@ -8,7 +8,9 @@ import { listRuns } from '../db/repositories/runs.repo.js'
 import { decideProposal, ApprovalError } from '../services/approvals.service.js'
 import { getSpendLimit, setSpendLimit, getSpendState } from '../db/repositories/spend-limits.repo.js'
 import { listNotifications } from '../db/repositories/notifications.repo.js'
+import { getMetrics } from '../db/repositories/metrics.repo.js'
 import { operatorPage } from './ui.js'
+import { dashboardPage } from './dashboard.js'
 
 export interface ApiOptions {
   db: Db
@@ -16,6 +18,8 @@ export interface ApiOptions {
   apiToken: string
   /** Se llama tras cambiar vigilancia_activa, para resincronizar el programador si hay Redis. */
   onWatchChanged?: () => Promise<void>
+  /** Intervalo de refresco del stream de métricas (SSE), en ms. */
+  metricsIntervalMs?: number
 }
 
 const decideBody = z.object({
@@ -34,9 +38,15 @@ export function buildApp(opts: ApiOptions): FastifyInstance {
   const app = Fastify({ logger: false })
   const { db } = opts
 
+  // Las páginas (/ui, /dashboard) son cascarones sin datos: se sirven sin token para poder abrirlas en el navegador.
+  // Todo lo que devuelve datos exige el token, en cabecera o, para EventSource (que no admite cabeceras), en ?token=.
+  const PUBLIC_PATHS = new Set(['/health', '/ui', '/dashboard'])
   app.addHook('onRequest', async (req, reply) => {
-    if (req.url === '/health') return
-    const token = req.headers['x-caza-token']
+    const path = req.url.split('?')[0] ?? req.url
+    if (PUBLIC_PATHS.has(path)) return
+    const header = req.headers['x-caza-token']
+    const query = (req.query as { token?: string } | undefined)?.token
+    const token = header ?? (path === '/api/v1/caza/metrics/stream' ? query : undefined)
     if (token !== opts.apiToken) {
       await reply.code(401).send({ error: 'token inválido' })
     }
@@ -45,6 +55,33 @@ export function buildApp(opts: ApiOptions): FastifyInstance {
   app.get('/health', async () => ({ ok: true }))
 
   app.get('/ui', async (_req, reply) => reply.type('text/html').send(operatorPage()))
+  app.get('/dashboard', async (_req, reply) => reply.type('text/html').send(dashboardPage()))
+
+  app.get('/api/v1/caza/metrics', async () => getMetrics(db))
+
+  /** Server-Sent Events: empuja las métricas al conectar y después cada metricsIntervalMs (5 s por defecto). */
+  app.get('/api/v1/caza/metrics/stream', async (req, reply) => {
+    const interval = opts.metricsIntervalMs ?? 5_000
+    reply.raw.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive', 'x-accel-buffering': 'no' })
+    reply.raw.write('retry: 3000\n\n')
+    let closed = false
+    const push = async () => {
+      if (closed) return
+      try {
+        const m = await getMetrics(db)
+        reply.raw.write(`event: metrics\ndata: ${JSON.stringify(m)}\n\n`)
+      } catch (err) {
+        reply.raw.write(`event: error\ndata: ${JSON.stringify({ error: (err as Error).message })}\n\n`)
+      }
+    }
+    await push()
+    const timer = setInterval(push, interval)
+    req.raw.on('close', () => {
+      closed = true
+      clearInterval(timer)
+    })
+    return reply
+  })
 
   app.get('/api/v1/caza/products', async () => {
     const products = await listProducts(db)

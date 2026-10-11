@@ -20,6 +20,7 @@ Este directorio contiene la **fase 1** del plan ([docs/PLAN_DESARROLLO.md](docs/
 | Servicio de decisiones | `src/services/approvals.service.ts` | Transacción: bloquea la propuesta, exige que esté pendiente y vigente, crea la autorización con las reglas del motor, marca la propuesta y escribe el audit log |
 | API del operador | `src/api/app.ts` | Fastify. `GET /api/v1/caza/products`, `GET .../products/:slug/summary`, `POST .../products/:slug/watch`, `GET .../proposals?estado=`, `GET .../proposals/:id`, `POST .../proposals/:id/approve` y `/reject`. Token compartido en `X-CAZA-Token`. Ningún endpoint compra |
 | Página del operador | `src/api/ui.ts` → `/ui` | Lista pendientes con precio, aterrizado, objetivo, veredicto y vencimiento; botones de aprobar y rechazar |
+| Tablero en tiempo real ([captura](docs/img/dashboard-claro.png)) | `src/api/dashboard.ts` → `/dashboard`, `src/db/repositories/metrics.repo.ts` | Tarjetas de estado (propuestas, vigilancia, alertas, presupuesto, órdenes, interruptor de compras) y, por producto y mercado, el perfil de precio real con la serie competitiva diaria graficada (SVG propio, paleta validada, tooltip, modo oscuro, vista de tabla). `GET /api/v1/caza/metrics` y SSE `GET /api/v1/caza/metrics/stream` cada 5 s |
 | Expiración de propuestas | `expireStaleProposals` en cada ciclo de vigilancia | 24 h sin respuesta → `expirada`; la vigilancia puede proponer de nuevo |
 | Criterio de aceptación | `scripts/phase5-check.sh` | Approve registrado en audit log con operador; reject bloquea la orden en la base de datos aunque el interruptor estuviera encendido; propuesta vencida expira |
 
@@ -77,7 +78,7 @@ Ningún producto tiene `vigilancia_activa` por defecto: activarla es una decisi�
 API del operador (`DATABASE_URL` y `CAZA_API_TOKEN` obligatorios; `REDIS_URL` opcional para resincronizar el programador al activar vigilancia):
 
 ```bash
-CAZA_API_TOKEN=un-token-largo npm run api     # http://localhost:3080/ui
+CAZA_API_TOKEN=un-token-largo npm run api     # http://localhost:3080/dashboard (tablero) y /ui (approve/reject)
 curl -H "X-CAZA-Token: un-token-largo" localhost:3080/api/v1/caza/proposals
 curl -H "X-CAZA-Token: un-token-largo" -H 'content-type: application/json' \
      -d '{"decididoPor":"tu@correo"}' -X POST localhost:3080/api/v1/caza/proposals/<id>/approve

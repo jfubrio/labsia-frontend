@@ -195,6 +195,8 @@ Evaluación detallada de herramientas, licencias y decisiones por fase en [HERRA
 
 ## 5. Autorización `approve` y prevención de compras duplicadas
 
+Tablero en tiempo real (`/dashboard`): propuestas pendientes y decididas (30 d), productos vigilados, corridas y observaciones de 24 h con errores, alertas enviadas y fallidas, presupuesto comprometido y disponible, órdenes activas y estado del interruptor de compras; por producto y mercado, el último perfil (precio real, piso, régimen, tendencia, confianza, tiendas) con la serie competitiva diaria graficada, líneas de referencia de precio real y objetivo, y vista de tabla. Los datos llegan por `GET /api/v1/caza/metrics` y se empujan por SSE en `GET /api/v1/caza/metrics/stream` cada 5 s; las páginas son cascarones públicos y los datos exigen token.
+
 Flujo: observación → veredicto `real` o `minimo_historico` → propuesta pendiente (una por producto, vigente 24 h) →
 el operador registra `approve` o `reject` desde la API (`POST /api/v1/caza/proposals/:id/approve|reject`, cabecera
 `X-CAZA-Token`, cuerpo con `decididoPor`, `motivo` y opcionalmente `precioMaximo` y `ttlHours`) → si `approve`, la
@@ -219,7 +221,7 @@ Prevención de duplicados, en este orden:
 | 2 | Vigilancia programada | 1 | Repositorios PostgreSQL, ciclo `runWatch` (observar → perfil por mercado → veredicto → propuesta pendiente), programador BullMQ con un Job Scheduler por producto, worker, `watch:once` sin Redis | Observaciones periódicas en DB con historial consultable y perfil recalculado en cada ciclo; ninguna orden | cerrada (`npm run phase2:check`, `npm run test:db`, `npm run phase2:worker-check` con Redis y PostgreSQL temporales) |
 | 3 | Conectores reales MX | 0, 2 | Amazon MX, Sony Store MX | Precio real coincide con la página en 3 verificaciones manuales |
 | 4 | Compra en EE. UU. en vivo | 3 | Conectores US, tipo de cambio diario (Banxico), tarifa real del buzón, franquicia y tasa de excedente confirmadas | Precio aterrizado reproducible con la fórmula documentada contra un ticket real de compra y cruce | pendiente de fase 0 |
-| 5 | Panel y flujo `approve` | 2 | API Fastify del operador (propuestas, approve/reject con tope y vigencia, activar vigilancia, resumen por producto), página mínima `/ui`, expiración de propuestas | Aprobación registrada en audit log; rechazo bloquea orden | cerrada (`npm run phase5:check`); la UI final del panel queda para cuando exista el dashboard de LABSIA |
+| 5 | Panel y flujo `approve` | 2 | API Fastify del operador (propuestas, approve/reject con tope y vigencia, activar vigilancia, resumen por producto), página `/ui`, expiración de propuestas, **tablero en tiempo real `/dashboard`** (métricas agregadas por HTTP y por SSE cada 5 s) | Aprobación registrada en audit log; rechazo bloquea orden | cerrada (`npm run phase5:check`, `tests/db/metrics.integration.test.ts`); integración en el dashboard de LABSIA pendiente |
 | 6 | Ejecución de compra (habilitable) | 3, 5 | Ejecutor por conector, `PURCHASES_ENABLED` configurable | Prueba de duplicado concurrente: 2 intentos → 1 orden | pendiente |
 | 7 | Pruebas de extremo a extremo y hardening | 6 | Suite E2E, alertas, límites de gasto | Simulacro completo sin compra real, alertas disparan | parcial: alertas (consola, webhook genérico, Telegram) y límites de gasto (presupuesto mensual y máximo de órdenes) cerrados con `npm run phase7:check`; la E2E con compra simulada espera a la fase 6 |
 | 8 | Operación | 7 | Runbook, backups, monitoreo | Primera compra real aprobada manualmente y documentada | pendiente |

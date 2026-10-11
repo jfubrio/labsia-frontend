@@ -30,6 +30,7 @@ npm run test:db       # pruebas de integración de la vigilancia (PostgreSQL tem
 npm run phase2:check  # criterio de aceptación de la fase 2 (dos ciclos de vigilancia persistidos)
 npm run phase2:worker-check  # programador BullMQ + worker con Redis temporal; obligatorio si tocaste src/watch/scheduler.ts
 npm run phase5:check  # API del operador: approve en audit log, reject bloquea orden; obligatorio si tocaste src/api o src/services
+npm run test:db -- tests/db/metrics  # métricas y SSE del tablero; obligatorio si tocaste metrics.repo.ts o dashboard.ts
 npm run phase7:check  # simulacro: alertas y límites de gasto; obligatorio si tocaste src/notify o spend-limits
 npm run profile       # imprime el perfil de precio real del fixture (ajuste de parámetros)
 npm test -- tests/market-price.test.ts   # una sola suite
