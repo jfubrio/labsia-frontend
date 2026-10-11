@@ -11,6 +11,10 @@ export const connectorCatalog: ConnectorMeta[] = [
   { clave: 'mercadolibre_mx', nombre: 'Mercado Libre', mercado: 'MX', moneda: 'MXN', tipo: 'api', soportaCompra: false, estadoValidacion: 'por_validar', habilitado: false },
   { clave: 'amazon_us', nombre: 'Amazon US', mercado: 'US', moneda: 'USD', tipo: 'api', soportaCompra: false, estadoValidacion: 'por_validar', habilitado: false },
   { clave: 'bestbuy_us', nombre: 'Best Buy', mercado: 'US', moneda: 'USD', tipo: 'api', soportaCompra: false, estadoValidacion: 'por_validar', habilitado: false },
+  { clave: 'walmart_us', nombre: 'Walmart', mercado: 'US', moneda: 'USD', tipo: 'api', soportaCompra: false, estadoValidacion: 'por_validar', habilitado: false },
+  { clave: 'ebay_us', nombre: 'eBay (Browse API)', mercado: 'US', moneda: 'USD', tipo: 'api', soportaCompra: false, estadoValidacion: 'por_validar', habilitado: false },
+  { clave: 'bhphoto_us', nombre: 'B&H Photo', mercado: 'US', moneda: 'USD', tipo: 'scraping', soportaCompra: false, estadoValidacion: 'por_validar', habilitado: false },
+  { clave: 'newegg_us', nombre: 'Newegg', mercado: 'US', moneda: 'USD', tipo: 'scraping', soportaCompra: false, estadoValidacion: 'por_validar', habilitado: false },
 ]
 
 export function isConnectorUsable(clave: string): boolean {

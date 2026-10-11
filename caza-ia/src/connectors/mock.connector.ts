@@ -35,9 +35,11 @@ export type MockScenario =
   | 'descuento_falso'
   | 'ancla_lanzamiento'
   | 'descuento_dudoso'
-  | 'minimo_historico'
   | 'tienda_sin_stock'
+  | 'minimo_historico'
   | 'comparacion_internacional'
+  | 'oferta_usa_gana'
+  | 'oferta_usa_no_gana'
 
 /**
  * Conector con datos de prueba. No hace red. Sirve para la fase 1 y para las pruebas de motores.

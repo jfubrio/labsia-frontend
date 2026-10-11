@@ -1,6 +1,6 @@
 {
  "productSlug": "sony-wh1000xm6",
- "description": "Historial sintético multitienda de 90 días para construir la lógica. Precios en MXN (MX) y USD (US). No proviene de ninguna tienda real. La tienda oficial se queda en 11,999 (precio de lanzamiento, ancla); Amazon y Mercado Libre bajan de forma escalonada; Liverpool tiene una venta flash de un día a 7,499.",
+ "description": "Historial sintético multitienda de 90 días para construir la lógica. MX en MXN (tienda oficial fija en 11,999 de lanzamiento, Amazon y Mercado Libre bajando por escalones, Liverpool con una venta flash a 7,499). US en USD (Amazon, Best Buy y Walmart bajando desde 449.99; Best Buy con una venta flash a 329.99). No proviene de ninguna tienda real.",
  "history": [
   {
    "connector": "mock",
@@ -701,6 +701,626 @@
    "price": 9299,
    "advertisedPreviousPrice": null,
    "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 89,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 86,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 83,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 80,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 77,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 74,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 71,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 68,
+   "price": 429.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 65,
+   "price": 429.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 62,
+   "price": 429.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 59,
+   "price": 429.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 56,
+   "price": 429.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 53,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 50,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 47,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 44,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 41,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 38,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 35,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 32,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 29,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 26,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 23,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 20,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 17,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 14,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 11,
+   "price": 369.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 8,
+   "price": 369.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 5,
+   "price": 369.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 2,
+   "price": 369.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 90,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 83,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 76,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 69,
+   "price": 449.99,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 62,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 55,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 48,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 41,
+   "price": 399.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 34,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 27,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 20,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 13,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 6,
+   "price": 379.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "bestbuy_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 20,
+   "price": 329.99,
+   "advertisedPreviousPrice": 449.99,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 88,
+   "price": 449.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 83,
+   "price": 449.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 78,
+   "price": 449.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 73,
+   "price": 449.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 68,
+   "price": 449.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 63,
+   "price": 449.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 58,
+   "price": 409.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 53,
+   "price": 409.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 48,
+   "price": 409.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 43,
+   "price": 409.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 38,
+   "price": 409.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 33,
+   "price": 409.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 28,
+   "price": 389.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 23,
+   "price": 389.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 18,
+   "price": 389.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 13,
+   "price": 389.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 8,
+   "price": 389.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "walmart_us",
+   "market": "US",
+   "currency": "USD",
+   "daysAgo": 3,
+   "price": 389.0,
+   "advertisedPreviousPrice": null,
+   "inStock": true
   }
  ],
  "scenarios": {
@@ -769,20 +1389,20 @@
    ]
   },
   "tienda_sin_stock": {
-    "description": "Amazon MX a 7,899 'antes 9,999' pero SIN STOCK. El veredicto sigue siendo REAL (se juzga contra el precio real ~8,999 y supera el 12 %), pero una oferta que no se puede comprar nunca genera propuesta de compra.",
-    "offers": [
-      {
-        "connector": "mock",
-        "store": "amazon_mx",
-        "market": "MX",
-        "currency": "MXN",
-        "price": 7899,
-        "advertisedPreviousPrice": 9999,
-        "inStock": false,
-        "url": "https://mock.local/mx/amazon/sony-wh1000xm6",
-        "seller": "Amazon MX (mock)"
-      }
-    ]
+   "description": "Amazon MX a 7,899 'antes 9,999' pero SIN STOCK. El veredicto sigue siendo REAL (se juzga contra el precio real ~8,999 y supera el 12 %), pero una oferta que no se puede comprar nunca genera propuesta de compra.",
+   "offers": [
+    {
+     "connector": "mock",
+     "store": "amazon_mx",
+     "market": "MX",
+     "currency": "MXN",
+     "price": 7899,
+     "advertisedPreviousPrice": 9999,
+     "inStock": false,
+     "url": "https://mock.local/mx/amazon/sony-wh1000xm6",
+     "seller": "Amazon MX (mock)"
+    }
+   ]
   },
   "minimo_historico": {
    "description": "5,933 'antes 9,999': iguala o mejora el mejor precio competitivo de la ventana: MÍNIMO HISTÓRICO. Genera propuesta.",
@@ -801,7 +1421,7 @@
    ]
   },
   "comparacion_internacional": {
-   "description": "Oferta US a 379 USD contra MX a 8,999 MXN. Con tipo de cambio 18.5, envío 650 e impuestos 15 % el precio aterrizado US es 8,713.22 MXN.",
+   "description": "MX 8,999 MXN contra US 379 USD. Aterrizado vía buzón en Texas (8.25 % impuesto de venta, 19 % importación, 35 USD de reenvío, tc 18.5) el US cuesta ~9,570 MXN: la oferta local gana.",
    "offers": [
     {
      "connector": "mock",
@@ -815,11 +1435,43 @@
      "seller": "Amazon MX (mock)"
     },
     {
-     "connector": "mock_us",
+     "connector": "mock",
      "store": "amazon_us",
      "market": "US",
      "currency": "USD",
      "price": 379,
+     "advertisedPreviousPrice": 449.99,
+     "inStock": true,
+     "url": "https://mock.local/us/amazon/sony-wh1000xm6",
+     "seller": "Amazon US (mock)"
+    }
+   ]
+  },
+  "oferta_usa_gana": {
+   "description": "Best Buy 299.99 USD 'antes 449.99': mínimo histórico en el mercado US y, aterrizado vía buzón en Texas (~7,710 MXN), por debajo del objetivo derivado: genera propuesta de compra en EE. UU.",
+   "offers": [
+    {
+     "connector": "mock",
+     "store": "bestbuy_us",
+     "market": "US",
+     "currency": "USD",
+     "price": 299.99,
+     "advertisedPreviousPrice": 449.99,
+     "inStock": true,
+     "url": "https://mock.local/us/bestbuy/sony-wh1000xm6",
+     "seller": "Best Buy (mock)"
+    }
+   ]
+  },
+  "oferta_usa_no_gana": {
+   "description": "Amazon US 329.99 USD 'antes 449.99': descuento real en EE. UU., pero aterrizado (~8,416 MXN) supera el objetivo derivado: se informa, no se propone.",
+   "offers": [
+    {
+     "connector": "mock",
+     "store": "amazon_us",
+     "market": "US",
+     "currency": "USD",
+     "price": 329.99,
      "advertisedPreviousPrice": 449.99,
      "inStock": true,
      "url": "https://mock.local/us/amazon/sony-wh1000xm6",

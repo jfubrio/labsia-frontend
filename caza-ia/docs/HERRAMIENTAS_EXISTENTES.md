@@ -11,7 +11,7 @@ Revisión de proyectos de código abierto en GitHub y de APIs oficiales que CAZA
 | Precio y compra en Amazon México | Integrar vía API oficial | Product Advertising API 5.0 (locale México) con firma SigV4 propia; **no scraping** | 3 |
 | Historial de precios de Amazon | Evaluar, de pago | Keepa API (cobertura de .com.mx **por confirmar**) | 3 |
 | Mercado Libre | Integrar vía API oficial con OAuth | API de Mercado Libre con app registrada; la búsqueda pública parece cerrada desde 2025 | 3 |
-| Comparación US | Integrar vía API oficial | Best Buy Developer API (clave gratuita, uso comercial sujeto a aprobación); Amazon US vía PA-API | 4 |
+| Compra en EE. UU. vía buzón en Texas | Integrar vía API oficial | Best Buy Developer API (clave gratuita, uso comercial sujeto a aprobación); Amazon US vía PA-API; Walmart Affiliate API; eBay Browse API (producción con aprobación) | 3–4 |
 | Tipo de cambio USD→MXN | Integrar | Banxico SIE (FIX oficial, token gratuito) como fuente primaria; Frankfurter autoalojado (MIT) como respaldo | 4 |
 | Scraping cuando una tienda lo permite | Integrar como librería | Crawlee + Playwright (Apache-2.0) respetando robots.txt y términos | 3 |
 | Notificaciones al operador | Integrar | Apprise (BSD-2) o ntfy; Telegram/WhatsApp/correo/webhook | 5 |
@@ -56,9 +56,23 @@ Revisión de proyectos de código abierto en GitHub y de APIs oficiales que CAZA
 
 - Sin API pública conocida. Opción: changedetection.io con detección de precio por JSON-LD, o Crawlee + Playwright si robots.txt y términos lo permiten (revisar en fase 0). Precio de lanzamiento del WH-1000XM6 en Sony Store: 11,999 MXN ([TechRadar MX](https://global.techradar.com/es-mx/tech/sony-sorprendio-en-mayo-con-el-lanzamiento-de-su-nueva-camara-y-sus-audifonos-wh-1000xm6)).
 
-### Best Buy (comparación US)
+### Tiendas de EE. UU. (compra vía buzón en Texas)
 
-- Developer API con clave gratuita; campos `salePrice`, `regularPrice`, `onSale`. Uso comercial sujeto a aprobación ([guía](https://jentic.com/apis/bestbuy)). SDK oficial [bestbuy-sdk-js](https://github.com/BestBuyAPIs/bestbuy-sdk-js) (MIT) sin actividad reciente (~4 años); usar `fetch` directo.
+Con buzón en Texas, EE. UU. es mercado de compra. Candidatas por orden de facilidad de acceso:
+
+| Tienda | Acceso | Notas |
+| --- | --- | --- |
+| Best Buy | Developer API con clave gratuita; campos `salePrice`, `regularPrice`, `onSale` | Uso comercial sujeto a aprobación ([guía](https://jentic.com/apis/bestbuy)). SDK oficial [bestbuy-sdk-js](https://github.com/BestBuyAPIs/bestbuy-sdk-js) (MIT) sin actividad en ~4 años; usar `fetch` directo |
+| Amazon US | PA-API 5.0 con la misma cuenta de Associates (host `webservices.amazon.com`) | Mismo requisito de tres ventas; sin scraping |
+| Walmart | Walmart Affiliate API (Walmart.io), peticiones firmadas con clave RSA ([wrapper de referencia](https://pkg.go.dev/github.com/tamnd/walmart-cli)) | Documentación oficial no verificada desde este entorno; **por confirmar** |
+| eBay | [Browse API](https://developer.ebay.com/api-docs/buy/browse/overview.html) oficial: búsqueda por palabra clave o GTIN, precio y disponibilidad | Sandbox abierto; **producción requiere aprobación y contrato con eBay**. Útil para seguimiento de precios de vendedores grandes |
+| B&H Photo, Newegg | Sin API pública; solo programas de afiliados (Impact, Rakuten) con enlaces, no datos | changedetection.io si robots.txt y términos lo permiten; si no, descartar |
+
+Logística del buzón (datos para `caza_buzones` y `config/logistics.ts`), todo **por confirmar**:
+
+- Impuesto de venta de Texas: 6.25 % estatal más hasta 2 % local, tope combinado 8.25 %; la tasa exacta depende de la dirección del buzón ([guía 2026](https://numeral.com/blog/texas-sales-tax-guide)).
+- Importación por paquetería a México desde EE. UU. bajo T-MEC: 0 % hasta 50 USD, 17 % de 50 a 117 USD, 19 % de 117 a 2,500 USD, con RFC del consignatario ([alerta regulatoria FedEx MX](https://www.fedex.com/content/dam/fedex/lac-latin-america/downloads/2025/MX_ES_2025_8_pdf_NA_Reg-Alert_cus.pdf), [Country Commercial Guide](https://www.trade.gov/country-commercial-guides/mexico-customs-regulations)). Fuentes de 2025; confirmar vigencia en DOF/SAT.
+- Tarifa de reenvío del buzón: supuesto de 35 USD por paquete hasta tener la tarifa del proveedor.
 
 ## 3. Tipo de cambio
 
@@ -116,3 +130,6 @@ Lo que ilustran: el 11,999 fue precio de lanzamiento de un modelo nuevo y el 9,9
 - [ ] Revisar robots.txt y términos de Sony Store México para decidir entre changedetection.io y descartar.
 - [ ] Obtener token de Banxico SIE y verificar MXN en Frankfurter.
 - [ ] Solicitar clave de Best Buy Developer y revisar aprobación de uso comercial.
+- [ ] Confirmar con el proveedor del buzón en Texas: dirección (tasa de impuesto de venta), tarifa de reenvío, tiempos y si opera con el RFC del consignatario.
+- [ ] Confirmar en DOF/SAT la vigencia de los tramos de importación por paquetería desde EE. UU.
+- [ ] Registrar app en eBay Developers y evaluar el proceso de aprobación para producción de la Browse API; revisar Walmart.io.

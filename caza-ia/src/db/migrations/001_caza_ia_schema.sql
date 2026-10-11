@@ -24,7 +24,8 @@ CREATE TABLE caza_watch_configs (
   precio_objetivo          NUMERIC(12,2),            -- objetivo manual; NULL = derivado del precio real de mercado
   precio_maximo            NUMERIC(12,2) NOT NULL,   -- tope duro: nunca se autoriza por encima
   umbral_descuento_pct     NUMERIC(5,2) NOT NULL DEFAULT 10.00,
-  mercados                 TEXT[] NOT NULL DEFAULT ARRAY['MX'],
+  mercados                 TEXT[] NOT NULL DEFAULT ARRAY['MX'],   -- mercados vigilados (historial y comparación)
+  mercados_compra          TEXT[] NOT NULL DEFAULT ARRAY['MX'],   -- mercados donde se permite comprar; el extranjero exige buzón
   requiere_aprobacion      BOOLEAN NOT NULL DEFAULT TRUE,
   vigilancia_activa        BOOLEAN NOT NULL DEFAULT FALSE,
   intervalo_minutos        INTEGER NOT NULL DEFAULT 360,
@@ -33,6 +34,40 @@ CREATE TABLE caza_watch_configs (
   CHECK (umbral_descuento_pct >= 0 AND umbral_descuento_pct <= 100)
 );
 CREATE UNIQUE INDEX uniq_watch_config_per_product ON caza_watch_configs (product_id);
+
+-- Buzones de recepción en el extranjero. Una compra en EE. UU. es doméstica allí (impuesto de venta) y se reenvía a casa.
+CREATE TABLE caza_buzones (
+  id                       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  clave                    TEXT NOT NULL UNIQUE,          -- 'buzon_tx'
+  nombre                   TEXT NOT NULL,
+  mercado                  CHAR(2) NOT NULL,
+  moneda                   CHAR(3) NOT NULL,
+  impuesto_venta_pct       NUMERIC(5,2) NOT NULL,         -- según la dirección exacta del buzón
+  envio_domestico          NUMERIC(12,2) NOT NULL DEFAULT 0,
+  tarifa_reenvio           NUMERIC(12,2) NOT NULL,        -- por paquete, en moneda del buzón
+  dias_transito_estimados  INTEGER NOT NULL DEFAULT 7,
+  consignatario_con_rfc    BOOLEAN NOT NULL DEFAULT TRUE,
+  activo                   BOOLEAN NOT NULL DEFAULT TRUE,
+  notas                    TEXT,
+  creado_en                TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Reglas de importación por tramos de valor (USD) entre un mercado de origen y el de casa. Siempre con fuente y vigencia.
+CREATE TABLE caza_reglas_importacion (
+  id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  origen         CHAR(2) NOT NULL,
+  destino        CHAR(2) NOT NULL,
+  min_usd        NUMERIC(12,2) NOT NULL,
+  max_usd        NUMERIC(12,2),                           -- NULL = sin tope
+  tasa           NUMERIC(6,4) NOT NULL,                   -- fracción: 0.19 = 19 %
+  nota           TEXT NOT NULL,
+  fuente         TEXT NOT NULL,
+  por_confirmar  BOOLEAN NOT NULL DEFAULT TRUE,
+  vigente_desde  DATE,
+  creado_en      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (max_usd IS NULL OR max_usd > min_usd)
+);
+CREATE INDEX idx_reglas_importacion ON caza_reglas_importacion (origen, destino, min_usd);
 
 -- Conectores (tiendas) y su estado de validación (fase 0)
 CREATE TABLE caza_connectors (
@@ -125,8 +160,10 @@ CREATE TABLE caza_purchase_authorizations (
   product_id         UUID NOT NULL REFERENCES caza_products(id),
   observation_id     UUID NOT NULL REFERENCES caza_price_observations(id),
   decision           TEXT NOT NULL,                   -- approve | reject
-  precio_maximo      NUMERIC(12,2) NOT NULL,          -- tope autorizado para ESTA oferta
+  precio_maximo      NUMERIC(12,2) NOT NULL,          -- tope autorizado para ESTA oferta, en la moneda de la oferta
   moneda             CHAR(3) NOT NULL,
+  precio_aterrizado_base NUMERIC(12,2),               -- estimado en moneda base para compras en el extranjero
+  buzon_id           UUID REFERENCES caza_buzones(id),-- buzón de recepción si la compra es en el extranjero
   autorizado_por     TEXT NOT NULL,                   -- identidad del operador
   expira_en          TIMESTAMPTZ NOT NULL,
   consumido_en       TIMESTAMPTZ,                     -- se marca al crear la orden (un solo uso)
@@ -145,6 +182,8 @@ CREATE TABLE caza_purchase_orders (
   status             TEXT NOT NULL DEFAULT 'pending', -- pending | authorized | placed | cancelled | failed | delivered
   precio_final       NUMERIC(12,2),
   moneda             CHAR(3) NOT NULL,
+  buzon_id           UUID REFERENCES caza_buzones(id),
+  guia_reenvio       TEXT,                            -- rastreo del reenvío buzón → casa
   referencia_externa TEXT,
   creado_en          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   actualizado_en     TIMESTAMPTZ NOT NULL DEFAULT NOW()

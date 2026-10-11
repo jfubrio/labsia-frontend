@@ -2,14 +2,19 @@ import { describe, it, expect } from 'vitest'
 import { validateDiscountWithProfile } from '../src/engines/discount-validator.js'
 import { buildMarketPriceProfile } from '../src/engines/market-price.js'
 import { proposePurchase, effectiveTargetPrice, decideAuthorization, checkAuthorization } from '../src/engines/authorization.js'
+import { defaultComparisonConfig } from '../src/engines/international-comparison.js'
 import { loadScenario, product, NOW } from './helpers.js'
+
+const CMP = defaultComparisonConfig(18.5)
 
 async function judged(scenario: Parameters<typeof loadScenario>[0]) {
   const { history, offers } = await loadScenario(scenario)
   const obs = offers[0]!
+  // El veredicto se juzga contra el perfil del mercado de la oferta; el objetivo sale siempre del perfil de casa (MX).
   const profile = buildMarketPriceProfile(history, { now: NOW, market: 'MX', currency: 'MXN' })
-  const verdict = validateDiscountWithProfile(obs, profile, product)
-  return { obs, profile, verdict, proposal: proposePurchase(obs, verdict, product, profile) }
+  const offerProfile = obs.market === 'MX' ? profile : buildMarketPriceProfile(history, { now: NOW, market: obs.market, currency: obs.currency })
+  const verdict = validateDiscountWithProfile(obs, offerProfile, product)
+  return { obs, profile, offerProfile, verdict, proposal: proposePurchase(obs, verdict, product, profile, CMP) }
 }
 
 async function realProposal() {
@@ -32,6 +37,55 @@ describe('objetivo efectivo', () => {
 
   it('sin perfil ni objetivo manual no hay objetivo', () => {
     expect(effectiveTargetPrice(product, null)).toEqual({ objetivo: null, derivado: true })
+  })
+
+  it('rechaza derivar el objetivo de un perfil en otra moneda', async () => {
+    const { offerProfile } = await judged('oferta_usa_gana')
+    expect(offerProfile.currency).toBe('USD')
+    expect(() => effectiveTargetPrice(product, offerProfile)).toThrow(/perfil en MXN/)
+  })
+})
+
+describe('compra en EE. UU. vía buzón en Texas', () => {
+  it('propone cuando el precio aterrizado en MXN queda bajo el objetivo', async () => {
+    const { proposal, verdict } = await judged('oferta_usa_gana')
+    expect(verdict.veredicto).toBe('minimo_historico') // juzgado contra el mercado US
+    expect(proposal).not.toBeNull()
+    expect(proposal!.moneda).toBe('USD')
+    expect(proposal!.precio).toBe(299.99)
+    expect(proposal!.buzon).toBe('buzon_tx')
+    expect(proposal!.precioAterrizadoBase).toBe(7709.65)
+    expect(proposal!.precioAterrizadoBase).toBeLessThanOrEqual(proposal!.precioObjetivo)
+  })
+
+  it('no propone cuando el descuento es real en EE. UU. pero aterrizado supera el objetivo', async () => {
+    const { proposal, verdict } = await judged('oferta_usa_no_gana')
+    expect(['real', 'minimo_historico']).toContain(verdict.veredicto)
+    expect(proposal).toBeNull()
+  })
+
+  it('no propone en un mercado donde no se permite comprar', async () => {
+    const { obs, verdict, profile } = await judged('oferta_usa_gana')
+    expect(proposePurchase(obs, verdict, { ...product, mercadosCompra: ['MX'] }, profile, CMP)).toBeNull()
+  })
+
+  it('no propone en el extranjero sin configuración de comparación o sin buzón', async () => {
+    const { obs, verdict, profile } = await judged('oferta_usa_gana')
+    expect(proposePurchase(obs, verdict, product, profile, null)).toBeNull()
+    expect(proposePurchase(obs, verdict, product, profile, { ...CMP, buzones: {} })).toBeNull()
+  })
+
+  it('la autorización guarda tope en USD y aterrizado en MXN, y el tope respeta el máximo del producto', async () => {
+    const { proposal } = await judged('oferta_usa_gana')
+    const { authorization } = decideAuthorization({ proposal: proposal!, decision: 'approve', autorizadoPor: 'op@labsia.mx', product, ttlHours: 24, now: NOW })
+    expect(authorization.moneda).toBe('USD')
+    expect(authorization.precioMaximo).toBe(299.99)
+    expect(authorization.precioAterrizadoBase).toBe(7709.65)
+    expect(authorization.buzon).toBe('buzon_tx')
+    // Un tope de 340 USD aterriza en ~8,738 MXN, por encima del máximo 8,499
+    expect(() =>
+      decideAuthorization({ proposal: proposal!, decision: 'approve', autorizadoPor: 'op@labsia.mx', product, ttlHours: 24, now: NOW, precioMaximo: 340 }),
+    ).toThrow(/precio máximo/)
   })
 })
 
@@ -72,7 +126,7 @@ describe('proposePurchase', () => {
     expect(proposePurchase(obs, { ...verdict, confianza: 'baja' }, product, profile)).toBeNull()
   })
 
-  it('no propone ofertas fuera de la moneda base', async () => {
+  it('sin configuración de comparación no propone ofertas fuera de la moneda base', async () => {
     const { obs, verdict, profile } = await realProposal()
     const us = { ...obs, currency: 'USD' as const, market: 'US' as const }
     expect(proposePurchase(us, verdict, product, profile)).toBeNull()

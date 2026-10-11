@@ -61,8 +61,18 @@ describe('validateDiscount contra el precio real de mercado', () => {
   it('ignora el historial de otra moneda o mercado', async () => {
     const { history, offers } = await loadScenario('comparacion_internacional')
     const us = offers.find((o) => o.market === 'US')!
-    const v = validateDiscount(us, history, product, NOW)
+    const soloMX = history.filter((h) => h.market === 'MX')
+    const v = validateDiscount(us, soloMX, product, NOW)
     expect(v.veredicto).toBe('sin_historial')
     expect(v.diasCubiertos).toBe(0)
+  })
+
+  it('una oferta en EE. UU. se juzga contra el mercado de EE. UU., en dólares', async () => {
+    const { history, offers } = await loadScenario('oferta_usa_gana')
+    const v = validateDiscount(offers[0]!, history, product, NOW)
+    expect(v.veredicto).toBe('minimo_historico')
+    expect(v.precioReal).toBe(369.99)
+    expect(v.piso).toBe(329.99)
+    expect(v.tiendas).toBe(3)
   })
 })

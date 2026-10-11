@@ -20,6 +20,7 @@ export const sonyWh1000xm6: ProductConfig = {
   precioMaximo: 8499,
   umbralDescuentoPct: 12,
   mercados: ['MX', 'US'],
+  mercadosCompra: ['MX', 'US'], // EE. UU. vía buzón en Texas (config/logistics.ts)
   requiereAprobacion: true,
   vigilanciaActiva: false,
   intervaloMinutos: 360,

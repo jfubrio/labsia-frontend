@@ -20,7 +20,10 @@ export interface ProductConfig {
   /** Tope duro de seguridad: por encima de esto nunca se autoriza nada. */
   precioMaximo: number
   umbralDescuentoPct: number
+  /** Mercados que se vigilan (para historial y comparación). */
   mercados: Market[]
+  /** Mercados donde se permite COMPRAR. Un mercado extranjero requiere un buzón configurado (config/logistics.ts). */
+  mercadosCompra: Market[]
   requiereAprobacion: boolean
   vigilanciaActiva: boolean
   intervaloMinutos: number
@@ -78,15 +81,26 @@ export interface DiscountVerdict {
   razon: string
 }
 
+/** Precio aterrizado: lo que de verdad pagaría el comprador por una oferta, en moneda base. */
 export interface LandedPrice {
   observationId: string
   connector: string
+  store: string
   market: Market
   precioLocal: number
   monedaLocal: Currency
   tipoCambio: number
-  envio: number
-  impuestos: number
+  /** Buzón usado para recibir en el extranjero; null para el mercado local. */
+  buzon: string | null
+  /** Impuesto de venta cobrado por la tienda al enviar al buzón, en moneda local. */
+  impuestoVenta: number
+  /** Envío de la tienda al buzón, en moneda local. */
+  envioDomestico: number
+  tasaImportacionPct: number
+  /** Impuestos de importación al mercado local, en moneda base. */
+  impuestosImportacion: number
+  /** Tarifa de reenvío del buzón, en moneda base. */
+  reenvio: number
   precioAterrizado: number
   monedaBase: Currency
 }
@@ -98,8 +112,12 @@ export interface PurchaseAuthorization {
   productSlug: string
   observationId: string
   decision: AuthorizationDecision
+  /** Tope autorizado en la moneda de la oferta. */
   precioMaximo: number
   moneda: Currency
+  /** Para compras en el extranjero: precio aterrizado estimado en moneda base y buzón de recepción. */
+  precioAterrizadoBase: number | null
+  buzon: string | null
   autorizadoPor: string
   expiraEn: Date
   consumidoEn: Date | null

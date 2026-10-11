@@ -110,9 +110,38 @@ Historial sintético de 90 días con cuatro tiendas: la oficial fija en 11,999 (
 | Amazon 7,899 "antes 9,999" | −21 % | **real** | ahorro real 12.2 % y sobre el piso; propone compra |
 | Amazon 5,933 "antes 9,999" | −40.7 % | **mínimo histórico** | mejora el mejor precio competitivo visto; propone compra |
 
-### 3.5 Comparación internacional
+### 3.5 Compra en EE. UU. vía buzón en Texas
 
-Convierte cada oferta a la moneda base (MXN) y suma envío e impuestos estimados de importación por mercado. Solo las ofertas con precio aterrizado menor al mejor precio local se reportan como alternativa. El perfil de precio real se calcula por mercado y moneda; no se mezclan. `[PENDIENTE: texto original — tabla de mercados y supuestos de importación]`
+EE. UU. es mercado de **compra**, no solo de comparación: hay un buzón de recepción en Texas. Una compra allí es
+doméstica (la tienda cobra el impuesto de venta de Texas y suele enviar gratis al buzón) y después el buzón reenvía a
+México, donde el paquete paga impuestos de importación por paquetería. Para competir con una oferta local, una oferta
+de EE. UU. se evalúa por su **precio aterrizado** en MXN (`src/engines/international-comparison.ts`, `src/config/logistics.ts`):
+
+```
+aterrizado = (precio + impuesto de venta del buzón + envío doméstico) × tipo de cambio
+           + precio × tasa de importación del tramo × tipo de cambio
+           + tarifa de reenvío del buzón × tipo de cambio
+```
+
+| Componente | Supuesto fase 1 | Estado |
+| --- | --- | --- |
+| Impuesto de venta Texas | 8.25 % (tope combinado; depende de la dirección exacta del buzón) | por confirmar |
+| Envío tienda → buzón | 0 USD | por confirmar |
+| Reenvío buzón → México | 35 USD por paquete | por confirmar con el proveedor |
+| Importación MX desde EE. UU. (T-MEC, paquetería, con RFC) | 0 % hasta 50 USD; 17 % de 50 a 117 USD; 19 % de 117 a 2,500 USD | por confirmar en DOF/SAT |
+| Tipo de cambio | fijo 18.5 hasta la fase 4 (Banxico FIX) | — |
+
+Reglas:
+
+1. El **veredicto** de una oferta de EE. UU. se juzga contra el precio real del mercado de EE. UU., en dólares, con su propio historial multitienda. Un descuento real en EE. UU. es real allí, aunque no convenga traerlo.
+2. El **objetivo** y el **tope** se expresan siempre en MXN y salen del perfil del mercado de casa. Derivar el objetivo de un perfil en otra moneda es un error y el código lo rechaza.
+3. Se **propone** la compra en EE. UU. solo si el mercado está en `mercadosCompra`, existe buzón y reglas de importación, el veredicto es real o mínimo histórico con confianza suficiente, y el aterrizado queda por debajo del objetivo y del tope.
+4. La autorización `approve` guarda el tope en la moneda de la oferta (USD) y el aterrizado estimado en MXN; el tope también se valida aterrizado contra el máximo del producto.
+
+Ejemplo con los datos de prueba (tc 18.5): el mercado US tiene precio real 369.99 USD y piso 329.99. Best Buy a 299.99 USD
+es mínimo histórico y aterriza en 7,709.65 MXN, por debajo del objetivo derivado 7,919: **se propone**. Amazon US a
+329.99 USD también es mínimo histórico pero aterriza en 8,415.80: se informa, no se propone. A 379 USD aterriza en
+9,569.69 y la oferta local de 8,999 gana.
 
 ## 4. Base de datos, API e integraciones por validar
 
@@ -123,10 +152,12 @@ Esquema lógico implementado en `src/db/migrations/001_caza_ia_schema.sql` y `00
 | `caza_products` | Producto vigilado, moneda base, estado |
 | `caza_watch_configs` | Precio de lista (solo informativo), objetivo manual opcional, tope duro, umbral de descuento, mercados, requiere aprobación |
 | `caza_connectors` | Conector por tienda/mercado, estado de validación de acceso (fase 0) |
+| `caza_buzones` | Buzones de recepción en el extranjero: impuesto de venta, envío doméstico, tarifa de reenvío, RFC |
+| `caza_reglas_importacion` | Tramos de importación por valor (USD) entre origen y destino, con fuente y vigencia |
 | `caza_price_observations` | Cada precio observado: tienda, precio, precio anunciado anterior, moneda, stock, URL, hash de la oferta |
 | `caza_market_price_profiles` | Perfil de precio real de mercado por producto, mercado y moneda: serie competitiva, precio real, piso, techo, régimen, confianza |
 | `caza_discount_verdicts` | Veredicto por observación contra el perfil de precio real |
-| `caza_purchase_authorizations` | `approve`/`reject` del operador, vigencia, vínculo con observación |
+| `caza_purchase_authorizations` | `approve`/`reject` del operador, vigencia, vínculo con observación; tope en moneda de la oferta, aterrizado en base y buzón |
 | `caza_purchase_orders` | Órdenes (ninguna se crea con compras deshabilitadas); índice único parcial anti-duplicados |
 | `caza_audit_log` | Todo evento relevante, inmutable |
 
@@ -138,7 +169,12 @@ Integraciones por validar en fase 0 (acceso, API oficial o scraping permitido, l
 | Keepa | MX | historial de precios de Amazon | API de pago; cobertura MX por confirmar | por validar |
 | Sony Store México | MX | precio, stock | changedetection.io o Crawlee, si robots.txt y términos lo permiten | por validar |
 | Mercado Libre | MX | precio, stock | API oficial con OAuth; búsqueda pública cerrada desde 2025 (por confirmar) | por validar |
-| Amazon US / Best Buy | US | comparación internacional | PA-API US / Best Buy Developer API | por validar |
+| Amazon US | US | precio, stock, **compra vía buzón** | PA-API US (misma cuenta Associates) | por validar |
+| Best Buy | US | precio, stock, compra vía buzón | Best Buy Developer API (clave gratuita) | por validar |
+| Walmart | US | precio, stock, compra vía buzón | Walmart Affiliate API (peticiones firmadas) | por validar |
+| eBay | US | precio, stock, compra vía buzón | Browse API oficial; producción requiere aprobación de eBay | por validar |
+| B&H Photo / Newegg | US | precio, stock | sin API pública; changedetection.io si sus términos lo permiten | por validar |
+| Buzón Texas | US→MX | recepción y reenvío | proveedor del buzón (tarifa, dirección, RFC) | por confirmar |
 | Banxico SIE / Frankfurter | — | tipo de cambio FIX | API oficial gratuita con token / respaldo autoalojado | por validar |
 
 Evaluación detallada de herramientas, licencias y decisiones por fase en [HERRAMIENTAS_EXISTENTES.md](HERRAMIENTAS_EXISTENTES.md).
@@ -166,7 +202,7 @@ Prevención de duplicados, en este orden:
 | 1 | Motor de precio real de mercado, base de datos, configuración de los Sony, conector mock | 0 (puede avanzar en paralelo con mock) | Migraciones 001–003, motor de precio real con historial multitienda, `sony-wh1000xm6.ts`, conector mock, motores con pruebas | `npm test` y `npm run typecheck` en verde; el ancla de lanzamiento se juzga `falso`; demo corre sin red; ninguna orden creada |
 | 2 | Vigilancia programada | 1 | Worker BullMQ, programación por producto, persistencia en Postgres | Observaciones cada N horas en DB con historial consultable |
 | 3 | Conectores reales MX | 0, 2 | Amazon MX, Sony Store MX | Precio real coincide con la página en 3 verificaciones manuales |
-| 4 | Comparación internacional en vivo | 3 | Conector US, tipo de cambio diario | Precio aterrizado reproducible con la fórmula documentada |
+| 4 | Compra en EE. UU. en vivo | 3 | Conectores US, tipo de cambio diario (Banxico), tarifas reales del buzón y tramos de importación confirmados | Precio aterrizado reproducible con la fórmula documentada contra un recibo real del buzón |
 | 5 | Panel y flujo `approve` | 2 | API + UI de propuestas, aprobación con vigencia | Aprobación registrada en audit log; rechazo bloquea orden |
 | 6 | Ejecución de compra (habilitable) | 3, 5 | Ejecutor por conector, `PURCHASES_ENABLED` configurable | Prueba de duplicado concurrente: 2 intentos → 1 orden |
 | 7 | Pruebas de extremo a extremo y hardening | 6 | Suite E2E, alertas, límites de gasto | Simulacro completo sin compra real, alertas disparan |
@@ -186,7 +222,9 @@ Prevención de duplicados, en este orden:
 - [ ] Umbral de descuento real por defecto: se asume 10 % (12 % en los Sony).
 - [ ] Parámetros del motor de precio real: ventana 90 días, vida media 21 días, vigencia 7 días, régimen ±5 %, lanzamiento inflado 15 %. Ajustar con datos reales en fase 3.
 - [ ] Vigencia de una autorización `approve`: se asume 24 h.
-- [ ] Supuestos de importación US→MX (envío e impuestos): se asumen 15 % + envío fijo; confirmar.
+- [ ] Buzón en Texas: dirección exacta (fija la tasa de impuesto de venta, se asume 8.25 %), tarifa de reenvío por paquete (se asumen 35 USD), tiempo de tránsito y si el consignatario tiene RFC.
+- [ ] Tramos de importación por paquetería desde EE. UU. (0 % hasta 50 USD, 17 % hasta 117 USD, 19 % hasta 2,500 USD): confirmar vigencia en DOF/SAT antes de la fase 4.
+- [ ] Alcance de tiendas de EE. UU. tras la fase 0: Amazon US, Best Buy, Walmart, eBay confirmadas como candidatas; B&H y Newegg dependen de términos.
 - [ ] Qué tiendas quedan en el alcance tras la fase 0.
 
 ## 9. Configuración inicial: Sony WH-1000XM6
@@ -201,7 +239,8 @@ Ejemplo para construir la lógica, definido en `src/config/products/sony-wh1000x
 | Precio objetivo | derivado: precio real de mercado × (1 − 12 %) |
 | Tope duro (`precioMaximo`) | 8,499 MXN |
 | Umbral de descuento real | 12 % |
-| Mercados vigilados | MX (principal), US (comparación) |
+| Mercados vigilados | MX (principal), US |
+| Mercados de compra | MX y US (vía buzón en Texas) |
 | Requiere aprobación humana | sí |
 | Compras | deshabilitadas |
 | Vigilancia | no activada (se activa en fase 2) |
