@@ -18,6 +18,7 @@ npm run db:check    # migraciones en PostgreSQL temporal + guardas. ~5 s. Si toc
 npm run test:db     # integración de la vigilancia en PostgreSQL temporal. ~10 s. Si tocaste src/db/ o src/watch/
 npm run phase2:check  # dos ciclos de vigilancia persistidos. Si tocaste src/watch/ o los repositorios
 npm run phase2:worker-check  # scheduler + worker con Redis temporal. Si tocaste src/watch/scheduler.ts
+npm run phase5:check  # API del operador en PostgreSQL temporal. Si tocaste src/api/ o src/services/
 ```
 
 Qué significa cada salida:
@@ -39,6 +40,7 @@ Busca en tu propio diff estas señales y, si aparecen, pregúntate si el usuario
 | `precioListaInformativo`, `advertisedPreviousPrice` o un precio fijo se usan como referencia de descuento | El precio real sale solo del análisis en el tiempo |
 | Un veredicto `real` o `minimo_historico` con `confianza` baja genera propuesta | Prohibido por regla 5 |
 | Aparece `amazon` junto a `fetch`, `playwright` o `cheerio` | No se scrapea Amazon |
+| Una ruta de la API inserta en `caza_purchase_orders` o llama a `executePurchase` | La API no compra; eso es del ejecutor en fase 6 |
 | Un test se salta (`.skip`), se borra o se afloja su aserción | Nunca para poner algo en verde |
 
 ## 3. Mantener los documentos en sintonía

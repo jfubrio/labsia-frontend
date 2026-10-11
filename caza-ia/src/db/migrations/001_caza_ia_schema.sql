@@ -178,6 +178,11 @@ CREATE TABLE caza_purchase_proposals (
   buzon_id               UUID REFERENCES caza_buzones(id),
   motivo                 TEXT NOT NULL,
   estado                 TEXT NOT NULL DEFAULT 'pendiente', -- pendiente | aprobada | rechazada | expirada
+  expira_en              TIMESTAMPTZ NOT NULL,          -- vencida sin respuesta pasa a 'expirada' y la vigilancia puede proponer de nuevo
+  decidido_en            TIMESTAMPTZ,
+  decidido_por           TEXT,
+  motivo_decision        TEXT,
+  authorization_id       UUID,                          -- se enlaza al aprobar/rechazar (FK abajo, la tabla se crea después)
   creado_en              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CHECK (estado IN ('pendiente', 'aprobada', 'rechazada', 'expirada'))
 );
@@ -219,6 +224,8 @@ CREATE TABLE caza_purchase_authorizations (
   CHECK (decision IN ('approve', 'reject'))
 );
 CREATE INDEX idx_auth_product ON caza_purchase_authorizations (product_id, creado_en DESC);
+ALTER TABLE caza_purchase_proposals
+  ADD CONSTRAINT fk_proposal_authorization FOREIGN KEY (authorization_id) REFERENCES caza_purchase_authorizations(id);
 
 -- Órdenes de compra. En fase 1 NO se crea ninguna fila (PURCHASES_ENABLED=false).
 CREATE TABLE caza_purchase_orders (

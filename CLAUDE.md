@@ -16,6 +16,7 @@ humana. Plan: `caza-ia/docs/PLAN_DESARROLLO.md`. Herramientas y decisiones de in
 3. **Sin scraping de Amazon** ni herramientas de evasión anti-bot. Conectores reales solo vía API oficial o tiendas cuyos términos lo permitan, y solo tras validarlos en fase 0.
 4. **Anti-duplicados en la base de datos**, no solo en código (índice único parcial y triggers en `002_purchase_guards.sql`).
 5. Ninguna propuesta de compra con confianza `baja` o `sin_historial`.
+6. **Ningún endpoint de la API compra.** La API solo lista, aprueba, rechaza y activa vigilancia; una aprobación habilita al ejecutor, no ejecuta.
 
 ## Comandos (desde `caza-ia/`)
 
@@ -27,6 +28,7 @@ npm run db:check      # aplica migraciones en un PostgreSQL temporal y prueba la
 npm run test:db       # pruebas de integración de la vigilancia (PostgreSQL temporal); obligatorio si tocaste src/db o src/watch
 npm run phase2:check  # criterio de aceptación de la fase 2 (dos ciclos de vigilancia persistidos)
 npm run phase2:worker-check  # programador BullMQ + worker con Redis temporal; obligatorio si tocaste src/watch/scheduler.ts
+npm run phase5:check  # API del operador: approve en audit log, reject bloquea orden; obligatorio si tocaste src/api o src/services
 npm run profile       # imprime el perfil de precio real del fixture (ajuste de parámetros)
 npm test -- tests/market-price.test.ts   # una sola suite
 ```
@@ -36,7 +38,7 @@ Infraestructura: PostgreSQL vía `DATABASE_URL` (fase 2+); Redis vía `REDIS_URL
 
 ## Convenciones
 
-- Node 22, TypeScript estricto, ESM (`.js` en los imports relativos), Vitest, zod, `pg` con SQL explícito, BullMQ. Sin frameworks nuevos sin acordarlo.
+- Node 22, TypeScript estricto, ESM (`.js` en los imports relativos), Vitest, zod, `pg` con SQL explícito, BullMQ, Fastify. Sin frameworks nuevos sin acordarlo.
 - Migraciones SQL numeradas en `src/db/migrations/`; mientras nada esté desplegado se editan en sitio; después, solo se agregan.
 - Español en documentación, mensajes y nombres de columnas; inglés en identificadores de código.
 - Datos de prueba sintéticos en `src/connectors/fixtures/`; nunca datos reales de tiendas.

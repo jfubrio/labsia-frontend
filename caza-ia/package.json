@@ -16,10 +16,13 @@
     "watch:once": "tsx src/scripts/watch-once.ts",
     "watch:worker": "tsx src/scripts/watch-worker.ts",
     "phase2:check": "bash scripts/phase2-check.sh",
-    "phase2:worker-check": "bash scripts/phase2-worker-check.sh"
+    "phase2:worker-check": "bash scripts/phase2-worker-check.sh",
+    "api": "tsx src/scripts/api-server.ts",
+    "phase5:check": "bash scripts/phase5-check.sh"
   },
   "dependencies": {
     "bullmq": "^6.3.12",
+    "fastify": "^5.12.5",
     "ioredis": "^6.0.0",
     "pg": "^8.23.1",
     "zod": "^3.23.8"

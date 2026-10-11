@@ -18,6 +18,9 @@ const schema = z.object({
   DATABASE_URL: z.string().default(''),
   /** Fase 2+: programador BullMQ. Vacía si solo se corre watch:once. */
   REDIS_URL: z.string().default(''),
+  /** Fase 5: token compartido de la API del operador (cabecera X-CAZA-Token). Obligatorio para levantar la API. */
+  CAZA_API_TOKEN: z.string().default(''),
+  CAZA_API_PORT: z.coerce.number().int().positive().default(3080),
 })
 
 export type Env = z.infer<typeof schema>

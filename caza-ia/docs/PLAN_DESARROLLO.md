@@ -193,9 +193,13 @@ Evaluación detallada de herramientas, licencias y decisiones por fase en [HERRA
 
 ## 5. Autorización `approve` y prevención de compras duplicadas
 
-Flujo: observación → veredicto `real` → propuesta de compra → el operador registra `approve` o `reject` → si
-`approve`, la autorización vale para **una** observación concreta, con precio máximo y vigencia (por defecto 24 h).
-Una autorización caducada, usada o para otra oferta no habilita nada.
+Flujo: observación → veredicto `real` o `minimo_historico` → propuesta pendiente (una por producto, vigente 24 h) →
+el operador registra `approve` o `reject` desde la API (`POST /api/v1/caza/proposals/:id/approve|reject`, cabecera
+`X-CAZA-Token`, cuerpo con `decididoPor`, `motivo` y opcionalmente `precioMaximo` y `ttlHours`) → si `approve`, la
+autorización vale para **una** observación concreta, con precio máximo (en la moneda de la oferta, validado también
+aterrizado contra el tope del producto) y vigencia (por defecto 24 h). Una autorización caducada, usada o para otra
+oferta no habilita nada. Una propuesta vencida sin respuesta pasa a `expirada` en el siguiente ciclo de vigilancia y
+el sistema puede proponer de nuevo. Todo queda en el audit log con la identidad del operador.
 
 Prevención de duplicados, en este orden:
 
@@ -212,11 +216,11 @@ Prevención de duplicados, en este orden:
 | 1 | Motor de precio real de mercado, base de datos, configuración de los Sony, conector mock | 0 (puede avanzar en paralelo con mock) | Migraciones 001–003, motor de precio real con historial multitienda, `sony-wh1000xm6.ts`, conector mock, motores con pruebas | `npm test` y `npm run typecheck` en verde; el ancla de lanzamiento se juzga `falso`; demo corre sin red; ninguna orden creada | cerrada (`npm run verify`, `npm run db:check`) |
 | 2 | Vigilancia programada | 1 | Repositorios PostgreSQL, ciclo `runWatch` (observar → perfil por mercado → veredicto → propuesta pendiente), programador BullMQ con un Job Scheduler por producto, worker, `watch:once` sin Redis | Observaciones periódicas en DB con historial consultable y perfil recalculado en cada ciclo; ninguna orden | cerrada (`npm run phase2:check`, `npm run test:db`, `npm run phase2:worker-check` con Redis y PostgreSQL temporales) |
 | 3 | Conectores reales MX | 0, 2 | Amazon MX, Sony Store MX | Precio real coincide con la página en 3 verificaciones manuales |
-| 4 | Compra en EE. UU. en vivo | 3 | Conectores US, tipo de cambio diario (Banxico), tarifa real del buzón, franquicia y tasa de excedente confirmadas | Precio aterrizado reproducible con la fórmula documentada contra un ticket real de compra y cruce |
-| 5 | Panel y flujo `approve` | 2 | API + UI de propuestas, aprobación con vigencia | Aprobación registrada en audit log; rechazo bloquea orden |
-| 6 | Ejecución de compra (habilitable) | 3, 5 | Ejecutor por conector, `PURCHASES_ENABLED` configurable | Prueba de duplicado concurrente: 2 intentos → 1 orden |
-| 7 | Pruebas de extremo a extremo y hardening | 6 | Suite E2E, alertas, límites de gasto | Simulacro completo sin compra real, alertas disparan |
-| 8 | Operación | 7 | Runbook, backups, monitoreo | Primera compra real aprobada manualmente y documentada |
+| 4 | Compra en EE. UU. en vivo | 3 | Conectores US, tipo de cambio diario (Banxico), tarifa real del buzón, franquicia y tasa de excedente confirmadas | Precio aterrizado reproducible con la fórmula documentada contra un ticket real de compra y cruce | pendiente de fase 0 |
+| 5 | Panel y flujo `approve` | 2 | API Fastify del operador (propuestas, approve/reject con tope y vigencia, activar vigilancia, resumen por producto), página mínima `/ui`, expiración de propuestas | Aprobación registrada en audit log; rechazo bloquea orden | cerrada (`npm run phase5:check`); la UI final del panel queda para cuando exista el dashboard de LABSIA |
+| 6 | Ejecución de compra (habilitable) | 3, 5 | Ejecutor por conector, `PURCHASES_ENABLED` configurable | Prueba de duplicado concurrente: 2 intentos → 1 orden | pendiente |
+| 7 | Pruebas de extremo a extremo y hardening | 6 | Suite E2E, alertas, límites de gasto | Simulacro completo sin compra real, alertas disparan | pendiente |
+| 8 | Operación | 7 | Runbook, backups, monitoreo | Primera compra real aprobada manualmente y documentada | pendiente |
 
 `[PENDIENTE: texto original — detalle de cada fase]`
 
@@ -236,7 +240,8 @@ Prevención de duplicados, en este orden:
 - [ ] Franquicia de pasajero que aplica al comprador: 500 USD general por tierra (PRODECON 2026) o 150 USD si cuenta como residente de la franja fronteriza. Cambia qué compras quedan libres de impuestos.
 - [ ] Excedente de franquicia: confirmar 19 % de tasa global, requisito de factura y tope de 3,000 USD del pago simplificado (RGCE 2026 / ANAM).
 - [ ] Cómo repartir la franquicia entre varias compras que cruzan juntas (fase 5).
-- [ ] Vigencia de una propuesta pendiente sin respuesta: hoy no expira sola; definir en fase 5 cuándo pasa a `expirada` para que la vigilancia pueda proponer de nuevo.
+- [x] Vigencia de una propuesta pendiente: 24 h; después pasa a `expirada` en el siguiente ciclo y la vigilancia puede proponer de nuevo (`PROPOSAL_TTL_HOURS_DEFAULT`).
+- [ ] Autenticación de la API del operador: hoy token compartido en `X-CAZA-Token`; al integrarse en el dashboard de LABSIA debe pasar al JWT de `dashboard_users` (DOC 18).
 - [ ] Intervalo de vigilancia por producto: 6 h por defecto; el arrastre de precio vigente del motor (7 días) debe acortarse al activar vigilancia real.
 - [ ] Tramos de importación por paquetería desde EE. UU. (ruta alternativa): confirmar vigencia en DOF/SAT.
 - [ ] Alcance de tiendas de EE. UU. tras la fase 0: Amazon US, Best Buy, Walmart, eBay confirmadas como candidatas; B&H y Newegg dependen de términos.

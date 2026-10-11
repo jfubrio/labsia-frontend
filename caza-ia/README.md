@@ -3,7 +3,17 @@
 Vigilancia de precios, **precio real de mercado a partir del comportamiento de la oferta competitiva en el tiempo**, validación de descuentos, comparación internacional y compras con autorización humana. El precio de lista, el de lanzamiento y el "antes" que anuncia una tienda nunca son referencia.
 Este directorio contiene la **fase 1** del plan ([docs/PLAN_DESARROLLO.md](docs/PLAN_DESARROLLO.md)).
 
-**Estado:** fases 1 y 2 cerradas. Compras deshabilitadas, vigilancia implementada pero no activada en ningún producto, conectores reales pendientes de validación (fase 0).
+**Estado:** fases 1, 2 y 5 cerradas. Compras deshabilitadas, vigilancia implementada pero no activada en ningún producto, conectores reales pendientes de validación (fase 0).
+
+## Qué incluye la fase 5 (flujo approve / reject)
+
+| Pieza | Ruta | Notas |
+| --- | --- | --- |
+| Servicio de decisiones | `src/services/approvals.service.ts` | Transacción: bloquea la propuesta, exige que esté pendiente y vigente, crea la autorización con las reglas del motor, marca la propuesta y escribe el audit log |
+| API del operador | `src/api/app.ts` | Fastify. `GET /api/v1/caza/products`, `GET .../products/:slug/summary`, `POST .../products/:slug/watch`, `GET .../proposals?estado=`, `GET .../proposals/:id`, `POST .../proposals/:id/approve` y `/reject`. Token compartido en `X-CAZA-Token`. Ningún endpoint compra |
+| Página del operador | `src/api/ui.ts` → `/ui` | Lista pendientes con precio, aterrizado, objetivo, veredicto y vencimiento; botones de aprobar y rechazar |
+| Expiración de propuestas | `expireStaleProposals` en cada ciclo de vigilancia | 24 h sin respuesta → `expirada`; la vigilancia puede proponer de nuevo |
+| Criterio de aceptación | `scripts/phase5-check.sh` | Approve registrado en audit log con operador; reject bloquea la orden en la base de datos aunque el interruptor estuviera encendido; propuesta vencida expira |
 
 ## Qué incluye la fase 2 (vigilancia programada)
 
@@ -40,6 +50,7 @@ npm run db:check      # aplica las migraciones en un PostgreSQL temporal y compr
 npm run test:db       # pruebas de integración de la vigilancia contra un PostgreSQL temporal
 npm run phase2:check  # criterio de aceptación de la fase 2: dos ciclos de vigilancia persistidos
 npm run phase2:worker-check  # programador BullMQ + worker contra Redis y PostgreSQL temporales (usa REDIS_URL si existe)
+npm run phase5:check  # criterio de aceptación de la fase 5: approve en audit log, reject bloquea orden
 npm run profile       # imprime el perfil de precio real de mercado del fixture y su serie diaria
 npm run demo          # recorre los nueve escenarios sin red ni base de datos
 ```
@@ -53,6 +64,15 @@ npm run watch:worker                                  # programador BullMQ + wor
 ```
 
 Ningún producto tiene `vigilancia_activa` por defecto: activarla es una decisión explícita.
+
+API del operador (`DATABASE_URL` y `CAZA_API_TOKEN` obligatorios; `REDIS_URL` opcional para resincronizar el programador al activar vigilancia):
+
+```bash
+CAZA_API_TOKEN=un-token-largo npm run api     # http://localhost:3080/ui
+curl -H "X-CAZA-Token: un-token-largo" localhost:3080/api/v1/caza/proposals
+curl -H "X-CAZA-Token: un-token-largo" -H 'content-type: application/json' \
+     -d '{"decididoPor":"tu@correo"}' -X POST localhost:3080/api/v1/caza/proposals/<id>/approve
+```
 
 Skills de Claude Code para este proyecto en `../.claude/skills/` (`caza-verify`, `caza-scenario`, `caza-connector`,
 `caza-migration`, `caza-phase`, `steward`); las convenciones generales están en `../CLAUDE.md`. Las sesiones en la nube
@@ -78,9 +98,10 @@ Hay tres capas y las tres deben estar abiertas para que una orden exista:
 2. `caza_settings.purchases_enabled = 'true'` en la base de datos. El trigger `trg_a_purchases_enabled` aborta cualquier `INSERT` en `caza_purchase_orders` mientras sea `false`.
 3. Una autorización `approve` vigente, no consumida, para esa observación y con precio dentro del tope.
 
-## Pendientes antes de la fase 3
+## Pendientes antes de las fases 3 y 6
 
 - Revisar [docs/HERRAMIENTAS_EXISTENTES.md](docs/HERRAMIENTAS_EXISTENTES.md) y resolver las tareas de fase 0 que lista (cuenta de Amazon Associates, Keepa, Mercado Libre, Sony Store, Banxico, Best Buy, buzón en Texas).
+- La fase 6 (ejecutor de compra) necesita la 3 (conectores reales con compra) además de la 5: no se habilita nada hasta cerrar la fase 0.
 - Al desplegar, el primer disparo de cada Job Scheduler se alinea al siguiente múltiplo del intervalo (con 6 h puede tardar hasta 6 h); si hace falta un ciclo inmediato, correr `npm run watch:once`.
 
 - Pegar el texto completo del plan original en `docs/PLAN_DESARROLLO.md` donde dice `[PENDIENTE: texto original]`.

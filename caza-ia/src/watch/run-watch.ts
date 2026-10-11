@@ -5,7 +5,7 @@ import { connectorIdsByClave, buzonIdByClave } from '../db/repositories/products
 import { insertObservation, listHistory } from '../db/repositories/observations.repo.js'
 import { insertProfile } from '../db/repositories/profiles.repo.js'
 import { insertVerdict } from '../db/repositories/verdicts.repo.js'
-import { insertProposal } from '../db/repositories/proposals.repo.js'
+import { insertProposal, expireStaleProposals } from '../db/repositories/proposals.repo.js'
 import { startRun, finishRun } from '../db/repositories/runs.repo.js'
 import { insertAudit } from '../db/repositories/audit.repo.js'
 import { toObservation } from '../engines/ingest.js'
@@ -74,7 +74,11 @@ export async function runWatch(product: ProductRow, deps: WatchDeps): Promise<Wa
     }
     const homeProfile = perfiles[product.mercados.find((m) => currencyFor(m) === product.monedaBase) ?? 'MX'] ?? null
 
-    // 3. Veredictos y 4. propuestas
+    // 3. Veredictos y 4. propuestas. Antes, las propuestas vencidas sin respuesta expiran para no bloquear una nueva.
+    const expiradas = await expireStaleProposals(db, product.id, now)
+    if (expiradas > 0) {
+      await insertAudit(db, product.id, { ocurridoEn: now, actor: 'sistema', evento: 'proposal.expired', productSlug: product.slug, payload: { expiradas } })
+    }
     let veredictos = 0
     let propuestas = 0
     for (const obs of nuevas) {
@@ -88,7 +92,7 @@ export async function runWatch(product: ProductRow, deps: WatchDeps): Promise<Wa
       const proposal = proposePurchase(obs, verdict, product, homeProfile, deps.comparison)
       if (!proposal) continue
       const buzonId = proposal.buzon ? await buzonIdByClave(db, proposal.buzon) : null
-      const proposalId = await insertProposal(db, product.id, verdictId, buzonId, proposal)
+      const proposalId = await insertProposal(db, product.id, verdictId, buzonId, proposal, now)
       if (proposalId) {
         propuestas++
         await insertAudit(db, product.id, {
