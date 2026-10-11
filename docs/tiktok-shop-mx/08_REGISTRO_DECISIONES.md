@@ -86,3 +86,4 @@ Convención: cada entrada indica si es **hecho** (consta en la especificación o
 | 2026-10-11 | Se añade P-08 (abajo) tras la revisión de herramientas. |
 | 2026-10-11 | Se crean siete skills de proyecto en `.claude/skills/` (ver `00_LEER_PRIMERO.md`). La tabla de `10_MATRIZ_NICHOS.md` pasa a generarse con script. |
 | 2026-10-11 | Bloqueo registrado: se añade P-09 (modalidad de la ronda 2 de T02: manual del propietario vs. agente con red abierta). La ronda 2 de T02 queda bloqueada hasta que el propietario decida. |
+| 2026-10-11 | Kit de la ronda 2 listo: `12_GUIA_RONDA2.md` y tres plantillas CSV en `investigacion/ronda2/` generadas desde las fichas. Sirve para cualquier respuesta a P-09. |

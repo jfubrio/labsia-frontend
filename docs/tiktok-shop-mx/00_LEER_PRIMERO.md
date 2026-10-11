@@ -40,6 +40,7 @@ La segmentación se hará por **problema de compra, audiencia y profundidad del 
 | `09_REQUISITOS_AFILIACION_MX.md` | Resultado de T01: requisitos públicos con fuentes fechadas y permisos de cuenta no verificados. |
 | `10_MATRIZ_NICHOS.md` | Resultado de T02: matriz comparativa de los seis candidatos. |
 | `11_HERRAMIENTAS_EXISTENTES.md` | Revisión preliminar de APIs oficiales, herramientas open source y conectores aplicables a T03–T08. |
+| `12_GUIA_RONDA2.md` | Cómo ejecutar la ronda 2 de T02, a mano o con un agente, y plantillas CSV en `investigacion/ronda2/`. |
 | `investigacion/` | Una ficha por candidato con las observaciones de T02 (`01_` a `06_`). |
 
 ## Estado al 2026-10-11
@@ -53,7 +54,7 @@ En `.claude/skills/` hay skills que encapsulan el flujo de este proyecto. Se car
 | Skill | Para qué |
 |---|---|
 | `tiktok-shop-mx` | Punto de entrada: convenciones de evidencia y enrutamiento al resto. |
-| `tsmx-ficha-nicho` | Investigar un candidato (ronda 1 o 2) y escribir su ficha con el protocolo de T02. |
+| `tsmx-ficha-nicho` | Investigar un candidato (ronda 1 o 2) y escribir su ficha con el protocolo de T02; `scripts/ronda2.py` genera y resume las capturas de la ronda 2. |
 | `tsmx-matriz` | Regenerar la tabla de `10_MATRIZ_NICHOS.md` desde las fichas (`scripts/matriz.py`). |
 | `tsmx-backlog` | Cambiar estados de tickets con registro de cambios (`scripts/backlog.py`). |
 | `tsmx-decision` | Registrar decisiones, pendientes y supuestos en `08_REGISTRO_DECISIONES.md`. |
