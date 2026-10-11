@@ -1,0 +1,46 @@
+{
+  "productSlug": "sony-wh1000xm6",
+  "description": "Historial sintético de 90 días para pruebas. Precios en MXN para MX y USD para US. No proviene de ninguna tienda real.",
+  "history": [
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 89, "price": 9999, "advertisedPreviousPrice": null, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 82, "price": 9999, "advertisedPreviousPrice": null, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 75, "price": 9799, "advertisedPreviousPrice": 9999, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 68, "price": 9999, "advertisedPreviousPrice": null, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 61, "price": 9499, "advertisedPreviousPrice": 9999, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 54, "price": 9499, "advertisedPreviousPrice": 9999, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 47, "price": 9999, "advertisedPreviousPrice": null, "inStock": false },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 40, "price": 9299, "advertisedPreviousPrice": 9999, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 33, "price": 9299, "advertisedPreviousPrice": 9999, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 26, "price": 8999, "advertisedPreviousPrice": 9999, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 19, "price": 8999, "advertisedPreviousPrice": 9999, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 12, "price": 9199, "advertisedPreviousPrice": 9999, "inStock": true },
+    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 5, "price": 8999, "advertisedPreviousPrice": 9999, "inStock": true }
+  ],
+  "scenarios": {
+    "descuento_real": {
+      "description": "Precio 7,899 MXN: por debajo de la mediana 90d y del objetivo. Debe salir 'real' y generar propuesta.",
+      "offers": [
+        { "connector": "mock", "market": "MX", "currency": "MXN", "price": 7899, "advertisedPreviousPrice": 9999, "inStock": true, "url": "https://mock.local/mx/sony-wh1000xm6", "seller": "Tienda Mock MX" }
+      ]
+    },
+    "descuento_falso": {
+      "description": "La tienda anuncia 'antes 12,999' pero el precio 9,499 está por encima de la mediana 90d. Debe salir 'falso'.",
+      "offers": [
+        { "connector": "mock", "market": "MX", "currency": "MXN", "price": 9499, "advertisedPreviousPrice": 12999, "inStock": true, "url": "https://mock.local/mx/sony-wh1000xm6", "seller": "Tienda Mock MX" }
+      ]
+    },
+    "descuento_dudoso": {
+      "description": "Precio 8,899: por debajo de la mediana 30d pero el ahorro vs 90d no supera el umbral. Debe salir 'dudoso'.",
+      "offers": [
+        { "connector": "mock", "market": "MX", "currency": "MXN", "price": 8899, "advertisedPreviousPrice": 9999, "inStock": true, "url": "https://mock.local/mx/sony-wh1000xm6", "seller": "Tienda Mock MX" }
+      ]
+    },
+    "comparacion_internacional": {
+      "description": "Oferta US a 379 USD contra MX a 8,999 MXN. Con tipo de cambio 18.5, envío 650 e impuestos 15 % el precio aterrizado US es 8,713.22 MXN.",
+      "offers": [
+        { "connector": "mock", "market": "MX", "currency": "MXN", "price": 8999, "advertisedPreviousPrice": 9999, "inStock": true, "url": "https://mock.local/mx/sony-wh1000xm6", "seller": "Tienda Mock MX" },
+        { "connector": "mock_us", "market": "US", "currency": "USD", "price": 379, "advertisedPreviousPrice": 449.99, "inStock": true, "url": "https://mock.local/us/sony-wh1000xm6", "seller": "Tienda Mock US" }
+      ]
+    }
+  }
+}
