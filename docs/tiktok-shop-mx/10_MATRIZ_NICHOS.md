@@ -6,16 +6,18 @@
 
 ## 1. Tabla comparativa
 
-Notas de 0 a 5. "s/e" = sin evidencia. Puntuación parcial = Σ(peso × nota)/5 sobre las tres dimensiones evaluadas (peso cubierto 60 %; máximo alcanzable 0.60). Las diferencias entre candidatos son de una o dos notas en una sola dimensión y están dentro del margen de error del método.
+<!-- matriz:inicio -->
+| # | Candidato | Demanda observable (25 %) | Necesidades sin contenido útil suficiente (20 %) | Economía del afiliado (25 %) | Facilidad de demostración original (15 %) | Calidad operativa del vendedor (15 %) | Puntuación parcial | Peso cubierto | Estado | Ficha |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Organización de cocinas pequeñas | 3 | 2 | s/e | 3 | s/e | 0.32 | 60 % | INCOMPLETA | `investigacion/01_cocinas_pequenas.md` |
+| 2 | Limpieza de pelo de mascotas en textiles | 3 | 3 | s/e | 4 | s/e | 0.39 | 60 % | INCOMPLETA | `investigacion/02_pelo_mascotas_textiles.md` |
+| 3 | Organización de escritorio y cables | 3 | 2 | s/e | 4 | s/e | 0.35 | 60 % | INCOMPLETA | `investigacion/03_escritorio_cables.md` |
+| 4 | Accesorios de costura y reparación doméstica | 3 | 3 | s/e | 4 | s/e | 0.39 | 60 % | INCOMPLETA | `investigacion/04_costura_reparacion.md` |
+| 5 | Organización de automóvil para uso diario | 2 | 3 | s/e | 4 | s/e | 0.34 | 60 % | INCOMPLETA | `investigacion/05_organizacion_auto.md` |
+| 6 | Herramientas manuales para pequeños proyectos | 3 | 3 | s/e | 4 | s/e | 0.39 | 60 % | INCOMPLETA | `investigacion/06_herramientas_manuales.md` |
 
-| # | Candidato | Demanda observable (25 %) | Necesidades sin contenido útil (20 %) | Economía del afiliado (25 %) | Facilidad de demostración (15 %) | Calidad operativa del vendedor (15 %) | Puntuación parcial | Estado |
-|---|---|---|---|---|---|---|---|---|
-| 1 | Organización de cocinas pequeñas | 3 | 2 | s/e | 3 | s/e | 0.32 | INCOMPLETA |
-| 2 | Limpieza de pelo de mascotas en textiles | 3 | 3 | s/e | 4 | s/e | 0.39 | INCOMPLETA |
-| 3 | Organización de escritorio y cables | 3 | 2 | s/e | 4 | s/e | 0.35 | INCOMPLETA |
-| 4 | Accesorios de costura y reparación doméstica | 3 | 3 | s/e | 4 | s/e | 0.39 | INCOMPLETA |
-| 5 | Organización de automóvil para uso diario | 2 | 3 | s/e | 4 | s/e | 0.34 | INCOMPLETA |
-| 6 | Herramientas manuales para pequeños proyectos | 3 | 3 | s/e | 4 | s/e | 0.39 | INCOMPLETA |
+Notas de 0 a 5. "s/e" = sin evidencia. Puntuación parcial = Σ(peso × nota)/5 sobre las dimensiones evaluadas; el máximo alcanzable es igual al peso cubierto (1.00 solo con las cinco dimensiones). Tabla generada por `.claude/skills/tsmx-matriz/scripts/matriz.py`; no editar a mano.
+<!-- matriz:fin -->
 
 ## 2. Evidencia observada por candidato (hechos de ronda 1)
 

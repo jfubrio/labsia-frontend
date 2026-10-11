@@ -67,6 +67,7 @@ Convención: cada entrada indica si es **hecho** (consta en la especificación o
 | P-06 | Datos fiscales: ¿el propietario tiene RFC activo y puede facturar/recibir pagos de plataforma en México? | Condición para liquidación de comisiones. Se registra como pendiente; no se guardan datos fiscales en el repo. | Confirmación sí/no. | T03, T07 |
 | P-07 | Criterio de parada del piloto (T10): umbral de comisión liquidada menos costos y plazo. | Sin criterio previo, la evaluación se sesga a posteriori. | Umbral y plazo. | T09, T10 |
 | P-08 | ¿Se registrará una aplicación pública de creador en TikTok Shop Partner Center para usar la Affiliate Creator API? | Es la única vía conforme a términos para importar comisiones (T05, T07); la alternativa es exportación manual desde la app. Implica abrir una cuenta de desarrollador. | Decisión sí/no y quién la registra. | T04, T05, T07 |
+| P-09 | **Modalidad de la ronda 2 de T02**: ¿la hace el propietario a mano en la app de TikTok o la corre un agente en un entorno con la red abierta (dominios de TikTok, Mercado Libre y Amazon permitidos)? | La ronda 1 fue preliminar (D-04) y la política de red del entorno actual bloquea los dominios necesarios (ver bitácora 2026-10-11). Sin definir quién la ejecuta y dónde, no hay segunda observación ni se puede cerrar T02. | Elegir una opción: "manual (propietario)" o "agente con red abierta"; si es la segunda, confirmar que existe ese entorno. | T02 (ronda 2) |
 
 ## 6. Supuestos de trabajo (inferencias, revisables)
 
@@ -83,3 +84,5 @@ Convención: cada entrada indica si es **hecho** (consta en la especificación o
 | 2026-10-11 | Se crea `docs/tiktok-shop-mx/` con 00, 03, 07, 08, 09, 10, 11 y seis fichas de investigación. Se ejecutan T00 (hecho), T01 y T02 ronda 1 (preliminares). |
 | 2026-10-11 | Limitación registrada: la política de red del entorno de ejecución bloqueó `*.tiktok.com`, `mercadolibre.com.mx`, `amazon.com.mx` y la mayoría de dominios (403 del proxy). Solo funcionó la búsqueda web. Ronda 2 de T02 y cierre de T01 requieren un entorno con esos dominios permitidos o trabajo manual del propietario. |
 | 2026-10-11 | Se añade P-08 (abajo) tras la revisión de herramientas. |
+| 2026-10-11 | Se crean siete skills de proyecto en `.claude/skills/` (ver `00_LEER_PRIMERO.md`). La tabla de `10_MATRIZ_NICHOS.md` pasa a generarse con script. |
+| 2026-10-11 | Bloqueo registrado: se añade P-09 (modalidad de la ronda 2 de T02: manual del propietario vs. agente con red abierta). La ronda 2 de T02 queda bloqueada hasta que el propietario decida. |

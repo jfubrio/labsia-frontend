@@ -46,6 +46,20 @@ La segmentación se hará por **problema de compra, audiencia y profundidad del 
 
 T00 hecho. T01 y T02 preliminares. Limitación principal de la sesión: la política de red del entorno bloqueó el acceso directo a `tiktok.com`, Mercado Libre y Amazon México, así que toda la evidencia proviene de fragmentos del índice del buscador. Ver detalles en cada documento.
 
+## Skills de proyecto (Claude Code)
+
+En `.claude/skills/` hay skills que encapsulan el flujo de este proyecto. Se cargan solas al trabajar en el repositorio con Claude Code o Cowork.
+
+| Skill | Para qué |
+|---|---|
+| `tiktok-shop-mx` | Punto de entrada: convenciones de evidencia y enrutamiento al resto. |
+| `tsmx-ficha-nicho` | Investigar un candidato (ronda 1 o 2) y escribir su ficha con el protocolo de T02. |
+| `tsmx-matriz` | Regenerar la tabla de `10_MATRIZ_NICHOS.md` desde las fichas (`scripts/matriz.py`). |
+| `tsmx-backlog` | Cambiar estados de tickets con registro de cambios (`scripts/backlog.py`). |
+| `tsmx-decision` | Registrar decisiones, pendientes y supuestos en `08_REGISTRO_DECISIONES.md`. |
+| `tsmx-requisitos` | Verificar y actualizar T01 con fuentes oficiales fechadas. |
+| `tsmx-validar-producto` | Plantilla y flujo de T03; solo con autorización registrada. |
+
 ## Restricciones operativas
 
 - No abrir cuentas, publicar contenido, contratar servicios ni gastar dinero durante T00–T02.
