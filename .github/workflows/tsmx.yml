@@ -2,9 +2,9 @@ name: tsmx
 
 on:
   push:
-    paths: ["tsmx/**", "docs/tiktok-shop-mx/**", ".claude/skills/**", ".github/workflows/tsmx.yml"]
+    paths: ["tsmx/**", "docs/tiktok-shop-mx/**", ".claude/skills/**", ".github/workflows/tsmx.yml", "ruff.toml"]
   pull_request:
-    paths: ["tsmx/**", "docs/tiktok-shop-mx/**", ".claude/skills/**", ".github/workflows/tsmx.yml"]
+    paths: ["tsmx/**", "docs/tiktok-shop-mx/**", ".claude/skills/**", ".github/workflows/tsmx.yml", "ruff.toml"]
 
 permissions:
   contents: read
@@ -20,9 +20,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - name: Pruebas del MVP
+      - name: Linter y formato
+        run: |
+          python -m pip install --quiet ruff==0.17.0
+          ruff check .
+          ruff format --check .
+      - name: Pruebas del MVP y de los scripts de las skills
         working-directory: tsmx
-        run: PYTHONPATH=src python -m unittest discover -s tests -t . -v
+        run: PYTHONPATH=src python -W error::ResourceWarning -m unittest discover -s tests -t . -v
       - name: Scripts de las skills
         run: |
           python .claude/skills/tsmx-matriz/scripts/matriz.py > /dev/null

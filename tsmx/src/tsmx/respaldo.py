@@ -8,6 +8,7 @@ restaurado pasa integrity_check y reproduce exactamente esos conteos.
 import datetime as _dt
 import json
 import shutil
+from contextlib import closing
 import sqlite3
 import tempfile
 from pathlib import Path
@@ -80,10 +81,9 @@ def verificar(archivo) -> dict:
         copia = Path(tmp) / "verificacion.db"
         shutil.copy2(archivo, copia)
         try:
-            c = sqlite3.connect(str(copia))
-            integridad = c.execute("PRAGMA integrity_check").fetchone()[0]
-            conteos = _conteos(c)
-            c.close()
+            with closing(sqlite3.connect(str(copia))) as c:
+                integridad = c.execute("PRAGMA integrity_check").fetchone()[0]
+                conteos = _conteos(c)
         except sqlite3.DatabaseError as e:
             integridad, conteos = f"no se pudo abrir: {e}", {}
     if integridad != "ok":
@@ -113,9 +113,11 @@ def restaurar(con_actual, actor, archivo, destino, forzar=False) -> dict:
         shutil.copy2(destino, previo)
     tmp = destino.with_suffix(".restaurando")
     shutil.copy2(archivo, tmp)
-    c = sqlite3.connect(str(tmp))
-    ok = c.execute("PRAGMA integrity_check").fetchone()[0] == "ok" and _conteos(c) == rep["conteos"]
-    c.close()
+    try:
+        with closing(sqlite3.connect(str(tmp))) as c:
+            ok = c.execute("PRAGMA integrity_check").fetchone()[0] == "ok" and _conteos(c) == rep["conteos"]
+    except sqlite3.DatabaseError:
+        ok = False
     if not ok:
         tmp.unlink(missing_ok=True)
         raise ErrorTSMX("La copia restaurada no reproduce el manifiesto; no se reemplazó nada.")

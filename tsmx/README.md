@@ -59,11 +59,14 @@ Publicar un video en TikTok lo hace una persona en la app. La herramienta solo d
 
 Fechas en AAAA-MM-DD. Números como aparecen en TikTok Studio ("12.3 mil" es válido). `rfc_valido` y `guanajuato` aceptan sí o no.
 
-## Pruebas
+## Pruebas y calidad
 
 ```bash
 cd tsmx && PYTHONPATH=src python3 -m unittest discover -s tests -t .
+ruff check .. && ruff format --check ..   # desde la raíz: ruff.toml
 ```
+
+77 pruebas: núcleo, contenido, importación, economía, métricas, respaldos, adaptador de TikTok, línea de comandos completa, regresiones de la revisión de código y los cuatro scripts de las skills sobre copias de los documentos. Cobertura de ramas del paquete: 96 %. La integración continua corre linter, formato y pruebas en Python 3.11 y 3.13.
 
 ## Seguridad
 

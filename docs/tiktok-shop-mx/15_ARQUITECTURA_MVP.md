@@ -65,7 +65,7 @@ tsmx/src/tsmx/
 
 ## 6. Pruebas
 
-50 pruebas con `unittest`, ocho de ellas de regresión por errores hallados en una revisión de código. Cada regla crítica se verificó con una mutación deliberada del código: invalidar aprobaciones, comparar versión y hash, excluir estimadas del resultado y ordenar por intención. En las cuatro, al menos una prueba falló.
+77 pruebas con `unittest`, con cobertura de ramas del 96 % del paquete medida con coverage.py. Incluyen ocho regresiones por errores hallados en una revisión de código, la línea de comandos completa, la petición firmada a TikTok sin red y los cuatro scripts de las skills sobre copias de los documentos. Cada regla crítica se verificó además con una mutación deliberada del código: invalidar aprobaciones, comparar versión y hash, excluir estimadas del resultado y ordenar por intención. En las cuatro, al menos una prueba falló. La integración continua corre ruff, formato y pruebas en Python 3.11 y 3.13.
 
 ## 7. Conexión al final (pendiente)
 
