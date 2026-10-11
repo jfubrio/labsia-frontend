@@ -8,6 +8,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "demo": "tsx src/scripts/phase1-demo.ts",
+    "profile": "tsx src/scripts/profile.ts",
+    "db:check": "bash scripts/pg-check.sh",
+    "verify": "npm run typecheck && npm test && npm run demo",
     "migrate:print": "cat src/db/migrations/*.sql"
   },
   "dependencies": {

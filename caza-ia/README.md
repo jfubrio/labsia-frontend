@@ -25,10 +25,15 @@ Este directorio contiene la **fase 1** del plan ([docs/PLAN_DESARROLLO.md](docs/
 ```bash
 cd caza-ia
 npm install
-npm run typecheck
-npm test
-npm run demo        # corre los cuatro escenarios sin red ni base de datos
+npm run verify      # typecheck + pruebas + demo sin red (lo que se corre antes de cada push)
+npm run db:check    # aplica las migraciones en un PostgreSQL temporal y comprueba las guardas de compra
+npm run profile     # imprime el perfil de precio real de mercado del fixture y su serie diaria
+npm run demo        # recorre los seis escenarios sin red ni base de datos
 ```
+
+Skills de Claude Code para este proyecto en `../.claude/skills/` (`caza-verify`, `caza-scenario`, `caza-connector`,
+`caza-migration`, `caza-phase`, `steward`); las convenciones generales están en `../CLAUDE.md`. Las sesiones en la nube
+instalan dependencias solas con el hook `../.claude/hooks/session-start.sh`.
 
 Aplicar las migraciones en una base de datos PostgreSQL (cuando exista una, a partir de la fase 2):
 
@@ -36,7 +41,7 @@ Aplicar las migraciones en una base de datos PostgreSQL (cuando exista una, a pa
 for f in src/db/migrations/*.sql; do psql "$DATABASE_URL" -f "$f"; done
 ```
 
-Comprobar las guardas de compra sobre una base de datos de prueba (verificado contra PostgreSQL 16):
+Comprobar las guardas de compra sobre una base de datos de prueba ya existente (`npm run db:check` lo hace solo en un PostgreSQL temporal):
 
 ```bash
 psql "$DATABASE_URL" -f src/db/checks/guards_check.sql
