@@ -1,0 +1,12 @@
+# Linter para el MVP tsmx y los scripts de las skills de TikTok Shop MX.
+include = ["tsmx/**/*.py", ".claude/skills/**/*.py"]
+target-version = "py311"
+line-length = 130
+
+[lint]
+select = ["E", "F", "W", "B", "UP", "SIM", "PLC", "PLE", "PLW"]
+ignore = ["E501", "SIM108"]
+
+[lint.per-file-ignores]
+# En pruebas se permiten varias sentencias por línea para preparar datos de forma compacta.
+"tsmx/tests/*.py" = ["E701", "E702"]

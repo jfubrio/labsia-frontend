@@ -1,7 +1,7 @@
 import sqlite3
 
 from tsmx import permisos
-from tsmx.db import migrar
+from tsmx.db import conectar, migrar
 from tsmx.errores import PermisoDenegado
 
 from .base import Caso
@@ -9,7 +9,8 @@ from .base import Caso
 
 class TestNucleo(Caso):
     def test_migracion_idempotente(self):
-        migrar(self.con); migrar(self.con)
+        migrar(self.con)
+        migrar(self.con)
         self.assertEqual(self.con.execute("PRAGMA user_version").fetchone()[0], 1)
 
     def test_candidatos_sembrados_desde_fichas(self):
@@ -17,8 +18,8 @@ class TestNucleo(Caso):
         self.assertEqual(nums, [1, 2, 3, 4, 5, 6])
 
     def test_primer_usuario_debe_ser_propietario(self):
-        from tsmx.db import conectar
-        c = conectar(self.dir / "otra.db"); migrar(c)
+        c = conectar(self.dir / "otra.db")
+        migrar(c)
         with self.assertRaises(PermisoDenegado):
             permisos.crear_usuario(c, None, "x", "X", "editor")
         c.close()

@@ -4,6 +4,7 @@ Un respaldo es una copia consistente de la base (API de respaldo de SQLite) más
 SHA-256 y el conteo de filas de cada tabla. "Restauración comprobada" significa que el archivo
 restaurado pasa integrity_check y reproduce exactamente esos conteos.
 """
+
 import datetime as _dt
 import json
 import shutil
@@ -16,8 +17,20 @@ from .auditoria import registrar
 from .db import ahora, sha256_archivo as _sha
 from .errores import ErrorTSMX
 
-TABLAS = ("usuarios", "candidatos", "importaciones", "productos", "contenidos", "contenido_versiones",
-          "aprobaciones", "publicaciones", "metricas_video", "comisiones", "costos", "auditoria")
+TABLAS = (
+    "usuarios",
+    "candidatos",
+    "importaciones",
+    "productos",
+    "contenidos",
+    "contenido_versiones",
+    "aprobaciones",
+    "publicaciones",
+    "metricas_video",
+    "comisiones",
+    "costos",
+    "auditoria",
+)
 
 
 def _conteos(con) -> dict:
@@ -28,7 +41,7 @@ def crear(con, actor, destino_dir) -> Path:
     permisos.exigir(con, actor, "respaldo")
     destino_dir = Path(destino_dir)
     destino_dir.mkdir(parents=True, exist_ok=True)
-    marca = _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    marca = _dt.datetime.now(_dt.UTC).strftime("%Y%m%dT%H%M%SZ")
     archivo = destino_dir / f"tsmx-{marca}.db"
     registrar(con, actor, "respaldo_creado", "respaldo", archivo.name)  # queda dentro del propio respaldo
     dst = sqlite3.connect(str(archivo))
@@ -41,8 +54,14 @@ def crear(con, actor, destino_dir) -> Path:
         conteos = _conteos(copia)
     finally:
         copia.close()
-    manifiesto = {"archivo": archivo.name, "sha256": _sha(archivo), "creado_en": ahora(), "por": actor,
-                  "user_version": con.execute("PRAGMA user_version").fetchone()[0], "conteos": conteos}
+    manifiesto = {
+        "archivo": archivo.name,
+        "sha256": _sha(archivo),
+        "creado_en": ahora(),
+        "por": actor,
+        "user_version": con.execute("PRAGMA user_version").fetchone()[0],
+        "conteos": conteos,
+    }
     archivo.with_suffix(".json").write_text(json.dumps(manifiesto, ensure_ascii=False, indent=2), encoding="utf-8")
     return archivo
 
@@ -88,8 +107,9 @@ def restaurar(con_actual, actor, archivo, destino, forzar=False) -> dict:
     if destino.exists():
         if not forzar:
             raise ErrorTSMX(f"{destino} ya existe. Usa --forzar; se respaldará antes de reemplazarlo.")
-        previo = destino.with_name(destino.stem + "-antes-de-restaurar-" +
-                                   _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ") + destino.suffix)
+        previo = destino.with_name(
+            destino.stem + "-antes-de-restaurar-" + _dt.datetime.now(_dt.UTC).strftime("%Y%m%dT%H%M%SZ") + destino.suffix
+        )
         shutil.copy2(destino, previo)
     tmp = destino.with_suffix(".restaurando")
     shutil.copy2(archivo, tmp)

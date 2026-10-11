@@ -1,4 +1,5 @@
 """Conexión a SQLite, migraciones y utilidades de tiempo."""
+
 import datetime as _dt
 import hashlib
 import os
@@ -11,7 +12,7 @@ VERSION_ESQUEMA = 1
 
 
 def ahora() -> str:
-    return _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat()
+    return _dt.datetime.now(_dt.UTC).replace(microsecond=0).isoformat()
 
 
 def sha256_archivo(path) -> str:

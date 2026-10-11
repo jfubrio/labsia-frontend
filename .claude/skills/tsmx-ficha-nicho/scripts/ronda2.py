@@ -8,17 +8,66 @@
 Los CSV se generan desde las fichas: las consultas salen de la sección 2 y las URLs a
 revisitar de la tabla 3.2. Así la ronda 2 repite exactamente la ronda 1.
 """
-import argparse, csv, re, sys
+
+import argparse
+import csv
+import re
+import sys
 from collections import defaultdict
 from pathlib import Path
 
-CAPTURA = ["candidato_num", "candidato", "tipo", "consulta", "pestana", "posicion", "fecha_obs", "url",
-           "formato", "creador", "senal_mx", "fecha_pub", "vistas", "likes", "comentarios", "guardados",
-           "enlace_tiktok_shop", "preguntas_compra", "notas"]
-REVISITA = ["candidato_num", "candidato", "fila_r1", "prioridad", "url", "fecha_obs", "estado_url",
-            "fecha_pub", "vistas", "likes", "comentarios", "preguntas_compra", "notas"]
-TIENDA = ["candidato_num", "candidato", "consulta", "posicion", "fecha_obs", "producto", "precio_mxn",
-          "vendidos_autodeclarado", "calificacion", "num_resenas", "tienda", "envio", "url", "notas"]
+CAPTURA = [
+    "candidato_num",
+    "candidato",
+    "tipo",
+    "consulta",
+    "pestana",
+    "posicion",
+    "fecha_obs",
+    "url",
+    "formato",
+    "creador",
+    "senal_mx",
+    "fecha_pub",
+    "vistas",
+    "likes",
+    "comentarios",
+    "guardados",
+    "enlace_tiktok_shop",
+    "preguntas_compra",
+    "notas",
+]
+REVISITA = [
+    "candidato_num",
+    "candidato",
+    "fila_r1",
+    "prioridad",
+    "url",
+    "fecha_obs",
+    "estado_url",
+    "fecha_pub",
+    "vistas",
+    "likes",
+    "comentarios",
+    "preguntas_compra",
+    "notas",
+]
+TIENDA = [
+    "candidato_num",
+    "candidato",
+    "consulta",
+    "posicion",
+    "fecha_obs",
+    "producto",
+    "precio_mxn",
+    "vendidos_autodeclarado",
+    "calificacion",
+    "num_resenas",
+    "tienda",
+    "envio",
+    "url",
+    "notas",
+]
 OBLIG_CAPTURA = ["fecha_obs", "url", "formato", "creador", "fecha_pub", "vistas", "likes", "comentarios", "preguntas_compra"]
 OBLIG_REVISITA = ["fecha_obs", "estado_url"]
 ESTADOS_URL = {"disponible", "eliminado", "privado", "requiere sesión", "requiere sesion", "no carga"}
@@ -54,8 +103,14 @@ def leer_ficha(p):
     prior = {int(n) for n in re.findall(r"#(\d+)", s8)}
     for grupo in re.findall(r"filas?\s+([\d,\sy]+)", s8):
         prior |= {int(n) for n in re.findall(r"\d+", grupo)}
-    return {"num": num, "nombre": nombre, "consultas": consultas, "filas": filas, "prioridad": prior,
-            "creadores_r1": set(re.findall(r"@[\w.]+", seccion(t, r"### 3\.3", r"### 3\.4")))}
+    return {
+        "num": num,
+        "nombre": nombre,
+        "consultas": consultas,
+        "filas": filas,
+        "prioridad": prior,
+        "creadores_r1": set(re.findall(r"@[\w.]+", seccion(t, r"### 3\.3", r"### 3\.4"))),
+    }
 
 
 def fichas(r):
@@ -86,14 +141,20 @@ def plantilla(a):
                 for pos in range(1, 6):
                     tie.append([f["num"], f["nombre"], q, pos] + [""] * (len(TIENDA) - 4))
         for fila, url in f["filas"]:
-            rev.append([f["num"], f["nombre"], fila, "alta" if fila in f["prioridad"] else "normal", url] + [""] * (len(REVISITA) - 5))
+            rev.append(
+                [f["num"], f["nombre"], fila, "alta" if fila in f["prioridad"] else "normal", url] + [""] * (len(REVISITA) - 5)
+            )
     rev.sort(key=lambda x: (x[0], x[3] != "alta", x[2]))
-    for nombre, cab, filas in [("captura_busquedas.csv", CAPTURA, cap), ("revisita_urls_r1.csv", REVISITA, rev), ("tienda_busquedas.csv", TIENDA, tie)]:
+    for nombre, cab, filas in [
+        ("captura_busquedas.csv", CAPTURA, cap),
+        ("revisita_urls_r1.csv", REVISITA, rev),
+        ("tienda_busquedas.csv", TIENDA, tie),
+    ]:
         if (out / nombre).exists() and not a.force:
-            print(f"Existe {out/nombre}; no se sobrescribe (usa --force).", file=sys.stderr)
+            print(f"Existe {out / nombre}; no se sobrescribe (usa --force).", file=sys.stderr)
             continue
         escribir(out / nombre, cab, filas)
-        print(f"{out/nombre}: {len(filas)} filas")
+        print(f"{out / nombre}: {len(filas)} filas")
 
 
 def leer_csv(p):
@@ -135,7 +196,7 @@ def resumen(a):
         print("PROBLEMAS (corrígelos antes de pasar a la ficha):", file=sys.stderr)
         for p in problemas[:60]:
             print("  " + p, file=sys.stderr)
-    for num in sorted(por, key=lambda n: int(n)):
+    for num in sorted(por, key=int):
         if a.candidato and str(a.candidato) != num:
             continue
         g, f = por[num], fs.get(num, {"nombre": num, "creadores_r1": set()})
@@ -148,15 +209,27 @@ def resumen(a):
         print(f"\n### 3b. Observaciones — ronda 2 · Ficha {num} · {f['nombre']}\n")
         print(f"- Fecha(s) de observación: {', '.join(fechas) or 'no disponible'}")
         print(f"- Resultados capturados: {len(g['cap'])} filas; URLs únicas: {len(urls)}")
-        print(f"- Creadores únicos (@): {len(creadores)}; nuevos respecto a ronda 1: {len(nuevos)}" + (f" ({', '.join(sorted(nuevos))})" if nuevos else ""))
-        print(f"- Con señal MX: {sum(1 for x in urls.values() if x.get('senal_mx','').strip().lower() in ('sí','si'))}")
-        print(f"- Con enlace a TikTok Shop: {sum(1 for x in urls.values() if x.get('enlace_tiktok_shop','').strip().lower() in ('sí','si'))}")
+        print(
+            f"- Creadores únicos (@): {len(creadores)}; nuevos respecto a ronda 1: {len(nuevos)}"
+            + (f" ({', '.join(sorted(nuevos))})" if nuevos else "")
+        )
+        print(f"- Con señal MX: {sum(1 for x in urls.values() if x.get('senal_mx', '').strip().lower() in ('sí', 'si'))}")
+        print(
+            f"- Con enlace a TikTok Shop: {sum(1 for x in urls.values() if x.get('enlace_tiktok_shop', '').strip().lower() in ('sí', 'si'))}"
+        )
         estados = defaultdict(int)
         for x in g["rev"]:
             estados[x["estado_url"].strip().lower()] += 1
-        print(f"- URLs de ronda 1 revisitadas: {len(g['rev'])}" + (" (" + ", ".join(f"{k}: {v}" for k, v in sorted(estados.items())) + ")" if estados else ""))
+        print(
+            f"- URLs de ronda 1 revisitadas: {len(g['rev'])}"
+            + (" (" + ", ".join(f"{k}: {v}" for k, v in sorted(estados.items())) + ")" if estados else "")
+        )
         print(f"- Productos vistos en la pestaña Tienda: {len(g['tie'])}")
-        preg = [x["preguntas_compra"].strip() for x in urls.values() if x.get("preguntas_compra", "").strip().lower() not in ("", "no disponible")]
+        preg = [
+            x["preguntas_compra"].strip()
+            for x in urls.values()
+            if x.get("preguntas_compra", "").strip().lower() not in ("", "no disponible")
+        ]
         if preg:
             print("\nPreguntas de compra observadas (hechos, texto capturado):")
             for p in preg[:15]:
@@ -164,8 +237,10 @@ def resumen(a):
         print("\n| # | Tipo | URL | Fecha pub. | Formato | Creador | Vistas | Likes | Comentarios | Shop | Preguntas |")
         print("|---|---|---|---|---|---|---|---|---|---|---|")
         for i, x in enumerate(urls.values(), 1):
-            print(f"| {i} | {x['tipo']} | {x['url']} | {x['fecha_pub'] or 'no disponible'} | {x['formato'] or 'no disponible'} | {x['creador'] or 'no disponible'} | "
-                  f"{x['vistas'] or 'no disponible'} | {x['likes'] or 'no disponible'} | {x['comentarios'] or 'no disponible'} | {x.get('enlace_tiktok_shop') or 'no disponible'} | {x['preguntas_compra'] or 'no disponible'} |")
+            print(
+                f"| {i} | {x['tipo']} | {x['url']} | {x['fecha_pub'] or 'no disponible'} | {x['formato'] or 'no disponible'} | {x['creador'] or 'no disponible'} | "
+                f"{x['vistas'] or 'no disponible'} | {x['likes'] or 'no disponible'} | {x['comentarios'] or 'no disponible'} | {x.get('enlace_tiktok_shop') or 'no disponible'} | {x['preguntas_compra'] or 'no disponible'} |"
+            )
     if not por:
         print("No hay filas capturadas todavía.")
 
@@ -173,8 +248,12 @@ def resumen(a):
 def main():
     ap = argparse.ArgumentParser()
     sp = ap.add_subparsers(dest="cmd", required=True)
-    p1 = sp.add_parser("plantilla"); p1.add_argument("--out"); p1.add_argument("--force", action="store_true")
-    p2 = sp.add_parser("resumen"); p2.add_argument("--dir"); p2.add_argument("--candidato")
+    p1 = sp.add_parser("plantilla")
+    p1.add_argument("--out")
+    p1.add_argument("--force", action="store_true")
+    p2 = sp.add_parser("resumen")
+    p2.add_argument("--dir")
+    p2.add_argument("--candidato")
     a = ap.parse_args()
     {"plantilla": plantilla, "resumen": resumen}[a.cmd](a)
 

@@ -17,6 +17,7 @@ Al conectar (ver docs/tiktok-shop-mx/15_ARQUITECTURA_MVP.md §7):
   lanzan ConexionPendiente en lugar de adivinar.
 - Credenciales solo por variables de entorno: TIKTOK_APP_KEY, TIKTOK_APP_SECRET, TIKTOK_ACCESS_TOKEN.
 """
+
 import hashlib
 import hmac
 import json
@@ -39,8 +40,7 @@ ENDPOINTS = {
 }
 
 
-def firmar(ruta: str, consulta: dict, cuerpo: bytes | str | None, secreto: str,
-           content_type: str = "application/json") -> str:
+def firmar(ruta: str, consulta: dict, cuerpo: bytes | str | None, secreto: str, content_type: str = "application/json") -> str:
     params = {k: v for k, v in consulta.items() if k not in ("sign", "access_token")}
     cadena = ruta + "".join(f"{k}{params[k]}" for k in sorted(params))
     if cuerpo and not content_type.lower().startswith("multipart/form-data"):
@@ -59,8 +59,12 @@ class ClienteTikTokShop:
         return f"ClienteTikTokShop(app_key={'configurada' if self.app_key else 'no'}, secret={'***' if self._secret else 'no'}, token={'***' if self._token else 'no'})"
 
     def estado(self) -> dict:
-        return {"app_key": bool(self.app_key), "app_secret": bool(self._secret), "access_token": bool(self._token),
-                "endpoints_verificados": {k: v is not None for k, v in ENDPOINTS.items()}}
+        return {
+            "app_key": bool(self.app_key),
+            "app_secret": bool(self._secret),
+            "access_token": bool(self._token),
+            "endpoints_verificados": {k: v is not None for k, v in ENDPOINTS.items()},
+        }
 
     def url_autorizacion_creador(self, state: str) -> str:
         if not self.app_key:
@@ -74,12 +78,18 @@ class ClienteTikTokShop:
         if ruta is None:
             raise ConexionPendiente(f"El endpoint '{clave_endpoint}' no está verificado. Complétalo en ENDPOINTS al conectar.")
         if not (self.app_key and self._secret and self._token):
-            raise ConexionPendiente("Faltan credenciales en variables de entorno (TIKTOK_APP_KEY, TIKTOK_APP_SECRET, TIKTOK_ACCESS_TOKEN).")
+            raise ConexionPendiente(
+                "Faltan credenciales en variables de entorno (TIKTOK_APP_KEY, TIKTOK_APP_SECRET, TIKTOK_ACCESS_TOKEN)."
+            )
         consulta = dict(consulta or {}, app_key=self.app_key, timestamp=str(int(time.time())))
         datos = json.dumps(cuerpo, separators=(",", ":")).encode("utf-8") if cuerpo is not None else None
         consulta["sign"] = firmar(ruta, consulta, datos, self._secret)
-        req = urllib.request.Request(f"{BASE_API}{ruta}?{urllib.parse.urlencode(consulta)}", data=datos, method=metodo,
-                                     headers={"Content-Type": "application/json", "x-tts-access-token": self._token})
+        req = urllib.request.Request(
+            f"{BASE_API}{ruta}?{urllib.parse.urlencode(consulta)}",
+            data=datos,
+            method=metodo,
+            headers={"Content-Type": "application/json", "x-tts-access-token": self._token},
+        )
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.loads(r.read().decode("utf-8"))
 

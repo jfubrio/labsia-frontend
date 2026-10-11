@@ -7,7 +7,11 @@ Uso:
   matriz.py --json     imprime JSON
   matriz.py --root DIR carpeta docs/tiktok-shop-mx (por defecto se busca desde el cwd)
 """
-import argparse, json, re, sys
+
+import argparse
+import json
+import re
+import sys
 from pathlib import Path
 
 PESOS = [
@@ -71,27 +75,42 @@ def leer_ficha(path):
     cubierto = sum(w for d, w in PESOS if notas.get(d) is not None)
     sin_ev = [d for d, _ in PESOS if d in notas and notas[d] is None]
     return {
-        "archivo": path.name, "numero": numero, "nombre": nombre, "estado": estado,
+        "archivo": path.name,
+        "numero": numero,
+        "nombre": nombre,
+        "estado": estado,
         "notas": {d: notas.get(d) for d, _ in PESOS},
-        "parcial": round(suma / 5, 2), "peso_cubierto": round(cubierto, 2),
+        "parcial": round(suma / 5, 2),
+        "peso_cubierto": round(cubierto, 2),
         "maximo_alcanzable": round(cubierto, 2),
         "normalizada_5": round(suma / cubierto, 2) if cubierto else None,
-        "completa": not sin_ev and not faltan, "faltan": sin_ev + faltan, "problemas": problemas,
+        "completa": not sin_ev and not faltan,
+        "faltan": sin_ev + faltan,
+        "problemas": problemas,
     }
 
 
 def tabla(fichas):
-    cab = "| # | Candidato | " + " | ".join(f"{d} ({int(w*100)} %)" for d, w in PESOS) + " | Puntuación parcial | Peso cubierto | Estado | Ficha |"
+    cab = (
+        "| # | Candidato | "
+        + " | ".join(f"{d} ({int(w * 100)} %)" for d, w in PESOS)
+        + " | Puntuación parcial | Peso cubierto | Estado | Ficha |"
+    )
     sep = "|" + "---|" * (len(PESOS) + 6)
     out = [cab, sep]
     for f in fichas:
         celdas = ["s/e" if f["notas"][d] is None else str(f["notas"][d]) for d, _ in PESOS]
         est = "COMPLETA" if f["completa"] else "INCOMPLETA"
-        out.append(f"| {f['numero'] or ''} | {f['nombre']} | " + " | ".join(celdas)
-                   + f" | {f['parcial']:.2f} | {int(round(f['peso_cubierto']*100))} % | {est} | `investigacion/{f['archivo']}` |")
-    nota = ("\nNotas de 0 a 5. \"s/e\" = sin evidencia. Puntuación parcial = Σ(peso × nota)/5 sobre las dimensiones evaluadas; "
-            "el máximo alcanzable es igual al peso cubierto (1.00 solo con las cinco dimensiones). "
-            "Tabla generada por `.claude/skills/tsmx-matriz/scripts/matriz.py`; no editar a mano.")
+        out.append(
+            f"| {f['numero'] or ''} | {f['nombre']} | "
+            + " | ".join(celdas)
+            + f" | {f['parcial']:.2f} | {int(round(f['peso_cubierto'] * 100))} % | {est} | `investigacion/{f['archivo']}` |"
+        )
+    nota = (
+        '\nNotas de 0 a 5. "s/e" = sin evidencia. Puntuación parcial = Σ(peso × nota)/5 sobre las dimensiones evaluadas; '
+        "el máximo alcanzable es igual al peso cubierto (1.00 solo con las cinco dimensiones). "
+        "Tabla generada por `.claude/skills/tsmx-matriz/scripts/matriz.py`; no editar a mano."
+    )
     return "\n".join(out) + "\n" + nota + "\n"
 
 
@@ -102,12 +121,15 @@ def main():
     ap.add_argument("--root")
     a = ap.parse_args()
     root = encontrar_root(a.root)
-    fichas = sorted((leer_ficha(p) for p in (root / "investigacion").glob("[0-9][0-9]_*.md")), key=lambda f: (f["numero"] or 99, f["archivo"]))
+    fichas = sorted(
+        (leer_ficha(p) for p in (root / "investigacion").glob("[0-9][0-9]_*.md")), key=lambda f: (f["numero"] or 99, f["archivo"])
+    )
     if not fichas:
         sys.exit("No hay fichas en investigacion/")
     problemas = [(f["archivo"], p) for f in fichas for p in f["problemas"]]
     if a.json:
-        print(json.dumps(fichas, ensure_ascii=False, indent=2)); return
+        print(json.dumps(fichas, ensure_ascii=False, indent=2))
+        return
     t = tabla(fichas)
     if problemas:
         print("ADVERTENCIAS:", file=sys.stderr)

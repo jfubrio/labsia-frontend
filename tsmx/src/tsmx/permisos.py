@@ -1,11 +1,21 @@
 """Roles y permisos (T08). La comprobación ocurre en la capa de servicio, no en la interfaz."""
+
 from .auditoria import registrar
 from .db import ahora
 from .errores import NoEncontrado, PermisoDenegado
 
 ROLES = {
-    "propietario": {"leer", "contenido.editar", "contenido.aprobar", "contenido.publicar",
-                    "importar", "economia.editar", "respaldo", "respaldo.restaurar", "usuarios.gestionar"},
+    "propietario": {
+        "leer",
+        "contenido.editar",
+        "contenido.aprobar",
+        "contenido.publicar",
+        "importar",
+        "economia.editar",
+        "respaldo",
+        "respaldo.restaurar",
+        "usuarios.gestionar",
+    },
     "editor": {"leer", "contenido.editar", "contenido.publicar", "importar"},
     "revisor": {"leer", "contenido.aprobar"},
     "lector": {"leer"},

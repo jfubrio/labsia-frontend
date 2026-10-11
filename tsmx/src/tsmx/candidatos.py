@@ -1,4 +1,5 @@
 """Candidatos de nicho, sembrados desde las fichas de docs/tiktok-shop-mx/investigacion/."""
+
 import re
 from pathlib import Path
 
@@ -25,9 +26,11 @@ def sembrar(con, actor, docs_dir=None) -> int:
             fila = con.execute("SELECT nombre, ficha FROM candidatos WHERE num = ?", (num,)).fetchone()
             if fila and (fila["nombre"], fila["ficha"]) == (nombre, ficha):
                 continue
-            con.execute("INSERT INTO candidatos (num, nombre, ficha) VALUES (?,?,?) "
-                        "ON CONFLICT(num) DO UPDATE SET nombre = excluded.nombre, ficha = excluded.ficha",
-                        (num, nombre, ficha))
+            con.execute(
+                "INSERT INTO candidatos (num, nombre, ficha) VALUES (?,?,?) "
+                "ON CONFLICT(num) DO UPDATE SET nombre = excluded.nombre, ficha = excluded.ficha",
+                (num, nombre, ficha),
+            )
             n += 1
         if n:
             registrar(con, actor, "candidatos_sembrados", "candidato", None, cambios=n, origen=str(docs))

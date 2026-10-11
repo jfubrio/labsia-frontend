@@ -8,12 +8,25 @@
 Indicadores: seguidores por 1,000 vistas e intención de compra por 1,000 vistas.
 Ordena por intención de compra, no por vistas (regla 1 de 13_ESTRATEGIA_AUDIENCIA.md §7).
 """
-import argparse, csv, re, sys
+
+import argparse
+import csv
+import re
+import sys
 from collections import defaultdict
 from pathlib import Path
 
-OBLIG = ["video_id", "fecha_pub", "url", "candidato_num", "pilar", "fecha_lectura", "vistas",
-         "seguidores_ganados", "comentarios_intencion_compra"]
+OBLIG = [
+    "video_id",
+    "fecha_pub",
+    "url",
+    "candidato_num",
+    "pilar",
+    "fecha_lectura",
+    "vistas",
+    "seguidores_ganados",
+    "comentarios_intencion_compra",
+]
 
 
 def root():
@@ -48,7 +61,8 @@ def main():
     f = Path(a.archivo) if a.archivo else root() / "audiencia" / "registro_videos.csv"
     filas = list(csv.DictReader(f.open(encoding="utf-8")))
     if not filas:
-        print("El registro está vacío: todavía no hay videos publicados."); return
+        print("El registro está vacío: todavía no hay videos publicados.")
+        return
     problemas, ultimo = [], {}
     for i, r in enumerate(filas, 2):
         for c in OBLIG:
@@ -63,12 +77,16 @@ def main():
         try:
             v, s, it = num(r["vistas"]), num(r["seguidores_ganados"]), num(r["comentarios_intencion_compra"])
         except ValueError as e:
-            problemas.append(f"video {r['video_id']}: número ilegible '{e}'"); continue
+            problemas.append(f"video {r['video_id']}: número ilegible '{e}'")
+            continue
         x = g[r.get(clave, "").strip() or "sin asignar"]
         x["videos"] += 1
         if v is None or s is None or it is None:
-            x["sin_dato"] += 1; continue
-        x["vistas"] += v; x["seg"] += s; x["int"] += it
+            x["sin_dato"] += 1
+            continue
+        x["vistas"] += v
+        x["seg"] += s
+        x["int"] += it
     if problemas:
         print("PROBLEMAS:", file=sys.stderr)
         for p in problemas[:40]:
@@ -83,10 +101,12 @@ def main():
     print(f"| {clave} | Videos | Con datos | Vistas | Seguidores / 1,000 vistas | Intención de compra / 1,000 vistas | Orden |")
     print("|---|---|---|---|---|---|---|")
     for pos, (k, x, sk, ik) in enumerate(listos, 1):
-        print(f"| {k} | {x['videos']} | {x['videos']-x['sin_dato']} | {int(x['vistas'])} | {sk} | {ik} | {pos} |")
+        print(f"| {k} | {x['videos']} | {x['videos'] - x['sin_dato']} | {int(x['vistas'])} | {sk} | {ik} | {pos} |")
     for k, x, sk, ik in faltan:
-        print(f"| {k} | {x['videos']} | {x['videos']-x['sin_dato']} | {int(x['vistas'])} | {sk if sk is not None else 'no disponible'} | {ik if ik is not None else 'no disponible'} | menos de {a.min} videos con datos |")
-    print(f"\nSe usa la lectura más reciente de cada video. Orden por intención de compra; las vistas no ordenan.")
+        print(
+            f"| {k} | {x['videos']} | {x['videos'] - x['sin_dato']} | {int(x['vistas'])} | {sk if sk is not None else 'no disponible'} | {ik if ik is not None else 'no disponible'} | menos de {a.min} videos con datos |"
+        )
+    print("\nSe usa la lectura más reciente de cada video. Orden por intención de compra; las vistas no ordenan.")
 
 
 if __name__ == "__main__":

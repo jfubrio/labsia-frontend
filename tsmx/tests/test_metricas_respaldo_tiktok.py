@@ -14,13 +14,16 @@ class TestMetricas(Caso):
     def test_orden_por_intencion_no_por_vistas(self):
         n = 0
         for cand, vistas, intencion in ((1, 100000, 10), (2, 10000, 10)):
-            for k in range(5):
+            for _ in range(5):
                 n += 1
                 cid = f"G{n:02d}"
                 contenido.crear(self.con, "juan", cid, cid, cid, cand, "P1")
                 contenido.publicar(self.con, "juan", cid, f"https://t/{n}", permitir_sin_aprobacion=True)
-                self.con.execute("INSERT INTO metricas_video (publicacion_id, fecha_lectura, vistas, seguidores_ganados, "
-                                 "comentarios_intencion_compra) VALUES (?,?,?,?,?)", (n, "2026-11-08", vistas, 10, intencion))
+                self.con.execute(
+                    "INSERT INTO metricas_video (publicacion_id, fecha_lectura, vistas, seguidores_ganados, "
+                    "comentarios_intencion_compra) VALUES (?,?,?,?,?)",
+                    (n, "2026-11-08", vistas, 10, intencion),
+                )
         filas = metricas.indicadores(self.con)
         self.assertEqual([f["grupo"] for f in filas], [2, 1])  # menos vistas pero más intención por mil
         self.assertIn("Audiencia", reporte.generar(self.con))
@@ -28,8 +31,10 @@ class TestMetricas(Caso):
     def test_grupos_con_pocos_videos_no_se_ordenan(self):
         contenido.crear(self.con, "juan", "G01", "x", "x", 4, "P1")
         contenido.publicar(self.con, "juan", "G01", "https://t/1", permitir_sin_aprobacion=True)
-        self.con.execute("INSERT INTO metricas_video (publicacion_id, fecha_lectura, vistas, seguidores_ganados, "
-                         "comentarios_intencion_compra) VALUES (1,'2026-11-08',100,1,1)")
+        self.con.execute(
+            "INSERT INTO metricas_video (publicacion_id, fecha_lectura, vistas, seguidores_ganados, "
+            "comentarios_intencion_compra) VALUES (1,'2026-11-08',100,1,1)"
+        )
         self.assertIsNone(metricas.indicadores(self.con)[0]["orden"])
 
 
@@ -50,7 +55,8 @@ class TestRespaldo(Caso):
     def test_detecta_alteracion(self):
         a = respaldo.crear(self.con, "juan", self.dir / "resp")
         with open(a, "r+b") as fh:
-            fh.seek(200); fh.write(b"\x00\xff\x00\xff")
+            fh.seek(200)
+            fh.write(b"\x00\xff\x00\xff")
         self.assertFalse(respaldo.verificar(a)["valido"])
         with self.assertRaises(ErrorTSMX):
             respaldo.restaurar(self.con, "juan", a, self.dir / "x.db")

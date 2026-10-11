@@ -7,6 +7,7 @@ Parámetros fiscales tomados de 09_REQUISITOS_AFILIACION_MX.md, fuente [S-8], ob
 2026-10-11 vía fragmento de buscador. Existe una discrepancia con [S-7] (sección 5 de ese
 documento): verificar antes de usar las cifras para decisiones.
 """
+
 from . import permisos
 from .auditoria import registrar
 from .db import ahora, transaccion
@@ -39,9 +40,14 @@ def calcular_retenciones(bruto: float, rfc_valido: bool, guanajuato: bool = Fals
     ret_iva = round(iva * tasas["retencion_iva"], 2)
     ret_isr = round(sin_iva * tasas["isr"], 2)
     ret_est = round(sin_iva * p["guanajuato_adicional"], 2) if guanajuato else 0.0
-    return {"sin_iva": round(sin_iva, 2), "iva": round(iva, 2), "retencion_iva": ret_iva,
-            "retencion_isr": ret_isr, "retencion_estatal": ret_est,
-            "neto": round(bruto - ret_iva - ret_isr - ret_est, 2)}
+    return {
+        "sin_iva": round(sin_iva, 2),
+        "iva": round(iva, 2),
+        "retencion_iva": ret_iva,
+        "retencion_isr": ret_isr,
+        "retencion_estatal": ret_est,
+        "neto": round(bruto - ret_iva - ret_isr - ret_est, 2),
+    }
 
 
 def registrar_comision(con, actor, d: dict, fuente: str, importacion_id=None) -> str:
@@ -63,20 +69,48 @@ def registrar_comision(con, actor, d: dict, fuente: str, importacion_id=None) ->
                 f"monto_bruto_mxn, estado, rfc_valido, guanajuato, retencion_iva_mxn, retencion_isr_mxn, "
                 f"retencion_estatal_mxn, monto_neto_mxn, fecha_{estado}, fuente, importacion_id) "
                 f"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (d["clave_externa"], d.get("producto_id"), d.get("publicacion_id"), d.get("candidato_num"),
-                 d.get("fecha_pedido"), d["monto_bruto_mxn"], estado, int(d["rfc_valido"]),
-                 int(d.get("guanajuato", False)), r["retencion_iva"], r["retencion_isr"], r["retencion_estatal"],
-                 r["neto"], d.get("fecha_estado") or ahora(), fuente, importacion_id))
-            registrar(con, actor, "comision_registrada", "comision", d["clave_externa"], estado=estado,
-                      bruto=d["monto_bruto_mxn"], neto=r["neto"], fuente=fuente)
+                (
+                    d["clave_externa"],
+                    d.get("producto_id"),
+                    d.get("publicacion_id"),
+                    d.get("candidato_num"),
+                    d.get("fecha_pedido"),
+                    d["monto_bruto_mxn"],
+                    estado,
+                    int(d["rfc_valido"]),
+                    int(d.get("guanajuato", False)),
+                    r["retencion_iva"],
+                    r["retencion_isr"],
+                    r["retencion_estatal"],
+                    r["neto"],
+                    d.get("fecha_estado") or ahora(),
+                    fuente,
+                    importacion_id,
+                ),
+            )
+            registrar(
+                con,
+                actor,
+                "comision_registrada",
+                "comision",
+                d["clave_externa"],
+                estado=estado,
+                bruto=d["monto_bruto_mxn"],
+                neto=r["neto"],
+                fuente=fuente,
+            )
             return "nueva"
         if previa["estado"] == estado:
             if abs(previa["monto_bruto_mxn"] - d["monto_bruto_mxn"]) > 0.005:
-                raise EstadoInvalido(f"{d['clave_externa']}: mismo estado '{estado}' con otro monto "
-                                     f"({previa['monto_bruto_mxn']} frente a {d['monto_bruto_mxn']}). Revisa la fuente.")
+                raise EstadoInvalido(
+                    f"{d['clave_externa']}: mismo estado '{estado}' con otro monto "
+                    f"({previa['monto_bruto_mxn']} frente a {d['monto_bruto_mxn']}). Revisa la fuente."
+                )
             if (previa["rfc_valido"], previa["guanajuato"]) != (int(d["rfc_valido"]), int(d.get("guanajuato", False))):
-                raise EstadoInvalido(f"{d['clave_externa']}: mismo estado '{estado}' con otro rfc_valido o guanajuato; "
-                                     "cambiaría las retenciones. Revisa la fuente.")
+                raise EstadoInvalido(
+                    f"{d['clave_externa']}: mismo estado '{estado}' con otro rfc_valido o guanajuato; "
+                    "cambiaría las retenciones. Revisa la fuente."
+                )
             return "duplicada"
         if estado not in TRANSICIONES[previa["estado"]]:
             raise EstadoInvalido(f"{d['clave_externa']}: no se puede pasar de '{previa['estado']}' a '{estado}'.")
@@ -86,12 +120,35 @@ def registrar_comision(con, actor, d: dict, fuente: str, importacion_id=None) ->
             f"fecha_{estado} = ?, producto_id = COALESCE(?, producto_id), publicacion_id = COALESCE(?, publicacion_id), "
             f"candidato_num = COALESCE(?, candidato_num), fecha_pedido = COALESCE(?, fecha_pedido) "
             f"WHERE clave_externa = ?",
-            (estado, d["monto_bruto_mxn"], int(d["rfc_valido"]), int(d.get("guanajuato", False)),
-             r["retencion_iva"], r["retencion_isr"], r["retencion_estatal"], r["neto"],
-             d.get("fecha_estado") or ahora(), d.get("producto_id"), d.get("publicacion_id"),
-             d.get("candidato_num"), d.get("fecha_pedido"), d["clave_externa"]))
-        registrar(con, actor, "comision_avanzada", "comision", d["clave_externa"], de=previa["estado"], a=estado,
-                  bruto_anterior=previa["monto_bruto_mxn"], bruto=d["monto_bruto_mxn"], fuente=fuente)
+            (
+                estado,
+                d["monto_bruto_mxn"],
+                int(d["rfc_valido"]),
+                int(d.get("guanajuato", False)),
+                r["retencion_iva"],
+                r["retencion_isr"],
+                r["retencion_estatal"],
+                r["neto"],
+                d.get("fecha_estado") or ahora(),
+                d.get("producto_id"),
+                d.get("publicacion_id"),
+                d.get("candidato_num"),
+                d.get("fecha_pedido"),
+                d["clave_externa"],
+            ),
+        )
+        registrar(
+            con,
+            actor,
+            "comision_avanzada",
+            "comision",
+            d["clave_externa"],
+            de=previa["estado"],
+            a=estado,
+            bruto_anterior=previa["monto_bruto_mxn"],
+            bruto=d["monto_bruto_mxn"],
+            fuente=fuente,
+        )
     return "avanzada"
 
 
@@ -104,9 +161,19 @@ def registrar_costo(con, actor, d: dict, importacion_id=None) -> str:
             return "duplicado"
         raise EstadoInvalido(f"El costo {d['clave_externa']} ya existe con otros datos. Usa otra clave o corrige el archivo.")
     with transaccion(con):
-        con.execute("INSERT INTO costos (clave_externa, fecha, concepto, categoria, monto_mxn, candidato_num, importacion_id) "
-                    "VALUES (?,?,?,?,?,?,?)", (d["clave_externa"], d["fecha"], d["concepto"], d["categoria"],
-                                               d["monto_mxn"], d.get("candidato_num"), importacion_id))
+        con.execute(
+            "INSERT INTO costos (clave_externa, fecha, concepto, categoria, monto_mxn, candidato_num, importacion_id) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (
+                d["clave_externa"],
+                d["fecha"],
+                d["concepto"],
+                d["categoria"],
+                d["monto_mxn"],
+                d.get("candidato_num"),
+                importacion_id,
+            ),
+        )
         registrar(con, actor, "costo_registrado", "costo", d["clave_externa"], monto=d["monto_mxn"], categoria=d["categoria"])
     return "nuevo"
 
@@ -116,14 +183,23 @@ def resumen(con) -> dict:
     filas = {}
 
     def base(k, nombre):
-        return filas.setdefault(k, {"candidato_num": k, "candidato": nombre,
-                                    **{f"{e}_n": 0 for e in ESTADOS},
-                                    **{f"{e}_bruto": 0.0 for e in ESTADOS if e != "cancelada"},
-                                    **{f"{e}_neto": 0.0 for e in ESTADOS if e != "cancelada"},
-                                    "costos": 0.0})
+        return filas.setdefault(
+            k,
+            {
+                "candidato_num": k,
+                "candidato": nombre,
+                **{f"{e}_n": 0 for e in ESTADOS},
+                **{f"{e}_bruto": 0.0 for e in ESTADOS if e != "cancelada"},
+                **{f"{e}_neto": 0.0 for e in ESTADOS if e != "cancelada"},
+                "costos": 0.0,
+            },
+        )
+
     nombres = {r["num"]: r["nombre"] for r in con.execute("SELECT num, nombre FROM candidatos")}
-    for r in con.execute("SELECT candidato_num, estado, COUNT(*) n, SUM(monto_bruto_mxn) b, SUM(monto_neto_mxn) nt "
-                         "FROM comisiones GROUP BY candidato_num, estado"):
+    for r in con.execute(
+        "SELECT candidato_num, estado, COUNT(*) n, SUM(monto_bruto_mxn) b, SUM(monto_neto_mxn) nt "
+        "FROM comisiones GROUP BY candidato_num, estado"
+    ):
         x = base(r["candidato_num"], nombres.get(r["candidato_num"], "sin candidato"))
         x[f"{r['estado']}_n"] = r["n"]
         if r["estado"] != "cancelada":

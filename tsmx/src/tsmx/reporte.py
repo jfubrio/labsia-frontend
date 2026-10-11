@@ -1,4 +1,5 @@
 """Reporte HTML estático para leer el estado del proyecto sin abrir la base."""
+
 import html
 
 from . import auditoria, contenido, economia, metricas
@@ -40,24 +41,69 @@ def generar(con) -> str:
     ind = metricas.indicadores(con)
     eco = economia.resumen(con)
     aud = auditoria.listar(con, 30)
-    partes = [f"<h1>TikTok Shop MX · estado interno</h1><p class='meta'>Generado {html.escape(ahora())}. "
-              "Las vistas no validan el negocio: el resultado cuenta solo comisiones liquidadas menos costos.</p>"]
-    partes.append("<h2>Contenido</h2>" + _tabla(
-        [("ID", "id"), ("Candidato", "candidato_num"), ("Pilar", "pilar"), ("Título", "titulo"), ("Estado", "estado"),
-         ("Versión", "version_actual"), ("Publicaciones", "publicaciones")], cont))
-    partes.append("<h2>Audiencia por candidato</h2><p class='meta'>Orden por intención de compra por cada 1,000 vistas; "
-                  "solo se ordenan candidatos con 5 o más videos con datos.</p>" + _tabla(
-        [("Candidato", "grupo"), ("Videos", "videos"), ("Con datos", "con_datos"), ("Vistas", "vistas"),
-         ("Seguidores / 1,000", "seguidores_por_mil"), ("Intención / 1,000", "intencion_por_mil"), ("Orden", "orden")], ind))
+    partes = [
+        f"<h1>TikTok Shop MX · estado interno</h1><p class='meta'>Generado {html.escape(ahora())}. "
+        "Las vistas no validan el negocio: el resultado cuenta solo comisiones liquidadas menos costos.</p>"
+    ]
+    partes.append(
+        "<h2>Contenido</h2>"
+        + _tabla(
+            [
+                ("ID", "id"),
+                ("Candidato", "candidato_num"),
+                ("Pilar", "pilar"),
+                ("Título", "titulo"),
+                ("Estado", "estado"),
+                ("Versión", "version_actual"),
+                ("Publicaciones", "publicaciones"),
+            ],
+            cont,
+        )
+    )
+    partes.append(
+        "<h2>Audiencia por candidato</h2><p class='meta'>Orden por intención de compra por cada 1,000 vistas; "
+        "solo se ordenan candidatos con 5 o más videos con datos.</p>"
+        + _tabla(
+            [
+                ("Candidato", "grupo"),
+                ("Videos", "videos"),
+                ("Con datos", "con_datos"),
+                ("Vistas", "vistas"),
+                ("Seguidores / 1,000", "seguidores_por_mil"),
+                ("Intención / 1,000", "intencion_por_mil"),
+                ("Orden", "orden"),
+            ],
+            ind,
+        )
+    )
     filas = eco["filas"] + ([eco["total"]] if eco["total"] else [])
-    partes.append("<h2>Economía</h2><p class='meta'>Estimadas y aprobadas no son ingreso. "
-                  f"Parámetros fiscales: {html.escape(eco['parametros']['fuente'])}.</p>" + _tabla(
-        [("Candidato", "candidato"), ("Estimadas", "estimada_n"), ("Neto estimado", "estimada_neto"),
-         ("Aprobadas", "aprobada_n"), ("Neto aprobado", "aprobada_neto"), ("Liquidadas", "liquidada_n"),
-         ("Neto liquidado", "liquidada_neto"), ("Canceladas", "cancelada_n"), ("Costos", "costos"),
-         ("Resultado liquidado", "resultado_liquidado")], filas))
-    partes.append("<h2>Últimas acciones</h2>" + _tabla(
-        [("Fecha", "ts"), ("Usuario", "usuario"), ("Acción", "accion"), ("Entidad", "entidad"), ("ID", "entidad_id")], aud))
-    return ("<!doctype html><html lang='es'><head><meta charset='utf-8'><meta name='viewport' "
-            "content='width=device-width,initial-scale=1'><title>TikTok Shop MX</title>"
-            f"<style>{CSS}</style></head><body><main>{''.join(partes)}</main></body></html>")
+    partes.append(
+        "<h2>Economía</h2><p class='meta'>Estimadas y aprobadas no son ingreso. "
+        f"Parámetros fiscales: {html.escape(eco['parametros']['fuente'])}.</p>"
+        + _tabla(
+            [
+                ("Candidato", "candidato"),
+                ("Estimadas", "estimada_n"),
+                ("Neto estimado", "estimada_neto"),
+                ("Aprobadas", "aprobada_n"),
+                ("Neto aprobado", "aprobada_neto"),
+                ("Liquidadas", "liquidada_n"),
+                ("Neto liquidado", "liquidada_neto"),
+                ("Canceladas", "cancelada_n"),
+                ("Costos", "costos"),
+                ("Resultado liquidado", "resultado_liquidado"),
+            ],
+            filas,
+        )
+    )
+    partes.append(
+        "<h2>Últimas acciones</h2>"
+        + _tabla(
+            [("Fecha", "ts"), ("Usuario", "usuario"), ("Acción", "accion"), ("Entidad", "entidad"), ("ID", "entidad_id")], aud
+        )
+    )
+    return (
+        "<!doctype html><html lang='es'><head><meta charset='utf-8'><meta name='viewport' "
+        "content='width=device-width,initial-scale=1'><title>TikTok Shop MX</title>"
+        f"<style>{CSS}</style></head><body><main>{''.join(partes)}</main></body></html>"
+    )

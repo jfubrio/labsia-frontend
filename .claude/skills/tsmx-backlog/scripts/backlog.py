@@ -6,7 +6,11 @@ Uso:
   backlog.py --listar
 Estados válidos: pendiente, en curso, preliminar, hecho, bloqueado.
 """
-import argparse, datetime, re, sys
+
+import argparse
+import datetime
+import re
+import sys
 from pathlib import Path
 
 ESTADOS = ["pendiente", "en curso", "preliminar", "hecho", "bloqueado"]
@@ -50,7 +54,7 @@ def main():
         sys.exit(f"No existe la fila del ticket {t}")
     anterior = m.group(2).strip()
     nota_nueva = a.nota if a.nota is not None else m.group(4).strip()
-    txt = txt[:m.start()] + f"{m.group(1)}{a.estado}{m.group(3)}{nota_nueva}{m.group(5)}" + txt[m.end():]
+    txt = txt[: m.start()] + f"{m.group(1)}{a.estado}{m.group(3)}{nota_nueva}{m.group(5)}" + txt[m.end() :]
     fila_log = f"| {a.fecha} | {t} | {anterior} | {a.estado} | {a.motivo} |\n"
     marca = "## Registro de cambios de estado"
     if marca in txt:

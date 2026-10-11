@@ -7,6 +7,7 @@ Reglas:
 - Un revisor no aprueba su propia versión; el propietario sí puede, y queda marcado en la auditoría.
 - Contenido con producto exige divulgación comercial al publicar.
 """
+
 import hashlib
 
 from . import permisos
@@ -16,7 +17,7 @@ from .errores import EstadoInvalido, NoEncontrado, PermisoDenegado
 
 
 def hash_cuerpo(cuerpo: str) -> str:
-    normal = "\n".join(l.rstrip() for l in cuerpo.strip().splitlines())
+    normal = "\n".join(linea.rstrip() for linea in cuerpo.strip().splitlines())
     return hashlib.sha256(normal.encode("utf-8")).hexdigest()
 
 
@@ -29,8 +30,11 @@ def obtener(con, cid: str) -> dict:
 
 def version_actual(con, cid: str) -> dict:
     c = obtener(con, cid)
-    return dict(con.execute("SELECT * FROM contenido_versiones WHERE contenido_id = ? AND version = ?",
-                            (cid, c["version_actual"])).fetchone())
+    return dict(
+        con.execute(
+            "SELECT * FROM contenido_versiones WHERE contenido_id = ? AND version = ?", (cid, c["version_actual"])
+        ).fetchone()
+    )
 
 
 def aprobacion_vigente(con, cid: str):
@@ -38,7 +42,8 @@ def aprobacion_vigente(con, cid: str):
     fila = con.execute(
         "SELECT * FROM aprobaciones WHERE contenido_id = ? AND version = ? AND hash = ? "
         "AND decision = 'aprobado' AND vigente = 1 ORDER BY id DESC LIMIT 1",
-        (cid, v["version"], v["hash"])).fetchone()
+        (cid, v["version"], v["hash"]),
+    ).fetchone()
     return dict(fila) if fila else None
 
 
@@ -48,11 +53,15 @@ def crear(con, actor, cid, titulo, cuerpo, candidato_num=None, pilar=None, produ
         raise EstadoInvalido(f"El contenido {cid} ya existe; usa editar.")
     t, h = ahora(), hash_cuerpo(cuerpo)
     with transaccion(con):
-        con.execute("INSERT INTO contenidos (id, candidato_num, pilar, titulo, estado, version_actual, producto_id, "
-                    "creado_por, creado_en, actualizado_en) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    (cid, candidato_num, pilar, titulo, "borrador", 1, producto_id, actor, t, t))
-        con.execute("INSERT INTO contenido_versiones (contenido_id, version, cuerpo, hash, autor, creado_en) "
-                    "VALUES (?,?,?,?,?,?)", (cid, 1, cuerpo, h, actor, t))
+        con.execute(
+            "INSERT INTO contenidos (id, candidato_num, pilar, titulo, estado, version_actual, producto_id, "
+            "creado_por, creado_en, actualizado_en) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (cid, candidato_num, pilar, titulo, "borrador", 1, producto_id, actor, t, t),
+        )
+        con.execute(
+            "INSERT INTO contenido_versiones (contenido_id, version, cuerpo, hash, autor, creado_en) VALUES (?,?,?,?,?,?)",
+            (cid, 1, cuerpo, h, actor, t),
+        )
         registrar(con, actor, "contenido_creado", "contenido", cid, version=1, hash=h[:12])
     return 1
 
@@ -68,14 +77,26 @@ def editar(con, actor, cid, cuerpo, titulo=None):
         raise EstadoInvalido(f"{cid} está {c['estado']}; un contenido publicado no se edita. Crea uno nuevo.")
     nueva, t = c["version_actual"] + 1, ahora()
     with transaccion(con):
-        con.execute("INSERT INTO contenido_versiones (contenido_id, version, cuerpo, hash, autor, creado_en) "
-                    "VALUES (?,?,?,?,?,?)", (cid, nueva, cuerpo, h, actor, t))
-        invalidadas = con.execute("UPDATE aprobaciones SET vigente = 0 WHERE contenido_id = ? AND vigente = 1",
-                                  (cid,)).rowcount
-        con.execute("UPDATE contenidos SET version_actual = ?, estado = 'borrador', titulo = ?, actualizado_en = ? "
-                    "WHERE id = ?", (nueva, titulo or c["titulo"], t, cid))
-        registrar(con, actor, "contenido_editado", "contenido", cid, version=nueva, hash=h[:12],
-                  aprobaciones_invalidadas=invalidadas, estado_anterior=c["estado"])
+        con.execute(
+            "INSERT INTO contenido_versiones (contenido_id, version, cuerpo, hash, autor, creado_en) VALUES (?,?,?,?,?,?)",
+            (cid, nueva, cuerpo, h, actor, t),
+        )
+        invalidadas = con.execute("UPDATE aprobaciones SET vigente = 0 WHERE contenido_id = ? AND vigente = 1", (cid,)).rowcount
+        con.execute(
+            "UPDATE contenidos SET version_actual = ?, estado = 'borrador', titulo = ?, actualizado_en = ? WHERE id = ?",
+            (nueva, titulo or c["titulo"], t, cid),
+        )
+        registrar(
+            con,
+            actor,
+            "contenido_editado",
+            "contenido",
+            cid,
+            version=nueva,
+            hash=h[:12],
+            aprobaciones_invalidadas=invalidadas,
+            estado_anterior=c["estado"],
+        )
     return nueva
 
 
@@ -101,11 +122,23 @@ def _decidir(con, actor, cid, decision, comentario):
         raise PermisoDenegado("Un revisor no puede decidir sobre una versión que escribió.")
     nuevo_estado = "aprobado" if decision == "aprobado" else "borrador"
     with transaccion(con):
-        con.execute("INSERT INTO aprobaciones (contenido_id, version, hash, decision, revisor, comentario, creado_en) "
-                    "VALUES (?,?,?,?,?,?,?)", (cid, v["version"], v["hash"], decision, actor, comentario, ahora()))
+        con.execute(
+            "INSERT INTO aprobaciones (contenido_id, version, hash, decision, revisor, comentario, creado_en) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (cid, v["version"], v["hash"], decision, actor, comentario, ahora()),
+        )
         con.execute("UPDATE contenidos SET estado = ?, actualizado_en = ? WHERE id = ?", (nuevo_estado, ahora(), cid))
-        registrar(con, actor, f"contenido_{decision}", "contenido", cid, version=v["version"],
-                  hash=v["hash"][:12], autoaprobacion=auto, comentario=comentario)
+        registrar(
+            con,
+            actor,
+            f"contenido_{decision}",
+            "contenido",
+            cid,
+            version=v["version"],
+            hash=v["hash"][:12],
+            autoaprobacion=auto,
+            comentario=comentario,
+        )
 
 
 def aprobar(con, actor, cid, comentario=None):
@@ -139,12 +172,22 @@ def publicar(con, actor, cid, url, fecha_pub=None, divulgacion=None, permitir_si
         raise EstadoInvalido("Este contenido muestra un producto: registra la divulgación comercial usada.")
     t = ahora()
     with transaccion(con):
-        cur = con.execute("INSERT INTO publicaciones (contenido_id, version, url, fecha_pub, divulgacion_comercial, "
-                          "sin_aprobacion, creado_en) VALUES (?,?,?,?,?,?,?)",
-                          (cid, c["version_actual"], url, fecha_pub, divulgacion, sin_aprob, t))
+        cur = con.execute(
+            "INSERT INTO publicaciones (contenido_id, version, url, fecha_pub, divulgacion_comercial, "
+            "sin_aprobacion, creado_en) VALUES (?,?,?,?,?,?,?)",
+            (cid, c["version_actual"], url, fecha_pub, divulgacion, sin_aprob, t),
+        )
         con.execute("UPDATE contenidos SET estado = 'publicado', actualizado_en = ? WHERE id = ?", (t, cid))
-        registrar(con, actor, "contenido_publicado", "contenido", cid, url=url, version=c["version_actual"],
-                  sin_aprobacion=bool(sin_aprob))
+        registrar(
+            con,
+            actor,
+            "contenido_publicado",
+            "contenido",
+            cid,
+            url=url,
+            version=c["version_actual"],
+            sin_aprobacion=bool(sin_aprob),
+        )
     return cur.lastrowid
 
 
@@ -160,5 +203,6 @@ def listar(con, estado=None):
     q = "SELECT c.*, (SELECT COUNT(*) FROM publicaciones p WHERE p.contenido_id = c.id) AS publicaciones FROM contenidos c"
     args = []
     if estado:
-        q += " WHERE estado = ?"; args.append(estado)
+        q += " WHERE estado = ?"
+        args.append(estado)
     return [dict(r) for r in con.execute(q + " ORDER BY id", args)]
