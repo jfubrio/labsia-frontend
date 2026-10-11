@@ -11,6 +11,6 @@ export type { MarketPriceProfile, DailyCompetitivePrice } from './engines/market
 export { landedPrice, compareInternational, defaultComparisonConfig } from './engines/international-comparison.js'
 export type { ComparisonConfig } from './engines/international-comparison.js'
 export { buzonTexas, importacionUsaMexico, importTierFor, mailboxes, importRules } from './config/logistics.js'
-export type { Mailbox, ImportRules, ImportTier } from './config/logistics.js'
+export type { Mailbox, ImportRules, ImportTier, ModoIngreso } from './config/logistics.js'
 export { proposePurchase, effectiveTargetPrice, decideAuthorization, checkAuthorization } from './engines/authorization.js'
 export { executePurchase, InMemoryOrderStore, idempotencyKey, PurchasesDisabledError } from './engines/purchase-executor.js'

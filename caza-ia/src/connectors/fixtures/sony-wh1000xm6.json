@@ -1421,7 +1421,7 @@
    ]
   },
   "comparacion_internacional": {
-   "description": "MX 8,999 MXN contra US 379 USD. Aterrizado vía buzón en Texas (8.25 % impuesto de venta, 19 % importación, 35 USD de reenvío, tc 18.5) el US cuesta ~9,570 MXN: la oferta local gana.",
+   "description": "MX 8,999 MXN contra US 379 USD. Con cruce personal por el buzón en Texas (8.25 % impuesto de venta, 5 USD de recepción, franquicia 500 USD, tc 18.5) el US aterriza en ~7,683 MXN y gana la comparación; pero 379 no es descuento real en el mercado US, así que no se propone.",
    "offers": [
     {
      "connector": "mock",
@@ -1448,7 +1448,7 @@
    ]
   },
   "oferta_usa_gana": {
-   "description": "Best Buy 299.99 USD 'antes 449.99': mínimo histórico en el mercado US y, aterrizado vía buzón en Texas (~7,710 MXN), por debajo del objetivo derivado: genera propuesta de compra en EE. UU.",
+   "description": "Best Buy 299.99 USD 'antes 449.99': mínimo histórico en el mercado US y, aterrizado con cruce personal (~6,100 MXN, dentro de la franquicia), muy por debajo del objetivo derivado: genera propuesta de compra en EE. UU.",
    "offers": [
     {
      "connector": "mock",
@@ -1463,15 +1463,15 @@
     }
    ]
   },
-  "oferta_usa_no_gana": {
-   "description": "Amazon US 329.99 USD 'antes 449.99': descuento real en EE. UU., pero aterrizado (~8,416 MXN) supera el objetivo derivado: se informa, no se propone.",
+  "oferta_usa_dudosa": {
+   "description": "Amazon US 349.99 USD 'antes 449.99': aterriza barato (~7,101 MXN, bajo el objetivo) pero el ahorro frente al precio real US (369.99) es 5.4 %, bajo el umbral: DUDOSO. Se informa, no se propone: el análisis del mercado manda, no el precio aterrizado.",
    "offers": [
     {
      "connector": "mock",
      "store": "amazon_us",
      "market": "US",
      "currency": "USD",
-     "price": 329.99,
+     "price": 349.99,
      "advertisedPreviousPrice": 449.99,
      "inStock": true,
      "url": "https://mock.local/us/amazon/sony-wh1000xm6",

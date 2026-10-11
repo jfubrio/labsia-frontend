@@ -54,14 +54,26 @@ describe('compra en EE. UU. vía buzón en Texas', () => {
     expect(proposal!.moneda).toBe('USD')
     expect(proposal!.precio).toBe(299.99)
     expect(proposal!.buzon).toBe('buzon_tx')
-    expect(proposal!.precioAterrizadoBase).toBe(7709.65)
+    expect(proposal!.precioAterrizadoBase).toBe(6100.19) // cruce personal, dentro de la franquicia
     expect(proposal!.precioAterrizadoBase).toBeLessThanOrEqual(proposal!.precioObjetivo)
   })
 
-  it('no propone cuando el descuento es real en EE. UU. pero aterrizado supera el objetivo', async () => {
-    const { proposal, verdict } = await judged('oferta_usa_no_gana')
-    expect(['real', 'minimo_historico']).toContain(verdict.veredicto)
+  it('no propone una oferta que aterriza barata pero no es descuento real en su mercado', async () => {
+    const { proposal, verdict } = await judged('oferta_usa_dudosa')
+    expect(verdict.veredicto).toBe('dudoso')
     expect(proposal).toBeNull()
+  })
+
+  it('no propone cuando el aterrizado supera el objetivo aunque el descuento sea real', async () => {
+    const { obs, verdict, profile } = await judged('oferta_usa_gana')
+    // Sin franquicia disponible y con reenvío por paquetería el mismo 299.99 USD aterriza por encima del objetivo
+    const caro = { ...CMP, buzones: { US: { ...CMP.buzones.US!, modoIngreso: 'paqueteria' as const, tarifaReenvio: 80 } } }
+    expect(proposePurchase(obs, verdict, product, profile, caro)).toBeNull()
+  })
+
+  it('no propone cuando el valor exige agente aduanal', async () => {
+    const { obs, verdict, profile } = await judged('oferta_usa_gana')
+    expect(proposePurchase({ ...obs, price: 3200 }, { ...verdict }, product, profile, CMP)).toBeNull()
   })
 
   it('no propone en un mercado donde no se permite comprar', async () => {
@@ -80,11 +92,11 @@ describe('compra en EE. UU. vía buzón en Texas', () => {
     const { authorization } = decideAuthorization({ proposal: proposal!, decision: 'approve', autorizadoPor: 'op@labsia.mx', product, ttlHours: 24, now: NOW })
     expect(authorization.moneda).toBe('USD')
     expect(authorization.precioMaximo).toBe(299.99)
-    expect(authorization.precioAterrizadoBase).toBe(7709.65)
+    expect(authorization.precioAterrizadoBase).toBe(6100.19)
     expect(authorization.buzon).toBe('buzon_tx')
-    // Un tope de 340 USD aterriza en ~8,738 MXN, por encima del máximo 8,499
+    // Un tope de 420 USD aterriza en ~8,540 MXN, por encima del máximo 8,499
     expect(() =>
-      decideAuthorization({ proposal: proposal!, decision: 'approve', autorizadoPor: 'op@labsia.mx', product, ttlHours: 24, now: NOW, precioMaximo: 340 }),
+      decideAuthorization({ proposal: proposal!, decision: 'approve', autorizadoPor: 'op@labsia.mx', product, ttlHours: 24, now: NOW, precioMaximo: 420 }),
     ).toThrow(/precio máximo/)
   })
 })

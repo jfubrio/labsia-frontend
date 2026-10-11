@@ -68,11 +68,13 @@ Con buzón en Texas, EE. UU. es mercado de compra. Candidatas por orden de facil
 | eBay | [Browse API](https://developer.ebay.com/api-docs/buy/browse/overview.html) oficial: búsqueda por palabra clave o GTIN, precio y disponibilidad | Sandbox abierto; **producción requiere aprobación y contrato con eBay**. Útil para seguimiento de precios de vendedores grandes |
 | B&H Photo, Newegg | Sin API pública; solo programas de afiliados (Impact, Rakuten) con enlaces, no datos | changedetection.io si robots.txt y términos lo permiten; si no, descartar |
 
-Logística del buzón (datos para `caza_buzones` y `config/logistics.ts`), todo **por confirmar**:
+Logística del buzón (datos para `caza_buzones` y `config/logistics.ts`), todo **por confirmar**. El comprador vive cerca de la frontera, recoge en el buzón y cruza por tierra (modo `cruce_personal`); la paquetería queda como ruta alternativa.
 
 - Impuesto de venta de Texas: 6.25 % estatal más hasta 2 % local, tope combinado 8.25 %; la tasa exacta depende de la dirección del buzón ([guía 2026](https://numeral.com/blog/texas-sales-tax-guide)).
-- Importación por paquetería a México desde EE. UU. bajo T-MEC: 0 % hasta 50 USD, 17 % de 50 a 117 USD, 19 % de 117 a 2,500 USD, con RFC del consignatario ([alerta regulatoria FedEx MX](https://www.fedex.com/content/dam/fedex/lac-latin-america/downloads/2025/MX_ES_2025_8_pdf_NA_Reg-Alert_cus.pdf), [Country Commercial Guide](https://www.trade.gov/country-commercial-guides/mexico-customs-regulations)). Fuentes de 2025; confirmar vigencia en DOF/SAT.
-- Tarifa de reenvío del buzón: supuesto de 35 USD por paquete hasta tener la tarifa del proveedor.
+- Franquicia de pasajero por vía terrestre: la tabla PRODECON 2026 del programa Héroes Paisanos indica 500 USD ([IMCP, Noticias Fiscales 2026-148](https://imcp.org.mx/wp-content/uploads/2026/07/NOTICIAS-FISCALES-2026-148-07-07-2026.pdf)); las reglas de 2024 fijaban 300 USD; para residentes de la franja fronteriza se cita 150 USD por persona ([POSTA Tamaulipas](https://www.posta.com.mx/tamaulipas/esta-es-la-franquicia-para-pasar-compras-sin-problemas-en-los-puentes-internacionales-en-tamaulipas/vl2144075)). Qué monto aplica depende de la residencia del comprador: decisión pendiente.
+- Excedente de la franquicia: se asume tasa global del 19 % con factura hasta 3,000 USD (pago simplificado). No se pudo confirmar desde este entorno; verificar en RGCE 2026 (regla 3.2.x) o con la ANAM.
+- Tarifa de recepción del buzón: supuesto de 5 USD por paquete hasta tener la tarifa del proveedor.
+- Paquetería (alternativa): importación a México desde EE. UU. bajo T-MEC 0 % hasta 50 USD, 17 % de 50 a 117 USD, 19 % de 117 a 2,500 USD, con RFC ([alerta regulatoria FedEx MX](https://www.fedex.com/content/dam/fedex/lac-latin-america/downloads/2025/MX_ES_2025_8_pdf_NA_Reg-Alert_cus.pdf), [Country Commercial Guide](https://www.trade.gov/country-commercial-guides/mexico-customs-regulations)); reenvío supuesto de 35 USD por paquete.
 
 ## 3. Tipo de cambio
 
@@ -130,6 +132,7 @@ Lo que ilustran: el 11,999 fue precio de lanzamiento de un modelo nuevo y el 9,9
 - [ ] Revisar robots.txt y términos de Sony Store México para decidir entre changedetection.io y descartar.
 - [ ] Obtener token de Banxico SIE y verificar MXN en Frankfurter.
 - [ ] Solicitar clave de Best Buy Developer y revisar aprobación de uso comercial.
-- [ ] Confirmar con el proveedor del buzón en Texas: dirección (tasa de impuesto de venta), tarifa de reenvío, tiempos y si opera con el RFC del consignatario.
-- [ ] Confirmar en DOF/SAT la vigencia de los tramos de importación por paquetería desde EE. UU.
+- [ ] Confirmar con el proveedor del buzón en Texas: dirección (tasa de impuesto de venta), tarifa de recepción por paquete y horarios de recogida.
+- [ ] Confirmar la franquicia de pasajero que aplica al comprador (500 USD general o 150 USD fronteriza) y la tasa del 19 % sobre el excedente con factura.
+- [ ] Confirmar en DOF/SAT la vigencia de los tramos de importación por paquetería (ruta alternativa).
 - [ ] Registrar app en eBay Developers y evaluar el proceso de aprobación para producción de la Browse API; revisar Walmart.io.

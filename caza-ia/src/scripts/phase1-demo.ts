@@ -38,9 +38,9 @@ console.log(`   objetivo efectivo: ${objetivo} ${product.monedaBase}${derivado ?
 console.log('── Precio real de mercado (US, 90 días, 3 tiendas) — compra vía buzón en Texas')
 console.log(`   precio real: ${profileUS.precioReal} USD  piso: ${profileUS.piso}  techo: ${profileUS.techo}  régimen: ${profileUS.regimen}  confianza: ${profileUS.confianza}  tiendas: ${profileUS.tiendas.join(', ')}`)
 const bz = comparison.buzones.US!
-console.log(`   buzón ${bz.clave}: impuesto de venta ${bz.impuestoVentaPct}%, reenvío ${bz.tarifaReenvio} ${bz.currency}, importación MX por tramos T-MEC (0/17/19 %), tc ${env.USD_MXN_RATE}. Supuestos por confirmar.\n`)
+console.log(`   buzón ${bz.clave} (${bz.modoIngreso}): impuesto de venta ${bz.impuestoVentaPct}%, recepción ${bz.tarifaRecepcion} ${bz.currency}, franquicia ${bz.franquiciaUsd} USD, ${bz.tasaExcedente * 100}% sobre el excedente, tc ${env.USD_MXN_RATE}. Supuestos por confirmar.\n`)
 
-const scenarios: MockScenario[] = ['ancla_lanzamiento', 'descuento_falso', 'descuento_dudoso', 'descuento_real', 'tienda_sin_stock', 'minimo_historico', 'comparacion_internacional', 'oferta_usa_gana', 'oferta_usa_no_gana']
+const scenarios: MockScenario[] = ['ancla_lanzamiento', 'descuento_falso', 'descuento_dudoso', 'descuento_real', 'tienda_sin_stock', 'minimo_historico', 'comparacion_internacional', 'oferta_usa_gana', 'oferta_usa_dudosa']
 
 for (const scenario of scenarios) {
   const offers = (await new MockConnector(scenario).fetchOffers(product.slug, now)).map((o) => toObservation(product.slug, o))
@@ -53,12 +53,12 @@ for (const scenario of scenarios) {
     )
     if (obs.market !== 'MX') {
       const lp = landedPrice(obs, comparison)
-      console.log(`   aterrizado vía ${lp.buzon}: ${lp.precioAterrizado} MXN = (${lp.precioLocal} + imp. venta ${lp.impuestoVenta}) × ${lp.tipoCambio} + importación ${lp.tasaImportacionPct}% ${lp.impuestosImportacion} + reenvío ${lp.reenvio}`)
+      console.log(`   aterrizado vía ${lp.buzon} (${lp.modoIngreso}): ${lp.precioAterrizado} MXN = (${lp.precioLocal} + imp. venta ${lp.impuestoVenta} + recepción ${lp.recepcionBuzon}) × ${lp.tipoCambio}; franquicia aplicada ${lp.franquiciaAplicadaUsd} USD, excedente gravable ${lp.baseGravableUsd} USD → impuestos ${lp.impuestosImportacion}`)
     }
     const proposal = proposePurchase(obs, verdict, product, profile, comparison) // objetivo siempre del perfil MX
     if (!proposal && !obs.inStock) console.log('   Sin stock: no se genera propuesta de compra aunque el veredicto sea bueno.')
-    if (!proposal && obs.inStock && obs.market !== 'MX' && (verdict.veredicto === 'real' || verdict.veredicto === 'minimo_historico')) {
-      console.log(`   Buen precio en ${obs.market}, pero aterrizado supera el objetivo ${objetivo} MXN: se informa, no se propone.`)
+    if (!proposal && obs.inStock && obs.market !== 'MX') {
+      console.log(`   Sin propuesta: ${verdict.veredicto === 'real' || verdict.veredicto === 'minimo_historico' ? `aterrizado supera el objetivo ${objetivo} MXN` : `no es descuento real en el mercado ${obs.market} (${verdict.veredicto}), aunque aterrice barato`}.`)
     }
     if (proposal) {
       console.log(`   Propuesta de compra a ${proposal.precio} ${proposal.moneda}${proposal.buzon ? ` vía ${proposal.buzon} (aterrizado ${proposal.precioAterrizadoBase} MXN)` : ''} (objetivo ${proposal.precioObjetivo} MXN). Requiere approve humano.`)
@@ -70,7 +70,7 @@ for (const scenario of scenarios) {
   if (scenario === 'comparacion_internacional') {
     const cmp = compareInternational(offers, defaultComparisonConfig(env.USD_MXN_RATE))
     for (const r of cmp.ranking) {
-      console.log(`   ${r.market} ${r.store}: ${r.precioLocal} ${r.monedaLocal} → aterrizado ${r.precioAterrizado} ${r.monedaBase}${r.buzon ? ` vía ${r.buzon} (imp. venta ${r.impuestoVenta}, importación ${r.tasaImportacionPct}% = ${r.impuestosImportacion}, reenvío ${r.reenvio})` : ''}`)
+      console.log(`   ${r.market} ${r.store}: ${r.precioLocal} ${r.monedaLocal} → aterrizado ${r.precioAterrizado} ${r.monedaBase}${r.buzon ? ` vía ${r.buzon}/${r.modoIngreso} (imp. venta ${r.impuestoVenta}, recepción ${r.recepcionBuzon}, franquicia ${r.franquiciaAplicadaUsd} USD, impuestos ${r.impuestosImportacion})` : ''}`)
     }
     console.log(`   Alternativas internacionales que ganan al mejor precio local: ${cmp.alternativasInternacionales.length}`)
   }

@@ -13,12 +13,16 @@ INSERT INTO caza_connectors (clave, nombre, mercado, moneda, tipo, soporta_compr
   ('bhphoto_us',    'B&H Photo',           'US', 'USD', 'scraping', FALSE, 'por_validar', FALSE),
   ('newegg_us',     'Newegg',              'US', 'USD', 'scraping', FALSE, 'por_validar', FALSE);
 
--- Buzón en Texas. Dirección, tasa exacta de impuesto de venta y tarifa de reenvío: por confirmar.
-INSERT INTO caza_buzones (clave, nombre, mercado, moneda, impuesto_venta_pct, envio_domestico, tarifa_reenvio, dias_transito_estimados, consignatario_con_rfc, notas)
-VALUES ('buzon_tx', 'Buzón Texas', 'US', 'USD', 8.25, 0, 35.00, 7, TRUE,
-        'Tope combinado de Texas 8.25 %; confirmar con la dirección. Tarifa de reenvío supuesta; confirmar con el proveedor.');
+-- Buzón en Texas con cruce personal por tierra: el comprador vive cerca de la frontera y recoge en el buzón.
+-- Dirección (tasa de impuesto de venta), tarifa de recepción, franquicia aplicable (500 USD general 2026; 150 USD
+-- para residentes de la franja fronteriza) y tasa sobre el excedente: por confirmar.
+INSERT INTO caza_buzones (clave, nombre, mercado, moneda, impuesto_venta_pct, envio_domestico, tarifa_recepcion, modo_ingreso, costo_viaje,
+                          franquicia_usd, tasa_excedente, tope_simplificado_usd, tarifa_reenvio, dias_transito_estimados, consignatario_con_rfc, notas)
+VALUES ('buzon_tx', 'Buzón Texas', 'US', 'USD', 8.25, 0, 5.00, 'cruce_personal', 0,
+        500.00, 0.1900, 3000.00, 35.00, 3, TRUE,
+        'Cruce personal. Tope combinado de Texas 8.25 %; confirmar con la dirección. Franquicia 500 USD (PRODECON 2026) o 150 USD si aplica residencia fronteriza; 19 % solo sobre el excedente, con factura. Paquetería solo como ruta alternativa.');
 
--- Importación por paquetería EE. UU. → México bajo T-MEC (procedimiento simplificado, con RFC). Vigencia por confirmar en DOF/SAT.
+-- Importación por paquetería EE. UU. → México bajo T-MEC (ruta alternativa al cruce personal). Vigencia por confirmar en DOF/SAT.
 INSERT INTO caza_reglas_importacion (origen, destino, min_usd, max_usd, tasa, nota, fuente, por_confirmar) VALUES
   ('US', 'MX',    0,    50, 0.0000, 'Exento hasta 50 USD',                                         'FedEx MX Reg Alert 2025; US Country Commercial Guide Mexico', TRUE),
   ('US', 'MX',   50,   117, 0.1700, '17 % entre 50 y 117 USD (origen T-MEC)',                      'FedEx MX Reg Alert 2025; US Country Commercial Guide Mexico', TRUE),

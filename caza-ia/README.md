@@ -11,12 +11,12 @@ Este directorio contiene la **fase 1** del plan ([docs/PLAN_DESARROLLO.md](docs/
 | --- | --- | --- |
 | Esquema de base de datos | `src/db/migrations/001_caza_ia_schema.sql` | Productos, configuración de vigilancia, conectores, observaciones, veredictos, autorizaciones, órdenes, audit log |
 | Guardas de compra | `src/db/migrations/002_purchase_guards.sql` | Índice único de una orden activa por producto, trigger que exige `approve` vigente y de un solo uso, interruptor `purchases_enabled=false`, audit log inmutable |
-| Datos iniciales | `src/db/migrations/003_seed_sony_wh1000xm6.sql` | Conectores MX y US en `por_validar`, buzón en Texas, tramos de importación T-MEC y los Sony WH-1000XM6 |
+| Datos iniciales | `src/db/migrations/003_seed_sony_wh1000xm6.sql` | Conectores MX y US en `por_validar`, buzón en Texas con cruce personal, tramos de importación por paquetería y los Sony WH-1000XM6 |
 | **Motor de precio real de mercado** | `src/engines/market-price.ts` | Núcleo del sistema: serie competitiva diaria entre tiendas, mediana ponderada por recencia, régimen, detección de lanzamiento inflado, confianza, objetivo derivado |
 | Configuración de los Sony | `src/config/products/sony-wh1000xm6.ts` | Precio de lista solo informativo, objetivo derivado del precio real, tope duro 8,499 MXN, umbral 12 %, mercados MX y US, compra permitida en MX y US |
 | Conector con datos de prueba | `src/connectors/mock.connector.ts` + `fixtures/` | Historial sintético multitienda de 90 días en MX (tienda oficial fija en lanzamiento, dos tiendas bajando, una venta flash) y en US (Amazon, Best Buy, Walmart) y nueve escenarios; no hace red |
 | Motor de validación de descuentos | `src/engines/discount-validator.ts` | Juzga cada oferta contra el precio real de mercado: mínimo histórico, real, dudoso, falso o sin historial; marca anclas infladas |
-| Compra en EE. UU. vía buzón en Texas | `src/engines/international-comparison.ts` + `src/config/logistics.ts` | Precio aterrizado en MXN: impuesto de venta de Texas, importación por tramos T-MEC, reenvío del buzón, tipo de cambio. Las ofertas de EE. UU. compiten por lo que cuestan ya en casa |
+| Compra en EE. UU. vía buzón en Texas | `src/engines/international-comparison.ts` + `src/config/logistics.ts` | Precio aterrizado en MXN con cruce personal: impuesto de venta de Texas, recepción en el buzón, franquicia de pasajero y 19 % solo sobre el excedente. Paquetería (reenvío + tramos T-MEC) como ruta alternativa. Las ofertas de EE. UU. compiten por lo que cuestan ya en casa |
 | Motor de autorización | `src/engines/authorization.ts` | Propuesta → `approve`/`reject` vinculado a una oferta, con tope y vigencia |
 | Ejecutor y anti-duplicados | `src/engines/purchase-executor.ts` | Interruptor por fase, idempotencia, una orden activa por producto |
 

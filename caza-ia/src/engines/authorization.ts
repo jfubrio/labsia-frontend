@@ -76,6 +76,7 @@ export function proposePurchase(
     if (!comparison) return null
     if (!comparison.buzones[obs.market]) return null
     const landed = landedPrice(obs, comparison)
+    if (landed.requiereAgenteAduanal) return null
     precioAterrizadoBase = landed.precioAterrizado
     buzon = landed.buzon
   }

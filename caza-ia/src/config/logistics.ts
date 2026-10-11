@@ -1,15 +1,21 @@
 import type { Market, Currency } from '../types.js'
 
 /**
- * Logística de compra en el extranjero: buzones de recepción y reglas de importación a México.
+ * Logística de compra en el extranjero: buzones de recepción y cómo entra la mercancía a México.
  *
  * Con un buzón en Texas, una compra en una tienda de EE. UU. es una compra DOMÉSTICA en EE. UU. (paga impuesto de
- * venta de Texas, envío doméstico normalmente gratis) que después se reenvía a México (tarifa del buzón) y paga
- * impuestos de importación por paquetería. El precio aterrizado suma todo eso en MXN; solo así es comparable con
- * una oferta local.
+ * venta de Texas, envío doméstico normalmente gratis). Después la mercancía entra a México por una de dos vías:
  *
+ *  - cruce_personal: el comprador recoge en el buzón y cruza por tierra. No hay reenvío ni importación por
+ *    paquetería: aplica la franquicia de pasajero y, si el valor la excede, la tasa global solo sobre el excedente.
+ *    Es la vía por defecto: el comprador vive cerca de la frontera y pasa por el buzón.
+ *  - paqueteria: el buzón reenvía a casa por mensajería; paga tarifa de reenvío e importación por tramos (T-MEC).
+ *
+ * El precio aterrizado suma todo eso en MXN; solo así es comparable con una oferta local.
  * Todos los números de aquí son supuestos de fase 1 marcados "por confirmar" en el plan (sección 8).
  */
+
+export type ModoIngreso = 'cruce_personal' | 'paqueteria'
 
 export interface ImportTier {
   /** Valor de la mercancía en USD, límite inferior inclusive. */
@@ -39,14 +45,32 @@ export interface Mailbox {
   impuestoVentaPct: number
   /** Envío de la tienda al buzón, en moneda local. Casi siempre 0 en EE. UU. por encima de un mínimo. */
   envioDomestico: number
-  /** Tarifa del buzón por reenviar un paquete a México, en moneda local del buzón. */
+  /** Tarifa del buzón por recibir y guardar un paquete, en moneda local. */
+  tarifaRecepcion: number
+  /** Cómo entra la mercancía a casa. */
+  modoIngreso: ModoIngreso
+  /** cruce_personal: costo del viaje al buzón por compra, en moneda local. 0 si el comprador pasa de todos modos. */
+  costoViaje: number
+  /** cruce_personal: franquicia de pasajero por persona y cruce, en USD. */
+  franquiciaUsd: number
+  /** cruce_personal: tasa global sobre el excedente de la franquicia. */
+  tasaExcedente: number
+  /** cruce_personal: valor máximo por encima del cual el pago simplificado no aplica y hace falta agente aduanal. */
+  topeSimplificadoUsd: number
+  /** paqueteria: tarifa del buzón por reenviar un paquete a casa, en moneda local. */
   tarifaReenvio: number
   diasTransitoEstimados: number
   /** Si el consignatario tiene RFC: requisito del procedimiento simplificado de paquetería en México. */
   consignatarioConRfc: boolean
 }
 
-/** Buzón de recepción en Texas. Dirección exacta y tarifa real: por confirmar. */
+/**
+ * Buzón de recepción en Texas, con cruce personal por tierra.
+ * Franquicia: la tabla PRODECON 2026 indica 500 USD por vía terrestre (300 USD en las reglas de 2024; 150 USD para
+ * residentes de la franja fronteriza, regla 3.4.1 RGCE). Qué monto aplica al comprador: por confirmar.
+ * Excedente: tasa global del 19 % sobre lo que supere la franquicia, con factura, hasta 3,000 USD (procedimiento
+ * simplificado): por confirmar en RGCE 2026 / ANAM.
+ */
 export const buzonTexas: Mailbox = {
   clave: 'buzon_tx',
   nombre: 'Buzón Texas',
@@ -54,8 +78,14 @@ export const buzonTexas: Mailbox = {
   currency: 'USD',
   impuestoVentaPct: 8.25, // tope combinado en Texas; la mayoría de las ciudades grandes lo aplican. Confirmar con la dirección.
   envioDomestico: 0,
-  tarifaReenvio: 35, // USD por paquete, supuesto; confirmar con el proveedor del buzón
-  diasTransitoEstimados: 7,
+  tarifaRecepcion: 5, // USD por paquete, supuesto; confirmar con el proveedor del buzón
+  modoIngreso: 'cruce_personal',
+  costoViaje: 0, // el comprador pasa por el buzón de todos modos
+  franquiciaUsd: 500,
+  tasaExcedente: 0.19,
+  topeSimplificadoUsd: 3000,
+  tarifaReenvio: 35, // solo si algún día se usa paquetería
+  diasTransitoEstimados: 3,
   consignatarioConRfc: true,
 }
 

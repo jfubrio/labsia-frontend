@@ -35,7 +35,9 @@ CREATE TABLE caza_watch_configs (
 );
 CREATE UNIQUE INDEX uniq_watch_config_per_product ON caza_watch_configs (product_id);
 
--- Buzones de recepción en el extranjero. Una compra en EE. UU. es doméstica allí (impuesto de venta) y se reenvía a casa.
+-- Buzones de recepción en el extranjero. Una compra en EE. UU. es doméstica allí (impuesto de venta). La mercancía
+-- entra a casa por cruce personal (franquicia de pasajero; tasa global solo sobre el excedente) o por paquetería
+-- (reenvío + importación por tramos de caza_reglas_importacion).
 CREATE TABLE caza_buzones (
   id                       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   clave                    TEXT NOT NULL UNIQUE,          -- 'buzon_tx'
@@ -44,12 +46,19 @@ CREATE TABLE caza_buzones (
   moneda                   CHAR(3) NOT NULL,
   impuesto_venta_pct       NUMERIC(5,2) NOT NULL,         -- según la dirección exacta del buzón
   envio_domestico          NUMERIC(12,2) NOT NULL DEFAULT 0,
-  tarifa_reenvio           NUMERIC(12,2) NOT NULL,        -- por paquete, en moneda del buzón
+  tarifa_recepcion         NUMERIC(12,2) NOT NULL DEFAULT 0, -- por paquete recibido, en moneda del buzón
+  modo_ingreso             TEXT NOT NULL DEFAULT 'cruce_personal', -- cruce_personal | paqueteria
+  costo_viaje              NUMERIC(12,2) NOT NULL DEFAULT 0, -- cruce_personal: costo del viaje atribuido a la compra
+  franquicia_usd           NUMERIC(12,2) NOT NULL DEFAULT 0, -- cruce_personal: franquicia de pasajero por persona y cruce
+  tasa_excedente           NUMERIC(6,4) NOT NULL DEFAULT 0.19, -- cruce_personal: tasa global sobre el excedente
+  tope_simplificado_usd    NUMERIC(12,2) NOT NULL DEFAULT 3000, -- cruce_personal: por encima requiere agente aduanal
+  tarifa_reenvio           NUMERIC(12,2) NOT NULL DEFAULT 0, -- paqueteria: por paquete reenviado, en moneda del buzón
   dias_transito_estimados  INTEGER NOT NULL DEFAULT 7,
   consignatario_con_rfc    BOOLEAN NOT NULL DEFAULT TRUE,
   activo                   BOOLEAN NOT NULL DEFAULT TRUE,
   notas                    TEXT,
-  creado_en                TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  creado_en                TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (modo_ingreso IN ('cruce_personal', 'paqueteria'))
 );
 
 -- Reglas de importación por tramos de valor (USD) entre un mercado de origen y el de casa. Siempre con fuente y vigencia.
@@ -183,7 +192,8 @@ CREATE TABLE caza_purchase_orders (
   precio_final       NUMERIC(12,2),
   moneda             CHAR(3) NOT NULL,
   buzon_id           UUID REFERENCES caza_buzones(id),
-  guia_reenvio       TEXT,                            -- rastreo del reenvío buzón → casa
+  guia_reenvio       TEXT,                            -- paqueteria: rastreo del reenvío buzón → casa
+  recogido_en        TIMESTAMPTZ,                     -- cruce_personal: cuándo se recogió en el buzón
   referencia_externa TEXT,
   creado_en          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   actualizado_en     TIMESTAMPTZ NOT NULL DEFAULT NOW()
