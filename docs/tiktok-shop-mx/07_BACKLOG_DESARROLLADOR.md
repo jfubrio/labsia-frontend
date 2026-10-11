@@ -4,14 +4,28 @@ Estado posible de un ticket: `pendiente`, `en curso`, `preliminar` (entregado co
 
 | Ticket | Trabajo | Criterio de aceptación | Estado | Notas |
 |---|---|---|---|---|
-| T00 | Preparar documentación y registro de decisiones | Alcance, responsables, restricciones y pendientes explícitos | pendiente | |
-| T01 | Verificar requisitos de afiliación en México | Fuentes oficiales fechadas; requisitos públicos separados del acceso real de cada cuenta | pendiente | |
-| T02 | Investigar los seis candidatos | Seis fichas, matriz comparativa, fuentes y limitaciones | pendiente | |
-| T03 | Validar productos y muestras | Variante, vendedor, elegibilidad, comisión, costos y derechos comprobados | pendiente | No iniciar sin aprobación tras T02. |
-| T04 | Diseñar MVP interno | Arquitectura y esquema de datos aprobados según necesidades observadas | pendiente | |
+| T00 | Preparar documentación y registro de decisiones | Alcance, responsables, restricciones y pendientes explícitos | hecho | 2026-10-11. `08_REGISTRO_DECISIONES.md`. Siete pendientes (P-01 a P-07) requieren al propietario. |
+| T01 | Verificar requisitos de afiliación en México | Fuentes oficiales fechadas; requisitos públicos separados del acceso real de cada cuenta | preliminar | 2026-10-11. `09_REQUISITOS_AFILIACION_MX.md`. Fuentes oficiales obtenidas vía índice de buscador (la red del entorno bloquea `*.tiktok.com`); permisos de cuenta no verificados. Cierre: lectura directa de 8 páginas oficiales y recorrido in-app por el propietario. |
+| T02 | Investigar los seis candidatos | Seis fichas, matriz comparativa, fuentes y limitaciones | preliminar | 2026-10-11, ronda 1 de 2. Seis fichas en `investigacion/` y `10_MATRIZ_NICHOS.md`. Puntuaciones incompletas (40 % del peso sin evidencia). Ronda 2 pendiente desde un entorno con acceso a tiktok.com y marketplaces MX. |
+| T03 | Validar productos y muestras | Variante, vendedor, elegibilidad, comisión, costos y derechos comprobados | pendiente | No iniciar sin aprobación tras T02. Requiere cuenta de creador verificada (P-04). Insumo: `11_HERRAMIENTAS_EXISTENTES.md`. |
+| T04 | Diseñar MVP interno | Arquitectura y esquema de datos aprobados según necesidades observadas | pendiente | Insumo: `11_HERRAMIENTAS_EXISTENTES.md` (Affiliate Creator API, conectores activos, patrón LABSIA). |
 | T05 | Implementar captura e importación | Validación, datos ausentes e importación sin duplicados | pendiente | |
 | T06 | Implementar contenido y aprobación | Ediciones invalidan aprobaciones previas; acciones trazables | pendiente | |
 | T07 | Implementar métricas y economía | Distingue comisiones estimadas, aprobadas y liquidadas | pendiente | |
 | T08 | Implementar permisos y respaldos | Accesos restringidos y restauración comprobada | pendiente | |
 | T09 | Ejecutar piloto autorizado | Contenido original, productos verificados y medición comparable | pendiente | |
 | T10 | Evaluar resultados | Decisión sustentada de continuar, modificar, extender o detener | pendiente | |
+
+## Registro de cambios de estado
+
+| Fecha | Ticket | De | A | Motivo |
+|---|---|---|---|---|
+| 2026-10-11 | T00 | pendiente | hecho | Documentación y registro de decisiones creados; pendientes explícitos. |
+| 2026-10-11 | T01 | pendiente | preliminar | Requisitos públicos documentados con fuentes oficiales fechadas; sin acceso directo a las páginas ni a una cuenta. |
+| 2026-10-11 | T02 | pendiente | preliminar | Ronda 1 completada sin abrir páginas; ronda 2 y dimensiones económicas pendientes. |
+
+## Trabajo adicional registrado (fuera de la numeración)
+
+| Fecha | Trabajo | Resultado |
+|---|---|---|
+| 2026-10-11 | Revisión de herramientas existentes aplicables (GitHub, PyPI, APIs oficiales, conectores de la sesión) | `11_HERRAMIENTAS_EXISTENTES.md`, preliminar; ninguna herramienta adoptada. |

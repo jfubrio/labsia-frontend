@@ -39,7 +39,12 @@ La segmentación se hará por **problema de compra, audiencia y profundidad del 
 | `08_REGISTRO_DECISIONES.md` | Resultado de T00: alcance, responsables, restricciones y pendientes. |
 | `09_REQUISITOS_AFILIACION_MX.md` | Resultado de T01: requisitos públicos con fuentes fechadas y permisos de cuenta no verificados. |
 | `10_MATRIZ_NICHOS.md` | Resultado de T02: matriz comparativa de los seis candidatos. |
-| `investigacion/` | Una ficha por candidato con las observaciones de T02. |
+| `11_HERRAMIENTAS_EXISTENTES.md` | Revisión preliminar de APIs oficiales, herramientas open source y conectores aplicables a T03–T08. |
+| `investigacion/` | Una ficha por candidato con las observaciones de T02 (`01_` a `06_`). |
+
+## Estado al 2026-10-11
+
+T00 hecho. T01 y T02 preliminares. Limitación principal de la sesión: la política de red del entorno bloqueó el acceso directo a `tiktok.com`, Mercado Libre y Amazon México, así que toda la evidencia proviene de fragmentos del índice del buscador. Ver detalles en cada documento.
 
 ## Restricciones operativas
 

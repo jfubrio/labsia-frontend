@@ -66,6 +66,7 @@ Convención: cada entrada indica si es **hecho** (consta en la especificación o
 | P-05 | **Disponibilidad de muestras**: ¿se comprarán productos para demostración, se solicitarán muestras al vendedor o ambas? | Afecta costos, tiempos y la facilidad de demostración original. | Política de muestras y tope de gasto. | T03, T09 |
 | P-06 | Datos fiscales: ¿el propietario tiene RFC activo y puede facturar/recibir pagos de plataforma en México? | Condición para liquidación de comisiones. Se registra como pendiente; no se guardan datos fiscales en el repo. | Confirmación sí/no. | T03, T07 |
 | P-07 | Criterio de parada del piloto (T10): umbral de comisión liquidada menos costos y plazo. | Sin criterio previo, la evaluación se sesga a posteriori. | Umbral y plazo. | T09, T10 |
+| P-08 | ¿Se registrará una aplicación pública de creador en TikTok Shop Partner Center para usar la Affiliate Creator API? | Es la única vía conforme a términos para importar comisiones (T05, T07); la alternativa es exportación manual desde la app. Implica abrir una cuenta de desarrollador. | Decisión sí/no y quién la registra. | T04, T05, T07 |
 
 ## 6. Supuestos de trabajo (inferencias, revisables)
 
@@ -79,4 +80,6 @@ Convención: cada entrada indica si es **hecho** (consta en la especificación o
 
 | Fecha | Evento |
 |---|---|
-| 2026-10-11 | Se crea `docs/tiktok-shop-mx/` con 00, 03, 07, 08, 09, 10 y fichas de investigación. Se ejecutan T00, T01 y T02 (ronda 1). |
+| 2026-10-11 | Se crea `docs/tiktok-shop-mx/` con 00, 03, 07, 08, 09, 10, 11 y seis fichas de investigación. Se ejecutan T00 (hecho), T01 y T02 ronda 1 (preliminares). |
+| 2026-10-11 | Limitación registrada: la política de red del entorno de ejecución bloqueó `*.tiktok.com`, `mercadolibre.com.mx`, `amazon.com.mx` y la mayoría de dominios (403 del proxy). Solo funcionó la búsqueda web. Ronda 2 de T02 y cierre de T01 requieren un entorno con esos dominios permitidos o trabajo manual del propietario. |
+| 2026-10-11 | Se añade P-08 (abajo) tras la revisión de herramientas. |
