@@ -19,10 +19,24 @@ Cualquier cambio aquí se hace con los números a la vista, no de memoria.
 
 Los parámetros viven en `MARKET_PRICE_DEFAULTS`. La sección 3 del plan los explica con el ejemplo de los Sony.
 
+## Dónde vive cada regla
+
+| Regla | Archivo | Pruebas |
+| --- | --- | --- |
+| Serie competitiva, precio real, régimen, confianza | `src/engines/market-price.ts` | `tests/market-price.test.ts` |
+| Veredicto de una oferta (real, falso, dudoso, mínimo histórico, sin historial, ancla inflada) | `src/engines/discount-validator.ts` | `tests/discount-validator.test.ts` |
+| Si una oferta se convierte en propuesta (stock, moneda base, objetivo, tope, confianza) | `src/engines/authorization.ts` (`proposePurchase`, `effectiveTargetPrice`) | `tests/authorization.test.ts` |
+| Si una propuesta aprobada llega a orden (interruptor, idempotencia, duplicados) | `src/engines/purchase-executor.ts` | `tests/purchase-executor.test.ts` |
+
+Un escenario puede demostrar una regla de cualquiera de las cuatro capas; la prueba va en la suite de la capa que
+decide. Ejemplo: "tienda sin stock" tiene veredicto `real` pero no genera propuesta, así que su prueba vive en
+`tests/authorization.test.ts`.
+
 ## Ver el perfil antes y después de cualquier cambio
 
 ```bash
-cd caza-ia && npm run profile              # sony-wh1000xm6 MX MXN
+cd caza-ia && npm install                  # solo la primera vez en local; en la nube lo hace el hook de arranque
+npm run profile                            # sony-wh1000xm6 MX MXN
 npm run profile -- <slug> MX MXN           # otro producto del fixture
 ```
 
@@ -38,9 +52,9 @@ demuestra y qué veredicto se espera) y `offers`. Pasos:
 
 1. Decide qué comportamiento del mercado quieres demostrar (un ancla inflada, un régimen al alza, una tienda sin stock, una oferta en otra moneda).
 2. Agrega el escenario al JSON y su nombre al tipo `MockScenario` en `src/connectors/mock.connector.ts`.
-3. Agrega una prueba en `tests/discount-validator.test.ts` (veredicto) o `tests/market-price.test.ts` (perfil) que afirme el veredicto y la razón de fondo, no solo el valor. Un buen test dice por qué: `expect(v.razon).toMatch(/lanzamiento/)`.
-4. Súmalo a la lista `scenarios` de `src/scripts/phase1-demo.ts` si aporta al recorrido de la demo.
-5. `npm run verify`.
+3. Agrega una prueba en la suite de la capa que decide (tabla de arriba) que afirme el resultado y la razón de fondo, no solo el valor. Un buen test dice por qué: `expect(v.razon).toMatch(/lanzamiento/)`.
+4. Súmalo a la lista `scenarios` de `src/scripts/phase1-demo.ts` si aporta al recorrido de la demo. La demo solo imprime la propuesta cuando existe: si el escenario demuestra una ausencia (sin stock, confianza baja, otra moneda), agrega una línea que lo diga para que no se vea igual que un escenario con propuesta.
+5. `npm run verify`. Si el conteo de pruebas aparece en algún documento, actualízalo o quítalo; es mejor que los documentos digan "la suite" que un número que envejece.
 
 ## Cambiar el historial del fixture
 

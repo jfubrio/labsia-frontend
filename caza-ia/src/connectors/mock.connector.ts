@@ -36,6 +36,7 @@ export type MockScenario =
   | 'ancla_lanzamiento'
   | 'descuento_dudoso'
   | 'minimo_historico'
+  | 'tienda_sin_stock'
   | 'comparacion_internacional'
 
 /**

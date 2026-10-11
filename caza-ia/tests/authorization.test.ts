@@ -58,6 +58,15 @@ describe('proposePurchase', () => {
     expect(proposePurchase({ ...obs, price: 7920 }, verdict, product, profile)).toBeNull()
   })
 
+  it('no propone una oferta sin stock aunque el veredicto sea real', async () => {
+    const { obs, verdict, proposal } = await judged('tienda_sin_stock')
+    expect(obs.inStock).toBe(false)
+    expect(verdict.veredicto).toBe('real') // el precio sí es bueno: 7,899 contra el precio real 8,999
+    expect(verdict.ahorroPctReal).toBeGreaterThanOrEqual(product.umbralDescuentoPct)
+    expect(verdict.confianza).toBe('alta')
+    expect(proposal).toBeNull() // pero no se puede comprar, así que no hay nada que proponer
+  })
+
   it('no propone con confianza baja', async () => {
     const { obs, verdict, profile } = await realProposal()
     expect(proposePurchase(obs, { ...verdict, confianza: 'baja' }, product, profile)).toBeNull()

@@ -768,6 +768,22 @@
     }
    ]
   },
+  "tienda_sin_stock": {
+    "description": "Amazon MX a 7,899 'antes 9,999' pero SIN STOCK. El veredicto sigue siendo REAL (se juzga contra el precio real ~8,999 y supera el 12 %), pero una oferta que no se puede comprar nunca genera propuesta de compra.",
+    "offers": [
+      {
+        "connector": "mock",
+        "store": "amazon_mx",
+        "market": "MX",
+        "currency": "MXN",
+        "price": 7899,
+        "advertisedPreviousPrice": 9999,
+        "inStock": false,
+        "url": "https://mock.local/mx/amazon/sony-wh1000xm6",
+        "seller": "Amazon MX (mock)"
+      }
+    ]
+  },
   "minimo_historico": {
    "description": "5,933 'antes 9,999': iguala o mejora el mejor precio competitivo de la ventana: MÍNIMO HISTÓRICO. Genera propuesta.",
    "offers": [

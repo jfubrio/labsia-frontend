@@ -19,8 +19,10 @@ humana. Plan: `caza-ia/docs/PLAN_DESARROLLO.md`. Herramientas y decisiones de in
 
 ## Comandos (desde `caza-ia/`)
 
+En local corre `npm install` la primera vez; en sesiones en la nube lo hace el hook de arranque.
+
 ```bash
-npm run verify     # typecheck + 43 pruebas + demo sin red (antes de cada push)
+npm run verify     # typecheck + suite de pruebas + demo sin red (antes de cada push)
 npm run db:check   # aplica migraciones en un PostgreSQL temporal y prueba las guardas
 npm run profile    # imprime el perfil de precio real del fixture (ajuste de parámetros)
 npm test -- tests/market-price.test.ts   # una sola suite

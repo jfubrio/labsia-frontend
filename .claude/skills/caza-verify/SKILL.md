@@ -45,4 +45,4 @@ Si cambiaste el motor de precio real o los veredictos, actualiza la sección 3 d
 ## 4. Reportar
 
 Di qué corrió y qué salió, con los números: cantidad de pruebas, si `db:check` pasó, y si algo quedó sin verificar
-y por qué. Un "todo bien" sin evidencia no sirve al que lee el PR.
+y por qué. No dejes conteos de pruebas fijos en CLAUDE.md ni en el README: envejecen con cada prueba nueva. Un "todo bien" sin evidencia no sirve al que lee el PR.

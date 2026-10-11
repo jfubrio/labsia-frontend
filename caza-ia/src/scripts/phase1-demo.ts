@@ -33,7 +33,7 @@ console.log(`   lanzamiento inflado: ${profile.lanzamientoInflado}  confianza: $
 for (const n of profile.notas) console.log(`   nota: ${n}`)
 console.log(`   objetivo efectivo: ${objetivo} ${product.monedaBase}${derivado ? ' (derivado del precio real menos ' + product.umbralDescuentoPct + '%)' : ''}; tope duro: ${product.precioMaximo}\n`)
 
-const scenarios: MockScenario[] = ['ancla_lanzamiento', 'descuento_falso', 'descuento_dudoso', 'descuento_real', 'minimo_historico', 'comparacion_internacional']
+const scenarios: MockScenario[] = ['ancla_lanzamiento', 'descuento_falso', 'descuento_dudoso', 'descuento_real', 'tienda_sin_stock', 'minimo_historico', 'comparacion_internacional']
 
 for (const scenario of scenarios) {
   const offers = (await new MockConnector(scenario).fetchOffers(product.slug, now)).map((o) => toObservation(product.slug, o))
@@ -45,6 +45,7 @@ for (const scenario of scenarios) {
       `   ${obs.store} ${obs.price} ${obs.currency} (anuncia antes: ${obs.advertisedPreviousPrice ?? '—'}, ${verdict.ahorroPctAnunciado ?? 0}%) → ${verdict.veredicto.toUpperCase()} | ${verdict.razon}`,
     )
     const proposal = proposePurchase(obs, verdict, product, prof)
+    if (!proposal && !obs.inStock) console.log('   Sin stock: no se genera propuesta de compra aunque el veredicto sea bueno.')
     if (proposal) {
       console.log(`   Propuesta de compra a ${proposal.precio} ${proposal.moneda} (objetivo ${proposal.precioObjetivo}). Requiere approve humano.`)
       const { authorization } = decideAuthorization({ proposal, decision: 'approve', autorizadoPor: 'demo@labsia.mx', product, ttlHours: env.DEFAULT_AUTHORIZATION_TTL_HOURS, now })
