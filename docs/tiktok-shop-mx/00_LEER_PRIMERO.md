@@ -41,6 +41,7 @@ La segmentación se hará por **problema de compra, audiencia y profundidad del 
 | `10_MATRIZ_NICHOS.md` | Resultado de T02: matriz comparativa de los seis candidatos. |
 | `11_HERRAMIENTAS_EXISTENTES.md` | Revisión preliminar de APIs oficiales, herramientas open source y conectores aplicables a T03–T08. |
 | `12_GUIA_RONDA2.md` | Cómo ejecutar la ronda 2 de T02, a mano o con un agente, y plantillas CSV en `investigacion/ronda2/`. |
+| `13_ESTRATEGIA_AUDIENCIA.md` | Fase orgánica de seguidores y alcance antes de invertir (D-08, T02B); registro por video en `audiencia/`. |
 | `investigacion/` | Una ficha por candidato con las observaciones de T02 (`01_` a `06_`). |
 
 ## Estado al 2026-10-11
@@ -60,6 +61,7 @@ En `.claude/skills/` hay skills que encapsulan el flujo de este proyecto. Se car
 | `tsmx-decision` | Registrar decisiones, pendientes y supuestos en `08_REGISTRO_DECISIONES.md`. |
 | `tsmx-requisitos` | Verificar y actualizar T01 con fuentes oficiales fechadas. |
 | `tsmx-validar-producto` | Plantilla y flujo de T03; solo con autorización registrada. |
+| `tsmx-audiencia` | Planificar videos, registrar métricas y aplicar las reglas de decisión de la fase de audiencia (`scripts/audiencia.py`). |
 
 ## Restricciones operativas
 
