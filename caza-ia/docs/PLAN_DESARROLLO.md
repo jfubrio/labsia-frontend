@@ -89,13 +89,16 @@ Esquema lógico implementado en `src/db/migrations/001_caza_ia_schema.sql` y `00
 
 Integraciones por validar en fase 0 (acceso, API oficial o scraping permitido, límites de tasa):
 
-| Integración | Mercado | Uso | Estado |
-| --- | --- | --- | --- |
-| Amazon México | MX | precio, stock, compra | por validar |
-| Sony Store México | MX | precio, stock | por validar |
-| Amazon US / Best Buy | US | comparación internacional | por validar |
-| Banxico / API de tipo de cambio | — | conversión de moneda | por validar |
-| Mercado Libre | MX | precio, stock | por validar |
+| Integración | Mercado | Uso | Vía | Estado |
+| --- | --- | --- | --- | --- |
+| Amazon México | MX | precio, stock | PA-API 5.0 (requiere cuenta Associates con ventas); sin scraping | por validar |
+| Keepa | MX | historial de precios de Amazon | API de pago; cobertura MX por confirmar | por validar |
+| Sony Store México | MX | precio, stock | changedetection.io o Crawlee, si robots.txt y términos lo permiten | por validar |
+| Mercado Libre | MX | precio, stock | API oficial con OAuth; búsqueda pública cerrada desde 2025 (por confirmar) | por validar |
+| Amazon US / Best Buy | US | comparación internacional | PA-API US / Best Buy Developer API | por validar |
+| Banxico SIE / Frankfurter | — | tipo de cambio FIX | API oficial gratuita con token / respaldo autoalojado | por validar |
+
+Evaluación detallada de herramientas, licencias y decisiones por fase en [HERRAMIENTAS_EXISTENTES.md](HERRAMIENTAS_EXISTENTES.md).
 
 `[PENDIENTE: texto original — endpoints de la API interna]`
 
@@ -150,7 +153,7 @@ Definida en `src/config/products/sony-wh1000xm6.ts`:
 | --- | --- |
 | Producto | Sony WH-1000XM6 (audífonos inalámbricos con cancelación de ruido) |
 | Moneda base | MXN |
-| Precio de referencia (lista MX) | 9,999 MXN `[confirmar]` |
+| Precio de referencia (lista MX) | 9,999 MXN en Amazon MX; 11,999 MXN en Sony Store al lanzamiento `[confirmar]` |
 | Precio objetivo | 7,999 MXN |
 | Precio máximo autorizable | 8,499 MXN |
 | Umbral de descuento real | 12 % |

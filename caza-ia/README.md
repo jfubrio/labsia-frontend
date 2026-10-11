@@ -51,6 +51,8 @@ Hay tres capas y las tres deben estar abiertas para que una orden exista:
 
 ## Pendientes antes de la fase 2
 
+- Revisar [docs/HERRAMIENTAS_EXISTENTES.md](docs/HERRAMIENTAS_EXISTENTES.md) y resolver las tareas de fase 0 que lista (cuenta de Amazon Associates, Keepa, Mercado Libre, Sony Store, Banxico, Best Buy).
+
 - Pegar el texto completo del plan original en `docs/PLAN_DESARROLLO.md` donde dice `[PENDIENTE: texto original]`.
 - Confirmar las decisiones de la sección 8 del plan (moneda base, umbral, vigencia, supuestos de importación).
 - Confirmar el precio de lista de los Sony WH-1000XM6 en México.
