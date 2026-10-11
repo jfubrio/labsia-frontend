@@ -13,13 +13,18 @@ garantiza que lo que se sube funciona y respeta las reglas del proyecto.
 Desde `caza-ia/`:
 
 ```bash
-npm run verify      # typecheck + pruebas + demo (sin red). ~10 s
-npm run db:check    # migraciones en PostgreSQL temporal + guardas. ~5 s. Solo si tocaste src/db/
+npm run verify      # typecheck + pruebas unitarias + demo (sin red). ~10 s
+npm run db:check    # migraciones en PostgreSQL temporal + guardas. ~5 s. Si tocaste src/db/
+npm run test:db     # integración de la vigilancia en PostgreSQL temporal. ~10 s. Si tocaste src/db/ o src/watch/
+npm run phase2:check  # dos ciclos de vigilancia persistidos. Si tocaste src/watch/ o los repositorios
+npm run phase2:worker-check  # scheduler + worker con Redis temporal. Si tocaste src/watch/scheduler.ts
 ```
 
 Qué significa cada salida:
 - `verify` termina con `Órdenes creadas: 0 (esperado: 0)`. Si aparece otro número, el ejecutor dejó pasar una compra con el interruptor apagado: detente y corrige antes de nada.
 - `db:check` termina con `OK: migraciones y guardas verificadas` y reporta 4 errores esperados y 1 orden. Menos errores significa que una guarda dejó de bloquear.
+
+- `test:db` corre `tests/db/` con `DATABASE_URL` exportada por `scripts/with-temp-pg.sh`; en `npm test` esas pruebas se omiten a propósito.
 
 Si falta PostgreSQL, `db:check` sale con código 2 y lo dice. Entonces reporta que las migraciones no se validaron en lugar de asumirlo.
 

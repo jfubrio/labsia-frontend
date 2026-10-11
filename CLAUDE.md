@@ -22,15 +22,21 @@ humana. Plan: `caza-ia/docs/PLAN_DESARROLLO.md`. Herramientas y decisiones de in
 En local corre `npm install` la primera vez; en sesiones en la nube lo hace el hook de arranque.
 
 ```bash
-npm run verify     # typecheck + suite de pruebas + demo sin red (antes de cada push)
-npm run db:check   # aplica migraciones en un PostgreSQL temporal y prueba las guardas
-npm run profile    # imprime el perfil de precio real del fixture (ajuste de parámetros)
+npm run verify        # typecheck + suite unitaria + demo sin red (antes de cada push)
+npm run db:check      # aplica migraciones en un PostgreSQL temporal y prueba las guardas
+npm run test:db       # pruebas de integración de la vigilancia (PostgreSQL temporal); obligatorio si tocaste src/db o src/watch
+npm run phase2:check  # criterio de aceptación de la fase 2 (dos ciclos de vigilancia persistidos)
+npm run phase2:worker-check  # programador BullMQ + worker con Redis temporal; obligatorio si tocaste src/watch/scheduler.ts
+npm run profile       # imprime el perfil de precio real del fixture (ajuste de parámetros)
 npm test -- tests/market-price.test.ts   # una sola suite
 ```
 
+Infraestructura: PostgreSQL vía `DATABASE_URL` (fase 2+); Redis vía `REDIS_URL` solo para el programador BullMQ
+(`npm run watch:worker`). Las pruebas no necesitan Redis.
+
 ## Convenciones
 
-- Node 22, TypeScript estricto, ESM (`.js` en los imports relativos), Vitest, zod. Sin frameworks nuevos sin acordarlo.
+- Node 22, TypeScript estricto, ESM (`.js` en los imports relativos), Vitest, zod, `pg` con SQL explícito, BullMQ. Sin frameworks nuevos sin acordarlo.
 - Migraciones SQL numeradas en `src/db/migrations/`; mientras nada esté desplegado se editan en sitio; después, solo se agregan.
 - Español en documentación, mensajes y nombres de columnas; inglés en identificadores de código.
 - Datos de prueba sintéticos en `src/connectors/fixtures/`; nunca datos reales de tiendas.

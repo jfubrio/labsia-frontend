@@ -165,6 +165,8 @@ Esquema lógico implementado en `src/db/migrations/001_caza_ia_schema.sql` y `00
 | `caza_price_observations` | Cada precio observado: tienda, precio, precio anunciado anterior, moneda, stock, URL, hash de la oferta |
 | `caza_market_price_profiles` | Perfil de precio real de mercado por producto, mercado y moneda: serie competitiva, precio real, piso, techo, régimen, confianza |
 | `caza_discount_verdicts` | Veredicto por observación contra el perfil de precio real |
+| `caza_purchase_proposals` | Propuestas generadas por la vigilancia, pendientes de `approve`/`reject`; una sola pendiente por producto (índice único parcial) |
+| `caza_watch_runs` | Una fila por ciclo de vigilancia: disparador, conectores, conteos, estado y error |
 | `caza_purchase_authorizations` | `approve`/`reject` del operador, vigencia, vínculo con observación; tope en moneda de la oferta, aterrizado en base y buzón |
 | `caza_purchase_orders` | Órdenes (ninguna se crea con compras deshabilitadas); índice único parcial anti-duplicados |
 | `caza_audit_log` | Todo evento relevante, inmutable |
@@ -204,11 +206,11 @@ Prevención de duplicados, en este orden:
 
 ## 6. Etapas de desarrollo
 
-| Fase | Objetivo | Depende de | Entregables | Criterio de aceptación |
-| --- | --- | --- | --- | --- |
-| 0 | Validar accesos e integraciones | — | Tabla de conectores con estado, términos revisados | Cada conector marcado `validado` o `descartado` con evidencia |
-| 1 | Motor de precio real de mercado, base de datos, configuración de los Sony, conector mock | 0 (puede avanzar en paralelo con mock) | Migraciones 001–003, motor de precio real con historial multitienda, `sony-wh1000xm6.ts`, conector mock, motores con pruebas | `npm test` y `npm run typecheck` en verde; el ancla de lanzamiento se juzga `falso`; demo corre sin red; ninguna orden creada |
-| 2 | Vigilancia programada | 1 | Worker BullMQ, programación por producto, persistencia en Postgres | Observaciones cada N horas en DB con historial consultable |
+| Fase | Objetivo | Depende de | Entregables | Criterio de aceptación | Estado |
+| --- | --- | --- | --- | --- | --- |
+| 0 | Validar accesos e integraciones | — | Tabla de conectores con estado, términos revisados | Cada conector marcado `validado` o `descartado` con evidencia | pendiente: requiere cuentas y accesos del usuario (ver HERRAMIENTAS_EXISTENTES.md, sección 9) |
+| 1 | Motor de precio real de mercado, base de datos, configuración de los Sony, conector mock | 0 (puede avanzar en paralelo con mock) | Migraciones 001–003, motor de precio real con historial multitienda, `sony-wh1000xm6.ts`, conector mock, motores con pruebas | `npm test` y `npm run typecheck` en verde; el ancla de lanzamiento se juzga `falso`; demo corre sin red; ninguna orden creada | cerrada (`npm run verify`, `npm run db:check`) |
+| 2 | Vigilancia programada | 1 | Repositorios PostgreSQL, ciclo `runWatch` (observar → perfil por mercado → veredicto → propuesta pendiente), programador BullMQ con un Job Scheduler por producto, worker, `watch:once` sin Redis | Observaciones periódicas en DB con historial consultable y perfil recalculado en cada ciclo; ninguna orden | cerrada (`npm run phase2:check`, `npm run test:db`, `npm run phase2:worker-check` con Redis y PostgreSQL temporales) |
 | 3 | Conectores reales MX | 0, 2 | Amazon MX, Sony Store MX | Precio real coincide con la página en 3 verificaciones manuales |
 | 4 | Compra en EE. UU. en vivo | 3 | Conectores US, tipo de cambio diario (Banxico), tarifa real del buzón, franquicia y tasa de excedente confirmadas | Precio aterrizado reproducible con la fórmula documentada contra un ticket real de compra y cruce |
 | 5 | Panel y flujo `approve` | 2 | API + UI de propuestas, aprobación con vigencia | Aprobación registrada en audit log; rechazo bloquea orden |
@@ -234,6 +236,8 @@ Prevención de duplicados, en este orden:
 - [ ] Franquicia de pasajero que aplica al comprador: 500 USD general por tierra (PRODECON 2026) o 150 USD si cuenta como residente de la franja fronteriza. Cambia qué compras quedan libres de impuestos.
 - [ ] Excedente de franquicia: confirmar 19 % de tasa global, requisito de factura y tope de 3,000 USD del pago simplificado (RGCE 2026 / ANAM).
 - [ ] Cómo repartir la franquicia entre varias compras que cruzan juntas (fase 5).
+- [ ] Vigencia de una propuesta pendiente sin respuesta: hoy no expira sola; definir en fase 5 cuándo pasa a `expirada` para que la vigilancia pueda proponer de nuevo.
+- [ ] Intervalo de vigilancia por producto: 6 h por defecto; el arrastre de precio vigente del motor (7 días) debe acortarse al activar vigilancia real.
 - [ ] Tramos de importación por paquetería desde EE. UU. (ruta alternativa): confirmar vigencia en DOF/SAT.
 - [ ] Alcance de tiendas de EE. UU. tras la fase 0: Amazon US, Best Buy, Walmart, eBay confirmadas como candidatas; B&H y Newegg dependen de términos.
 - [ ] Qué tiendas quedan en el alcance tras la fase 0.

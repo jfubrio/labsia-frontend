@@ -3,7 +3,17 @@
 Vigilancia de precios, **precio real de mercado a partir del comportamiento de la oferta competitiva en el tiempo**, validación de descuentos, comparación internacional y compras con autorización humana. El precio de lista, el de lanzamiento y el "antes" que anuncia una tienda nunca son referencia.
 Este directorio contiene la **fase 1** del plan ([docs/PLAN_DESARROLLO.md](docs/PLAN_DESARROLLO.md)).
 
-**Estado:** compras deshabilitadas, vigilancia no activada, conectores reales pendientes de validación (fase 0).
+**Estado:** fases 1 y 2 cerradas. Compras deshabilitadas, vigilancia implementada pero no activada en ningún producto, conectores reales pendientes de validación (fase 0).
+
+## Qué incluye la fase 2 (vigilancia programada)
+
+| Pieza | Ruta | Notas |
+| --- | --- | --- |
+| Cliente y repositorios PostgreSQL | `src/db/client.ts`, `src/db/repositories/` | Productos, observaciones (historial por mercado y moneda), perfiles, veredictos, propuestas, corridas, audit log |
+| Ciclo de vigilancia | `src/watch/run-watch.ts` | Observa con los conectores usables → recalcula el perfil de precio real por mercado con el historial de la DB → juzga → registra una propuesta pendiente de approve (una sola por producto). Nunca compra |
+| Programador y worker | `src/watch/scheduler.ts` | BullMQ sobre Redis: un Job Scheduler por producto con `vigilancia_activa`, repetido cada `intervalo_minutos`; worker con concurrencia 1 |
+| Ciclo manual sin Redis | `src/scripts/watch-once.ts` | `npm run watch:once -- <slug> [--seed-history] [--activate]` |
+| Criterio de aceptación | `scripts/phase2-check.sh`, `scripts/phase2-worker-check.sh` | Dos ciclos contra un PostgreSQL temporal: historial consultable, perfil recalculado por ciclo, 0 órdenes. El worker: scheduler sincronizado dos veces sin duplicar, primer job completado y registrado como corrida `scheduler`, scheduler retirado al desactivar la vigilancia |
 
 ## Qué incluye la fase 1
 
@@ -25,11 +35,24 @@ Este directorio contiene la **fase 1** del plan ([docs/PLAN_DESARROLLO.md](docs/
 ```bash
 cd caza-ia
 npm install
-npm run verify      # typecheck + pruebas + demo sin red (lo que se corre antes de cada push)
-npm run db:check    # aplica las migraciones en un PostgreSQL temporal y comprueba las guardas de compra
-npm run profile     # imprime el perfil de precio real de mercado del fixture y su serie diaria
-npm run demo        # recorre los seis escenarios sin red ni base de datos
+npm run verify        # typecheck + pruebas unitarias + demo sin red (lo que se corre antes de cada push)
+npm run db:check      # aplica las migraciones en un PostgreSQL temporal y comprueba las guardas de compra
+npm run test:db       # pruebas de integración de la vigilancia contra un PostgreSQL temporal
+npm run phase2:check  # criterio de aceptación de la fase 2: dos ciclos de vigilancia persistidos
+npm run phase2:worker-check  # programador BullMQ + worker contra Redis y PostgreSQL temporales (usa REDIS_URL si existe)
+npm run profile       # imprime el perfil de precio real de mercado del fixture y su serie diaria
+npm run demo          # recorre los nueve escenarios sin red ni base de datos
 ```
+
+Vigilancia contra una base de datos propia (`DATABASE_URL`) y, para el programador, Redis (`REDIS_URL`):
+
+```bash
+npm run watch:once -- sony-wh1000xm6 --seed-history   # un ciclo manual, sin Redis; --seed-history solo para demostrar
+npm run watch:once -- sony-wh1000xm6 --activate       # marca vigilancia_activa para que el programador lo tome
+npm run watch:worker                                  # programador BullMQ + worker (requiere REDIS_URL)
+```
+
+Ningún producto tiene `vigilancia_activa` por defecto: activarla es una decisión explícita.
 
 Skills de Claude Code para este proyecto en `../.claude/skills/` (`caza-verify`, `caza-scenario`, `caza-connector`,
 `caza-migration`, `caza-phase`, `steward`); las convenciones generales están en `../CLAUDE.md`. Las sesiones en la nube
@@ -55,9 +78,10 @@ Hay tres capas y las tres deben estar abiertas para que una orden exista:
 2. `caza_settings.purchases_enabled = 'true'` en la base de datos. El trigger `trg_a_purchases_enabled` aborta cualquier `INSERT` en `caza_purchase_orders` mientras sea `false`.
 3. Una autorización `approve` vigente, no consumida, para esa observación y con precio dentro del tope.
 
-## Pendientes antes de la fase 2
+## Pendientes antes de la fase 3
 
-- Revisar [docs/HERRAMIENTAS_EXISTENTES.md](docs/HERRAMIENTAS_EXISTENTES.md) y resolver las tareas de fase 0 que lista (cuenta de Amazon Associates, Keepa, Mercado Libre, Sony Store, Banxico, Best Buy).
+- Revisar [docs/HERRAMIENTAS_EXISTENTES.md](docs/HERRAMIENTAS_EXISTENTES.md) y resolver las tareas de fase 0 que lista (cuenta de Amazon Associates, Keepa, Mercado Libre, Sony Store, Banxico, Best Buy, buzón en Texas).
+- Al desplegar, el primer disparo de cada Job Scheduler se alinea al siguiente múltiplo del intervalo (con 6 h puede tardar hasta 6 h); si hace falta un ciclo inmediato, correr `npm run watch:once`.
 
 - Pegar el texto completo del plan original en `docs/PLAN_DESARROLLO.md` donde dice `[PENDIENTE: texto original]`.
 - Confirmar las decisiones de la sección 8 del plan (moneda base, umbral, vigencia, supuestos de importación).

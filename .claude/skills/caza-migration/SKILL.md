@@ -35,8 +35,8 @@ Levanta un PostgreSQL temporal, aplica todas las migraciones con `ON_ERROR_STOP`
 `src/db/checks/guards_check.sql`. Debe terminar en `OK` con 4 errores esperados y 1 orden. Si cambias una guarda,
 amplía `guards_check.sql` con el caso nuevo y actualiza el conteo esperado en `scripts/pg-check.sh`.
 
-Si la columna nueva la escribe o lee el código, agrega el campo al tipo correspondiente en `src/types.ts` y a la
-tabla de "Base de datos" de la sección 4 del plan.
+Si la columna nueva la escribe o lee el código, agrega el campo al tipo correspondiente en `src/types.ts`, al
+repositorio en `src/db/repositories/` y a la tabla de "Base de datos" de la sección 4 del plan; luego `npm run test:db`.
 
 ## Cuando llegue Drizzle (fase 2+)
 

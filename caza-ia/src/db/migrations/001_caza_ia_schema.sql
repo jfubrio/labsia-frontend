@@ -163,6 +163,45 @@ CREATE TABLE caza_discount_verdicts (
   CHECK (veredicto IN ('minimo_historico', 'real', 'dudoso', 'falso', 'sin_historial'))
 );
 
+-- Propuestas de compra generadas por la vigilancia. Esperan approve/reject del operador (fase 5).
+CREATE TABLE caza_purchase_proposals (
+  id                     UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id             UUID NOT NULL REFERENCES caza_products(id) ON DELETE CASCADE,
+  observation_id         UUID NOT NULL UNIQUE REFERENCES caza_price_observations(id) ON DELETE CASCADE,
+  verdict_id             UUID REFERENCES caza_discount_verdicts(id),
+  precio                 NUMERIC(12,2) NOT NULL,
+  moneda                 CHAR(3) NOT NULL,
+  precio_objetivo        NUMERIC(12,2) NOT NULL,       -- en moneda base
+  objetivo_derivado      BOOLEAN NOT NULL,
+  precio_aterrizado_base NUMERIC(12,2) NOT NULL,
+  moneda_base            CHAR(3) NOT NULL,
+  buzon_id               UUID REFERENCES caza_buzones(id),
+  motivo                 TEXT NOT NULL,
+  estado                 TEXT NOT NULL DEFAULT 'pendiente', -- pendiente | aprobada | rechazada | expirada
+  creado_en              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (estado IN ('pendiente', 'aprobada', 'rechazada', 'expirada'))
+);
+CREATE INDEX idx_proposals_product_estado ON caza_purchase_proposals (product_id, estado, creado_en DESC);
+-- Una sola propuesta pendiente por producto: la vigilancia no debe acumular propuestas que nadie revisa.
+CREATE UNIQUE INDEX uniq_pending_proposal_per_product ON caza_purchase_proposals (product_id) WHERE estado = 'pendiente';
+
+-- Corridas de vigilancia: evidencia de que las observaciones son periódicas y de qué pasó en cada una.
+CREATE TABLE caza_watch_runs (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id      UUID NOT NULL REFERENCES caza_products(id) ON DELETE CASCADE,
+  iniciado_en     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  terminado_en    TIMESTAMPTZ,
+  disparador      TEXT NOT NULL,                     -- scheduler | manual
+  conectores      TEXT[] NOT NULL DEFAULT '{}',
+  observaciones   INTEGER NOT NULL DEFAULT 0,
+  veredictos      INTEGER NOT NULL DEFAULT 0,
+  propuestas      INTEGER NOT NULL DEFAULT 0,
+  estado          TEXT NOT NULL DEFAULT 'en_curso',  -- en_curso | ok | error
+  error           TEXT,
+  CHECK (estado IN ('en_curso', 'ok', 'error'))
+);
+CREATE INDEX idx_watch_runs_product_time ON caza_watch_runs (product_id, iniciado_en DESC);
+
 -- Autorizaciones del operador (approve / reject)
 CREATE TABLE caza_purchase_authorizations (
   id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

@@ -14,6 +14,10 @@ const schema = z.object({
     .transform((v) => v === 'true'),
   DEFAULT_AUTHORIZATION_TTL_HOURS: z.coerce.number().positive().default(24),
   USD_MXN_RATE: z.coerce.number().positive().default(18.5),
+  /** Fase 2+: persistencia. Vacía en fase 1 (demo y pruebas unitarias no la necesitan). */
+  DATABASE_URL: z.string().default(''),
+  /** Fase 2+: programador BullMQ. Vacía si solo se corre watch:once. */
+  REDIS_URL: z.string().default(''),
 })
 
 export type Env = z.infer<typeof schema>
