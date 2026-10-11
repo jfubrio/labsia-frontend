@@ -97,7 +97,7 @@ Ning√∫n producto tiene `vigilancia_activa` por defecto: activarla es una decisi√
 API del operador (`DATABASE_URL` y `CAZA_API_TOKEN` obligatorios; `REDIS_URL` opcional para resincronizar el programador al activar vigilancia):
 
 ```bash
-CAZA_API_TOKEN=un-token-largo npm run api     # http://localhost:3080/dashboard (tablero) y /ui (approve/reject)
+CAZA_API_TOKEN=$(openssl rand -hex 24) npm run api     # http://localhost:3080/dashboard (tablero) y /ui (approve/reject)
 curl -H "X-CAZA-Token: un-token-largo" localhost:3080/api/v1/caza/proposals
 curl -H "X-CAZA-Token: un-token-largo" -H 'content-type: application/json' \
      -d '{"decididoPor":"tu@correo"}' -X POST localhost:3080/api/v1/caza/proposals/<id>/approve

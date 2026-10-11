@@ -76,3 +76,18 @@ describe('validateDiscount contra el precio real de mercado', () => {
     expect(v.tiendas).toBe(3)
   })
 })
+
+import { toObservation, safeHttpUrl } from '../src/engines/ingest.js'
+
+describe('ingesta: solo enlaces http(s)', () => {
+  it('descarta esquemas peligrosos y conserva http(s)', () => {
+    expect(safeHttpUrl('javascript:alert(1)')).toBe('')
+    expect(safeHttpUrl('data:text/html,<script>')).toBe('')
+    expect(safeHttpUrl('no es url')).toBe('')
+    expect(safeHttpUrl('https://www.bestbuy.com/x?a=1')).toBe('https://www.bestbuy.com/x?a=1')
+  })
+  it('toObservation limpia la URL antes de calcular el hash y persistir', () => {
+    const o = toObservation('s', { connector: 'webhook', market: 'MX', currency: 'MXN', price: 10, inStock: true, url: 'javascript:alert(1)', observedAt: new Date() })
+    expect(o.url).toBe('')
+  })
+})

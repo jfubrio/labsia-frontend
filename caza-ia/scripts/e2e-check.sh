@@ -20,11 +20,11 @@ exec scripts/with-temp-pg.sh bash -c '
   " &
   WH=$!
   sleep 1
-  export CAZA_NOTIFY_WEBHOOK_URL=http://127.0.0.1:3998/caza CAZA_API_TOKEN=e2e CAZA_API_PORT=3083 CAZA_PHASE=6 PURCHASES_ENABLED=true
+  export CAZA_NOTIFY_WEBHOOK_URL=http://127.0.0.1:3998/caza CAZA_API_TOKEN=e2e-token-de-prueba-0123456789 CAZA_API_PORT=3083 CAZA_PHASE=6 PURCHASES_ENABLED=true
   npx tsx src/scripts/api-server.ts > "$S/api.log" 2>&1 &
   API=$!
   for i in $(seq 1 30); do curl -fs localhost:3083/health >/dev/null 2>&1 && break; sleep 0.5; done
-  H="X-CAZA-Token: e2e"; J="content-type: application/json"
+  H="X-CAZA-Token: e2e-token-de-prueba-0123456789"; J="content-type: application/json"
   echo "== 1. historial + vigilancia (propuesta + alerta)"
   npx tsx src/scripts/watch-once.ts sony-wh1000xm6 --seed-history --activate | grep -E "corrida|tipo de cambio"
   PID=$(curl -s -H "$H" "localhost:3083/api/v1/caza/proposals?estado=pendiente" | node -e "process.stdin.on(\"data\",d=>console.log(JSON.parse(d)[0].id))")

@@ -11,6 +11,9 @@ import { defaultComparisonConfig } from '../engines/international-comparison.js'
 import { createNotifiers } from '../notify/notifier.js'
 
 const env = loadEnv()
+if (env.CAZA_API_TOKEN.length < 24) {
+  throw new Error('CAZA: CAZA_API_TOKEN debe tener al menos 24 caracteres (genera uno con: openssl rand -hex 24)')
+}
 const db = createDb(env.DATABASE_URL)
 const app = buildApp({
   db,

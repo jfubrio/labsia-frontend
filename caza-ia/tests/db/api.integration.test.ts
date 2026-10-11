@@ -45,6 +45,8 @@ d('API del operador: approve y reject (fase 5)', () => {
 
   it('rechaza peticiones sin token y responde /health sin él', async () => {
     expect((await app.inject({ method: 'GET', url: '/api/v1/caza/proposals' })).statusCode).toBe(401)
+    expect((await app.inject({ method: 'GET', url: '/api/v1/caza/proposals', headers: { 'x-caza-token': TOKEN + 'x' } })).statusCode).toBe(401)
+    expect((await app.inject({ method: 'GET', url: '/api/v1/caza/proposals', headers: { 'x-caza-token': TOKEN.slice(0, -1) } })).statusCode).toBe(401)
     expect((await app.inject({ method: 'GET', url: '/health' })).statusCode).toBe(200)
     expect((await app.inject({ method: 'GET', url: '/ui', headers: H })).headers['content-type']).toMatch(/text\/html/)
   })

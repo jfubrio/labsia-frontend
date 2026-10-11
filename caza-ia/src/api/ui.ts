@@ -27,6 +27,9 @@ export function operatorPage(): string {
 const $ = (s) => document.querySelector(s);
 $('#who').value = sessionStorage.getItem('caza.who') || ''; $('#tok').value = sessionStorage.getItem('caza.tok') || '';
 const headers = () => ({ 'content-type': 'application/json', 'x-caza-token': $('#tok').value });
+// Todo texto que viene de la base de datos puede venir de una tienda o de la ingesta externa: se escapa siempre.
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const safeUrl = (u) => /^https?:/i.test(String(u ?? '')) ? esc(u) : '';
 const fmt = (n, c) => Number(n).toLocaleString('es-MX', { style: 'currency', currency: c.trim() });
 async function load() {
   sessionStorage.setItem('caza.who', $('#who').value); sessionStorage.setItem('caza.tok', $('#tok').value);
@@ -35,14 +38,14 @@ async function load() {
   if (!r.ok) { $('#msg').innerHTML = '<span class="warn">' + (r.status === 401 ? 'Token inválido' : 'Error ' + r.status) + '</span>'; return; }
   const rows = await r.json(); $('#msg').textContent = rows.length ? rows.length + ' pendiente(s)' : 'Sin propuestas pendientes';
   $('#list').innerHTML = rows.map(p => \`
-    <div class="card" data-id="\${p.id}">
-      <div class="row"><span class="big">\${fmt(p.precio, p.moneda)}</span><span>\${p.product_nombre}</span><span class="k">\${p.tienda || ''}</span></div>
-      <div class="row"><span><span class="k">aterrizado</span> \${fmt(p.precio_aterrizado_base, p.moneda_base)}\${p.buzon ? ' vía ' + p.buzon : ''}</span>
-        <span><span class="k">objetivo</span> \${fmt(p.precio_objetivo, p.moneda_base)}\${p.objetivo_derivado ? ' (derivado)' : ''}</span>
-        <span><span class="k">veredicto</span> \${p.veredicto || ''} · \${p.confianza || ''}</span>
-        <span><span class="k">expira</span> \${new Date(p.expira_en).toLocaleString('es-MX')}</span></div>
-      <div class="k">\${p.motivo}</div>
-      \${p.url ? '<div><a href="' + p.url + '" target="_blank" rel="noopener">ver oferta</a></div>' : ''}
+    <div class="card" data-id="\${esc(p.id)}">
+      <div class="row"><span class="big">\${esc(fmt(p.precio, p.moneda))}</span><span>\${esc(p.product_nombre)}</span><span class="k">\${esc(p.tienda)}</span></div>
+      <div class="row"><span><span class="k">aterrizado</span> \${esc(fmt(p.precio_aterrizado_base, p.moneda_base))}\${p.buzon ? ' vía ' + esc(p.buzon) : ''}</span>
+        <span><span class="k">objetivo</span> \${esc(fmt(p.precio_objetivo, p.moneda_base))}\${p.objetivo_derivado ? ' (derivado)' : ''}</span>
+        <span><span class="k">veredicto</span> \${esc(p.veredicto)} · \${esc(p.confianza)}</span>
+        <span><span class="k">expira</span> \${esc(new Date(p.expira_en).toLocaleString('es-MX'))}</span></div>
+      <div class="k">\${esc(p.motivo)}</div>
+      \${safeUrl(p.url) ? '<div><a href="' + safeUrl(p.url) + '" target="_blank" rel="noopener noreferrer">ver oferta</a></div>' : ''}
       <div class="row"><button class="ok" data-act="approve">Aprobar</button><button class="no" data-act="reject">Rechazar</button></div>
     </div>\`).join('');
 }
@@ -53,7 +56,7 @@ $('#list').addEventListener('click', async (e) => {
   const motivo = act === 'reject' ? (prompt('Motivo del rechazo (opcional)') || undefined) : undefined;
   if (!confirm((act === 'approve' ? 'Aprobar' : 'Rechazar') + ' esta propuesta como ' + who + '?')) return;
   const r = await fetch('/api/v1/caza/proposals/' + id + '/' + act, { method: 'POST', headers: headers(), body: JSON.stringify({ decididoPor: who, motivo }) });
-  const j = await r.json(); $('#msg').innerHTML = r.ok ? 'Propuesta ' + j.proposal.estado : '<span class="warn">' + (j.error || 'Error') + '</span>';
+  const j = await r.json(); $('#msg').innerHTML = r.ok ? 'Propuesta ' + esc(j.proposal.estado) : '<span class="warn">' + esc(j.error || 'Error') + '</span>';
   if (r.ok) load();
 });
 $('#reload').addEventListener('click', load); if ($('#tok').value) load();

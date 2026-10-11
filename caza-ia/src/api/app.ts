@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from 'fastify'
+import { timingSafeEqual } from 'node:crypto'
 import { z } from 'zod'
 import type { Db } from '../db/client.js'
 import { listProposals, getProposal, countPendingProposals } from '../db/repositories/proposals.repo.js'
@@ -48,6 +49,14 @@ const decideBody = z.object({
  * API del operador (fase 5). Solo lectura de propuestas y perfiles, y las dos decisiones humanas: approve y reject.
  * No existe ningún endpoint que compre: eso es del ejecutor (fase 6), y sigue deshabilitado.
  */
+/** Comparación en tiempo constante: no revela por tiempo de respuesta cuántos caracteres del token acertó quien prueba. */
+function tokenMatches(given: unknown, expected: string): boolean {
+  if (typeof given !== 'string') return false
+  const a = Buffer.from(given)
+  const b = Buffer.from(expected)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
+
 export function buildApp(opts: ApiOptions): FastifyInstance {
   if (!opts.apiToken) throw new Error('CAZA: CAZA_API_TOKEN es obligatorio para levantar la API')
   const app = Fastify({ logger: false })
@@ -62,7 +71,7 @@ export function buildApp(opts: ApiOptions): FastifyInstance {
     const header = req.headers['x-caza-token']
     const query = (req.query as { token?: string } | undefined)?.token
     const token = header ?? (path === '/api/v1/caza/metrics/stream' ? query : undefined)
-    if (token !== opts.apiToken) {
+    if (!tokenMatches(token, opts.apiToken)) {
       await reply.code(401).send({ error: 'token inválido' })
     }
   })
@@ -204,7 +213,7 @@ export function buildApp(opts: ApiOptions): FastifyInstance {
     price: z.number().positive(),
     advertisedPreviousPrice: z.number().positive().nullable().optional(),
     inStock: z.boolean().default(true),
-    url: z.string().url(),
+    url: z.string().url().refine((u) => /^https?:\/\//i.test(u), 'solo URLs http(s)'),
     seller: z.string().optional(),
     observedAt: z.string().datetime().optional(),
   })

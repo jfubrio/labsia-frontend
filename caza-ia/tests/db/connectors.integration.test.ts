@@ -91,5 +91,7 @@ d('conectores: estado, credenciales, identificadores e ingesta', () => {
     expect(rows[0].clave).toBe('webhook')
     expect((await app.inject({ method: 'POST', url: '/api/v1/caza/observations', headers: H, payload: { productSlug: 'sony-wh1000xm6', store: 'x', market: 'MX', currency: 'MXN', price: -1, url: 'https://x' } })).statusCode).toBe(400)
     expect((await app.inject({ method: 'POST', url: '/api/v1/caza/observations', headers: H, payload: { productSlug: 'nope', store: 'x', market: 'MX', currency: 'MXN', price: 1, url: 'https://x' } })).statusCode).toBe(404)
+    const js = await app.inject({ method: 'POST', url: '/api/v1/caza/observations', headers: H, payload: { productSlug: 'sony-wh1000xm6', store: 'x', market: 'MX', currency: 'MXN', price: 1, url: 'javascript:alert(1)' } })
+    expect(js.statusCode).toBe(400)
   })
 })

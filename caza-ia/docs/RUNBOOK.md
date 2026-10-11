@@ -7,7 +7,7 @@ implementado; lo que falta son credenciales y decisiones (ver "Conectar", abajo)
 
 ```bash
 cd caza-ia
-cp .env.example .env            # pon al menos CAZA_API_TOKEN (largo y aleatorio)
+cp .env.example .env            # pon al menos CAZA_API_TOKEN (≥ 24 caracteres: openssl rand -hex 24)
 docker compose up -d --build    # postgres, redis, migraciones, api (:3080), worker
 ```
 
