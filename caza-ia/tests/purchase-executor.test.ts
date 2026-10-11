@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { loadEnv } from '../src/config/env.js'
-import { validateDiscount } from '../src/engines/discount-validator.js'
+import { validateDiscountWithProfile } from '../src/engines/discount-validator.js'
+import { buildMarketPriceProfile } from '../src/engines/market-price.js'
 import { proposePurchase, decideAuthorization } from '../src/engines/authorization.js'
 import { executePurchase, InMemoryOrderStore, idempotencyKey } from '../src/engines/purchase-executor.js'
 import { loadScenario, product, NOW } from './helpers.js'
@@ -8,8 +9,9 @@ import { loadScenario, product, NOW } from './helpers.js'
 async function approved() {
   const { history, offers } = await loadScenario('descuento_real')
   const obs = offers[0]!
-  const verdict = validateDiscount(obs, history, product, NOW)
-  const proposal = proposePurchase(obs, verdict, product)!
+  const profile = buildMarketPriceProfile(history, { now: NOW, market: 'MX', currency: 'MXN' })
+  const verdict = validateDiscountWithProfile(obs, profile, product)
+  const proposal = proposePurchase(obs, verdict, product, profile)!
   const { authorization } = decideAuthorization({ proposal, decision: 'approve', autorizadoPor: 'op@labsia.mx', product, ttlHours: 24, now: NOW })
   return { obs, authorization }
 }

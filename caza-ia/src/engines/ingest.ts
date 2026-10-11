@@ -3,7 +3,7 @@ import type { RawOffer, PriceObservation } from '../types.js'
 
 export function offerHash(o: RawOffer): string {
   return createHash('sha256')
-    .update([o.connector, o.price.toFixed(2), o.currency, o.url, o.seller ?? ''].join('|'))
+    .update([o.connector, o.store ?? '', o.price.toFixed(2), o.currency, o.url, o.seller ?? ''].join('|'))
     .digest('hex')
     .slice(0, 32)
 }

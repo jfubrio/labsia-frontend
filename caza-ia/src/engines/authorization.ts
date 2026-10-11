@@ -8,6 +8,8 @@ import type {
   AuditEvent,
   Currency,
 } from '../types.js'
+import type { MarketPriceProfile } from './market-price.js'
+import { derivedTargetPrice } from './market-price.js'
 
 export interface PurchaseProposal {
   productSlug: string
@@ -16,25 +18,42 @@ export interface PurchaseProposal {
   precio: number
   moneda: Currency
   veredicto: DiscountVerdict
+  /** Objetivo aplicado: el manual del producto o el derivado del precio real de mercado. */
+  precioObjetivo: number
+  objetivoDerivado: boolean
   motivo: string
+}
+
+/** Objetivo efectivo: el manual si existe; si no, el derivado del análisis de mercado. Nunca sobre el tope. */
+export function effectiveTargetPrice(product: ProductConfig, profile: MarketPriceProfile | null): { objetivo: number | null; derivado: boolean } {
+  if (product.precioObjetivo !== null) {
+    return { objetivo: Math.min(product.precioObjetivo, product.precioMaximo), derivado: false }
+  }
+  if (!profile) return { objetivo: null, derivado: true }
+  return { objetivo: derivedTargetPrice(profile, product.umbralDescuentoPct, product.precioMaximo), derivado: true }
 }
 
 /**
  * Una observación se convierte en propuesta solo si:
- *  - el veredicto es 'real',
+ *  - el veredicto es 'real' o 'minimo_historico' (juzgado contra el precio real de mercado),
+ *  - la confianza del perfil no es 'baja' ni 'sin_historial',
  *  - hay stock,
- *  - el precio no excede el precio objetivo del producto,
+ *  - el precio no excede el objetivo efectivo ni el tope duro,
  *  - está en la moneda base (las alternativas internacionales se reportan, no se proponen, hasta la fase 4).
  */
 export function proposePurchase(
   obs: PriceObservation,
   verdict: DiscountVerdict,
   product: ProductConfig,
+  profile: MarketPriceProfile | null = null,
 ): PurchaseProposal | null {
-  if (verdict.veredicto !== 'real') return null
+  if (verdict.veredicto !== 'real' && verdict.veredicto !== 'minimo_historico') return null
+  if (verdict.confianza === 'baja' || verdict.confianza === 'sin_historial') return null
   if (!obs.inStock) return null
   if (obs.currency !== product.monedaBase) return null
-  if (obs.price > product.precioObjetivo) return null
+  const { objetivo, derivado } = effectiveTargetPrice(product, profile)
+  if (objetivo === null) return null
+  if (obs.price > objetivo || obs.price > product.precioMaximo) return null
   return {
     productSlug: product.slug,
     observationId: obs.id,
@@ -42,7 +61,9 @@ export function proposePurchase(
     precio: obs.price,
     moneda: obs.currency,
     veredicto: verdict,
-    motivo: `${verdict.razon} Precio ${obs.price} ${obs.currency} ≤ objetivo ${product.precioObjetivo}.`,
+    precioObjetivo: objetivo,
+    objetivoDerivado: derivado,
+    motivo: `${verdict.razon} Precio ${obs.price} ${obs.currency} ≤ objetivo ${objetivo}${derivado ? ' (derivado del precio real de mercado)' : ''}.`,
   }
 }
 

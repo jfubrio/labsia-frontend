@@ -20,16 +20,16 @@ CREATE TABLE caza_products (
 CREATE TABLE caza_watch_configs (
   id                       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   product_id               UUID NOT NULL REFERENCES caza_products(id) ON DELETE CASCADE,
-  precio_referencia        NUMERIC(12,2),            -- precio de lista conocido
-  precio_objetivo          NUMERIC(12,2) NOT NULL,   -- a partir de aquí se propone compra
-  precio_maximo            NUMERIC(12,2) NOT NULL,   -- nunca se autoriza por encima
+  precio_lista_informativo NUMERIC(12,2),            -- lista/lanzamiento. SOLO informativo; nunca es referencia de descuento
+  precio_objetivo          NUMERIC(12,2),            -- objetivo manual; NULL = derivado del precio real de mercado
+  precio_maximo            NUMERIC(12,2) NOT NULL,   -- tope duro: nunca se autoriza por encima
   umbral_descuento_pct     NUMERIC(5,2) NOT NULL DEFAULT 10.00,
   mercados                 TEXT[] NOT NULL DEFAULT ARRAY['MX'],
   requiere_aprobacion      BOOLEAN NOT NULL DEFAULT TRUE,
   vigilancia_activa        BOOLEAN NOT NULL DEFAULT FALSE,
   intervalo_minutos        INTEGER NOT NULL DEFAULT 360,
   creado_en                TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CHECK (precio_objetivo <= precio_maximo),
+  CHECK (precio_objetivo IS NULL OR precio_objetivo <= precio_maximo),
   CHECK (umbral_descuento_pct >= 0 AND umbral_descuento_pct <= 100)
 );
 CREATE UNIQUE INDEX uniq_watch_config_per_product ON caza_watch_configs (product_id);
@@ -54,6 +54,7 @@ CREATE TABLE caza_price_observations (
   id                       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   product_id               UUID NOT NULL REFERENCES caza_products(id) ON DELETE CASCADE,
   connector_id             UUID NOT NULL REFERENCES caza_connectors(id),
+  tienda                   TEXT,                      -- tienda que publica la oferta; NULL = la del conector
   observado_en             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   precio                   NUMERIC(12,2) NOT NULL,
   precio_anterior_anunciado NUMERIC(12,2),           -- el "antes" que anuncia la tienda; NO se confía en él
@@ -67,19 +68,55 @@ CREATE TABLE caza_price_observations (
 CREATE INDEX idx_observations_product_time ON caza_price_observations (product_id, observado_en DESC);
 CREATE INDEX idx_observations_hash ON caza_price_observations (oferta_hash);
 
--- Veredictos del motor de validación de descuentos
+-- Perfil de PRECIO REAL DE MERCADO por producto, mercado y moneda (motor central, engines/market-price.ts).
+-- El precio real sale del comportamiento de la oferta competitiva en el tiempo (mínimo entre tiendas por día,
+-- mediana ponderada por recencia, régimen), nunca del precio de lista ni del "antes" anunciado.
+CREATE TABLE caza_market_price_profiles (
+  id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id          UUID NOT NULL REFERENCES caza_products(id) ON DELETE CASCADE,
+  mercado             CHAR(2) NOT NULL,
+  moneda              CHAR(3) NOT NULL,
+  calculado_en        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ventana_dias        INTEGER NOT NULL,
+  precio_real         NUMERIC(12,2),
+  mediana_ponderada   NUMERIC(12,2),
+  mediana_reciente    NUMERIC(12,2),
+  mediana_anterior    NUMERIC(12,2),
+  piso                NUMERIC(12,2),
+  techo               NUMERIC(12,2),
+  tendencia_pct       NUMERIC(6,2),
+  regimen             TEXT,                           -- bajando | estable | subiendo
+  lanzamiento_inflado BOOLEAN NOT NULL DEFAULT FALSE,
+  confianza           TEXT NOT NULL,                  -- alta | media | baja | sin_historial
+  dias_cubiertos      INTEGER NOT NULL,
+  dias_observados     INTEGER NOT NULL,
+  muestras            INTEGER NOT NULL,
+  tiendas             TEXT[] NOT NULL,
+  serie               JSONB NOT NULL,                 -- [{day, precioMinimo, tienda, tiendasObservadas}]
+  notas               TEXT[] NOT NULL DEFAULT '{}'
+);
+CREATE INDEX idx_profiles_product_time ON caza_market_price_profiles (product_id, mercado, calculado_en DESC);
+
+-- Veredictos del motor de validación de descuentos, siempre contra el precio real de mercado
 CREATE TABLE caza_discount_verdicts (
-  id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  observation_id     UUID NOT NULL UNIQUE REFERENCES caza_price_observations(id) ON DELETE CASCADE,
-  veredicto          TEXT NOT NULL,                   -- real | dudoso | falso
-  mediana_30d        NUMERIC(12,2),
-  mediana_90d        NUMERIC(12,2),
-  minimo_90d         NUMERIC(12,2),
-  ahorro_pct_real    NUMERIC(6,2),                    -- vs mediana 90d
-  ahorro_pct_anunciado NUMERIC(6,2),                  -- vs precio_anterior_anunciado
-  muestras           INTEGER NOT NULL,
-  razon              TEXT NOT NULL,
-  creado_en          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  observation_id       UUID NOT NULL UNIQUE REFERENCES caza_price_observations(id) ON DELETE CASCADE,
+  profile_id           UUID REFERENCES caza_market_price_profiles(id),
+  veredicto            TEXT NOT NULL,                 -- minimo_historico | real | dudoso | falso | sin_historial
+  precio_real          NUMERIC(12,2),
+  piso                 NUMERIC(12,2),
+  techo                NUMERIC(12,2),
+  regimen              TEXT,
+  confianza            TEXT NOT NULL,
+  ahorro_pct_real      NUMERIC(6,2),                  -- vs precio real de mercado
+  ahorro_pct_anunciado NUMERIC(6,2),                  -- vs precio_anterior_anunciado (solo informativo)
+  ancla_inflada        BOOLEAN NOT NULL DEFAULT FALSE,
+  lanzamiento_inflado  BOOLEAN NOT NULL DEFAULT FALSE,
+  dias_cubiertos       INTEGER NOT NULL,
+  tiendas              INTEGER NOT NULL,
+  razon                TEXT NOT NULL,
+  creado_en            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (veredicto IN ('minimo_historico', 'real', 'dudoso', 'falso', 'sin_historial'))
 );
 
 -- Autorizaciones del operador (approve / reject)

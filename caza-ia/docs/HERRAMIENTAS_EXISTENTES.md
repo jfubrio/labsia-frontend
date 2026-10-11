@@ -95,9 +95,9 @@ Revisión de proyectos de código abierto en GitHub y de APIs oficiales que CAZA
 - **Paquetes npm sin mantenimiento** (`bestbuy` ~4 años sin publicar, `paapi5-nodejs-sdk` archivado): se reemplazan por llamadas `fetch` propias, pequeñas y probadas.
 - **Servicios intermediarios de tipo de cambio** cuando la fuente oficial es gratuita.
 
-## 8. Hallazgo sobre los Sony WH-1000XM6
+## 8. Precios públicos encontrados para los Sony WH-1000XM6
 
-Los precios públicos encontrados para México difieren de los supuestos de la configuración inicial:
+Estos datos son **informativos** y alimentan el conector mock como ejemplo. Ninguno es referencia de descuento: el precio real sale del análisis del comportamiento de la oferta competitiva en el tiempo (plan, sección 3).
 
 | Dato | Valor | Fuente |
 | --- | --- | --- |
@@ -105,7 +105,7 @@ Los precios públicos encontrados para México difieren de los supuestos de la c
 | Precio de lista en Amazon MX | 9,999 MXN | [Xataka MX](https://www.xataka.com.mx/seleccion/amazon-mega-ofertas-2026-tienen-a-precio-remate-mejores-audifonos-sony-wh-1000xm6) |
 | Precio en Mega Ofertas 2026 (Amazon MX) | 5,933 MXN | misma fuente |
 
-El precio objetivo configurado (7,999 MXN) queda por encima de un precio ya observado en promoción (5,933 MXN). No se cambió la configuración: la decisión del objetivo es tuya. La fase 3, al cargar historial real, permitirá fijarlo con datos propios.
+Lo que ilustran: el 11,999 fue precio de lanzamiento de un modelo nuevo y el 9,999 es un precio de lista; una oferta "antes 11,999, ahora 9,499" presume 21 % de descuento y no ahorra nada frente a lo que ya se pagaba en el mercado. El 5,933 muestra hasta dónde ha llegado la oferta competitiva, y por eso el objetivo se deriva del análisis en vez de fijarse a mano.
 
 ## 9. Tareas que esto agrega a la fase 0
 

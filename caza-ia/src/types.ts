@@ -7,8 +7,17 @@ export interface ProductConfig {
   marca: string
   modelo: string
   monedaBase: Currency
-  precioReferencia: number | null
-  precioObjetivo: number
+  /**
+   * Precio de lista o de lanzamiento, SOLO informativo. Nunca se usa como referencia de descuento:
+   * el precio real sale del análisis del comportamiento de la oferta competitiva en el tiempo.
+   */
+  precioListaInformativo: number | null
+  /**
+   * Objetivo manual. Si es null, se deriva del precio real de mercado menos el umbral de descuento
+   * (ver engines/market-price.ts). Nunca supera precioMaximo.
+   */
+  precioObjetivo: number | null
+  /** Tope duro de seguridad: por encima de esto nunca se autoriza nada. */
   precioMaximo: number
   umbralDescuentoPct: number
   mercados: Market[]
@@ -26,6 +35,8 @@ export interface RawOffer {
   advertisedPreviousPrice?: number | null
   inStock: boolean
   url: string
+  /** Tienda que publica la oferta. Si falta, se usa el conector. Permite comparar tiendas por día. */
+  store?: string
   seller?: string
   observedAt: Date
 }
@@ -37,17 +48,33 @@ export interface PriceObservation extends RawOffer {
   offerHash: string
 }
 
-export type DiscountVerdictKind = 'real' | 'dudoso' | 'falso'
+/**
+ *  minimo_historico: por debajo o igual al mejor precio competitivo visto en la ventana
+ *  real:             por debajo del precio real de mercado y el ahorro supera el umbral
+ *  dudoso:           por debajo del precio real pero sin alcanzar el umbral
+ *  falso:            igual o por encima del precio real, aunque la tienda anuncie descuento
+ *  sin_historial:    no hay serie competitiva suficiente para juzgar
+ */
+export type DiscountVerdictKind = 'minimo_historico' | 'real' | 'dudoso' | 'falso' | 'sin_historial'
 
 export interface DiscountVerdict {
   observationId: string
   veredicto: DiscountVerdictKind
-  mediana30d: number | null
-  mediana90d: number | null
-  minimo90d: number | null
+  /** Precio real de mercado contra el que se juzga la oferta. */
+  precioReal: number | null
+  piso: number | null
+  techo: number | null
+  regimen: 'bajando' | 'estable' | 'subiendo' | null
+  confianza: 'alta' | 'media' | 'baja' | 'sin_historial'
+  /** Ahorro frente al precio real de mercado. */
   ahorroPctReal: number | null
+  /** Ahorro frente al "antes" que anuncia la tienda. Solo informativo. */
   ahorroPctAnunciado: number | null
-  muestras: number
+  /** true si el "antes" anunciado supera el peor precio competitivo visto: ancla inflada. */
+  anclaInflada: boolean
+  lanzamientoInflado: boolean
+  diasCubiertos: number
+  tiendas: number
   razon: string
 }
 

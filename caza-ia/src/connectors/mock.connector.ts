@@ -12,6 +12,7 @@ interface FixtureOffer {
   advertisedPreviousPrice: number | null
   inStock: boolean
   url?: string
+  store?: string
   seller?: string
   daysAgo?: number
 }
@@ -29,7 +30,13 @@ function loadFixture(productSlug: string): Fixture {
   return JSON.parse(readFileSync(file, 'utf8')) as Fixture
 }
 
-export type MockScenario = 'descuento_real' | 'descuento_falso' | 'descuento_dudoso' | 'comparacion_internacional'
+export type MockScenario =
+  | 'descuento_real'
+  | 'descuento_falso'
+  | 'ancla_lanzamiento'
+  | 'descuento_dudoso'
+  | 'minimo_historico'
+  | 'comparacion_internacional'
 
 /**
  * Conector con datos de prueba. No hace red. Sirve para la fase 1 y para las pruebas de motores.
@@ -60,6 +67,7 @@ export class MockConnector implements PriceConnector {
       advertisedPreviousPrice: o.advertisedPreviousPrice ?? null,
       inStock: o.inStock,
       url: o.url ?? `https://mock.local/${o.market.toLowerCase()}/${productSlug}`,
+      store: o.store,
       seller: o.seller,
       observedAt: now,
     }))
@@ -77,6 +85,7 @@ export class MockConnector implements PriceConnector {
         advertisedPreviousPrice: h.advertisedPreviousPrice ?? null,
         inStock: h.inStock,
         url: h.url ?? `https://mock.local/${h.market.toLowerCase()}/${productSlug}`,
+        store: h.store,
         seller: h.seller,
         observedAt: new Date(now.getTime() - (h.daysAgo ?? 0) * 86_400_000),
       }))

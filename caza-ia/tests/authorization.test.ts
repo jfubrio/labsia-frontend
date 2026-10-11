@@ -1,39 +1,72 @@
 import { describe, it, expect } from 'vitest'
-import { validateDiscount } from '../src/engines/discount-validator.js'
-import { proposePurchase, decideAuthorization, checkAuthorization } from '../src/engines/authorization.js'
+import { validateDiscountWithProfile } from '../src/engines/discount-validator.js'
+import { buildMarketPriceProfile } from '../src/engines/market-price.js'
+import { proposePurchase, effectiveTargetPrice, decideAuthorization, checkAuthorization } from '../src/engines/authorization.js'
 import { loadScenario, product, NOW } from './helpers.js'
 
-async function realProposal() {
-  const { history, offers } = await loadScenario('descuento_real')
+async function judged(scenario: Parameters<typeof loadScenario>[0]) {
+  const { history, offers } = await loadScenario(scenario)
   const obs = offers[0]!
-  const verdict = validateDiscount(obs, history, product, NOW)
-  const proposal = proposePurchase(obs, verdict, product)!
-  return { obs, verdict, proposal }
+  const profile = buildMarketPriceProfile(history, { now: NOW, market: 'MX', currency: 'MXN' })
+  const verdict = validateDiscountWithProfile(obs, profile, product)
+  return { obs, profile, verdict, proposal: proposePurchase(obs, verdict, product, profile) }
 }
 
-describe('proposePurchase', () => {
-  it('genera propuesta solo con veredicto real y precio ≤ objetivo', async () => {
-    const { proposal } = await realProposal()
-    expect(proposal).not.toBeNull()
-    expect(proposal.precio).toBe(7899)
+async function realProposal() {
+  const r = await judged('descuento_real')
+  return { ...r, proposal: r.proposal! }
+}
+
+describe('objetivo efectivo', () => {
+  it('sin objetivo manual se deriva del precio real de mercado', async () => {
+    const { profile } = await judged('descuento_real')
+    expect(product.precioObjetivo).toBeNull()
+    expect(effectiveTargetPrice(product, profile)).toEqual({ objetivo: 7919.12, derivado: true })
   })
 
-  it('no propone con veredicto falso', async () => {
-    const { history, offers } = await loadScenario('descuento_falso')
-    const v = validateDiscount(offers[0]!, history, product, NOW)
-    expect(proposePurchase(offers[0]!, v, product)).toBeNull()
+  it('un objetivo manual se respeta pero nunca supera el tope', async () => {
+    const { profile } = await judged('descuento_real')
+    expect(effectiveTargetPrice({ ...product, precioObjetivo: 7000 }, profile)).toEqual({ objetivo: 7000, derivado: false })
+    expect(effectiveTargetPrice({ ...product, precioObjetivo: 9000 }, profile)).toEqual({ objetivo: 8499, derivado: false })
+  })
+
+  it('sin perfil ni objetivo manual no hay objetivo', () => {
+    expect(effectiveTargetPrice(product, null)).toEqual({ objetivo: null, derivado: true })
+  })
+})
+
+describe('proposePurchase', () => {
+  it('propone con veredicto real y precio ≤ objetivo derivado', async () => {
+    const { proposal } = await realProposal()
+    expect(proposal.precio).toBe(7899)
+    expect(proposal.precioObjetivo).toBe(7919.12)
+    expect(proposal.objetivoDerivado).toBe(true)
+  })
+
+  it('propone en mínimo histórico', async () => {
+    const { proposal } = await judged('minimo_historico')
+    expect(proposal?.precio).toBe(5933)
+  })
+
+  it('no propone con veredicto falso ni con el ancla de lanzamiento', async () => {
+    expect((await judged('descuento_falso')).proposal).toBeNull()
+    expect((await judged('ancla_lanzamiento')).proposal).toBeNull()
   })
 
   it('no propone si el precio supera el objetivo aunque el descuento sea real', async () => {
-    const { obs, verdict } = await realProposal()
-    const caro = { ...obs, price: product.precioObjetivo + 1 }
-    expect(proposePurchase(caro, verdict, product)).toBeNull()
+    const { obs, verdict, profile } = await realProposal()
+    expect(proposePurchase({ ...obs, price: 7920 }, verdict, product, profile)).toBeNull()
+  })
+
+  it('no propone con confianza baja', async () => {
+    const { obs, verdict, profile } = await realProposal()
+    expect(proposePurchase(obs, { ...verdict, confianza: 'baja' }, product, profile)).toBeNull()
   })
 
   it('no propone ofertas fuera de la moneda base', async () => {
-    const { obs, verdict } = await realProposal()
+    const { obs, verdict, profile } = await realProposal()
     const us = { ...obs, currency: 'USD' as const, market: 'US' as const }
-    expect(proposePurchase(us, verdict, product)).toBeNull()
+    expect(proposePurchase(us, verdict, product, profile)).toBeNull()
   })
 })
 

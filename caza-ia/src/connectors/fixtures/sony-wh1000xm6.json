@@ -1,46 +1,815 @@
 {
-  "productSlug": "sony-wh1000xm6",
-  "description": "Historial sintético de 90 días para pruebas. Precios en MXN para MX y USD para US. No proviene de ninguna tienda real.",
-  "history": [
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 89, "price": 9999, "advertisedPreviousPrice": null, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 82, "price": 9999, "advertisedPreviousPrice": null, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 75, "price": 9799, "advertisedPreviousPrice": 9999, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 68, "price": 9999, "advertisedPreviousPrice": null, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 61, "price": 9499, "advertisedPreviousPrice": 9999, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 54, "price": 9499, "advertisedPreviousPrice": 9999, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 47, "price": 9999, "advertisedPreviousPrice": null, "inStock": false },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 40, "price": 9299, "advertisedPreviousPrice": 9999, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 33, "price": 9299, "advertisedPreviousPrice": 9999, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 26, "price": 8999, "advertisedPreviousPrice": 9999, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 19, "price": 8999, "advertisedPreviousPrice": 9999, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 12, "price": 9199, "advertisedPreviousPrice": 9999, "inStock": true },
-    { "connector": "mock", "market": "MX", "currency": "MXN", "daysAgo": 5, "price": 8999, "advertisedPreviousPrice": 9999, "inStock": true }
-  ],
-  "scenarios": {
-    "descuento_real": {
-      "description": "Precio 7,899 MXN: por debajo de la mediana 90d y del objetivo. Debe salir 'real' y generar propuesta.",
-      "offers": [
-        { "connector": "mock", "market": "MX", "currency": "MXN", "price": 7899, "advertisedPreviousPrice": 9999, "inStock": true, "url": "https://mock.local/mx/sony-wh1000xm6", "seller": "Tienda Mock MX" }
-      ]
-    },
-    "descuento_falso": {
-      "description": "La tienda anuncia 'antes 12,999' pero el precio 9,499 está por encima de la mediana 90d. Debe salir 'falso'.",
-      "offers": [
-        { "connector": "mock", "market": "MX", "currency": "MXN", "price": 9499, "advertisedPreviousPrice": 12999, "inStock": true, "url": "https://mock.local/mx/sony-wh1000xm6", "seller": "Tienda Mock MX" }
-      ]
-    },
-    "descuento_dudoso": {
-      "description": "Precio 8,899: por debajo de la mediana 30d pero el ahorro vs 90d no supera el umbral. Debe salir 'dudoso'.",
-      "offers": [
-        { "connector": "mock", "market": "MX", "currency": "MXN", "price": 8899, "advertisedPreviousPrice": 9999, "inStock": true, "url": "https://mock.local/mx/sony-wh1000xm6", "seller": "Tienda Mock MX" }
-      ]
-    },
-    "comparacion_internacional": {
-      "description": "Oferta US a 379 USD contra MX a 8,999 MXN. Con tipo de cambio 18.5, envío 650 e impuestos 15 % el precio aterrizado US es 8,713.22 MXN.",
-      "offers": [
-        { "connector": "mock", "market": "MX", "currency": "MXN", "price": 8999, "advertisedPreviousPrice": 9999, "inStock": true, "url": "https://mock.local/mx/sony-wh1000xm6", "seller": "Tienda Mock MX" },
-        { "connector": "mock_us", "market": "US", "currency": "USD", "price": 379, "advertisedPreviousPrice": 449.99, "inStock": true, "url": "https://mock.local/us/sony-wh1000xm6", "seller": "Tienda Mock US" }
-      ]
-    }
+ "productSlug": "sony-wh1000xm6",
+ "description": "Historial sintético multitienda de 90 días para construir la lógica. Precios en MXN (MX) y USD (US). No proviene de ninguna tienda real. La tienda oficial se queda en 11,999 (precio de lanzamiento, ancla); Amazon y Mercado Libre bajan de forma escalonada; Liverpool tiene una venta flash de un día a 7,499.",
+ "history": [
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 89,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 82,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 75,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 68,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 61,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 54,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 47,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 40,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 33,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 26,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 19,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 12,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 5,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "sony_store_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 45,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": false
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 89,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 86,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 83,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 80,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 77,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 74,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 71,
+   "price": 11999,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 68,
+   "price": 10999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 65,
+   "price": 10999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 62,
+   "price": 10999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 59,
+   "price": 10999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 56,
+   "price": 10999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 53,
+   "price": 9999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 50,
+   "price": 9999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 47,
+   "price": 9999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 44,
+   "price": 9999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 41,
+   "price": 9499,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 38,
+   "price": 9499,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 35,
+   "price": 9499,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 32,
+   "price": 9499,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 29,
+   "price": 9499,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 26,
+   "price": 9199,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 23,
+   "price": 9199,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 20,
+   "price": 9199,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 17,
+   "price": 9199,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 14,
+   "price": 9199,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 11,
+   "price": 8999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 8,
+   "price": 8999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 5,
+   "price": 8999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "amazon_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 2,
+   "price": 8999,
+   "advertisedPreviousPrice": 11999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 88,
+   "price": 11499,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 84,
+   "price": 11499,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 80,
+   "price": 11499,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 76,
+   "price": 11499,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 72,
+   "price": 11499,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 68,
+   "price": 11499,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 64,
+   "price": 11499,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 60,
+   "price": 9799,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 56,
+   "price": 9799,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 52,
+   "price": 9799,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 48,
+   "price": 9799,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 44,
+   "price": 9799,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 40,
+   "price": 9799,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 36,
+   "price": 9799,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 32,
+   "price": 9299,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 28,
+   "price": 9299,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 24,
+   "price": 9299,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 20,
+   "price": 9299,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 16,
+   "price": 9299,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 12,
+   "price": 9299,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 8,
+   "price": 9299,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 4,
+   "price": 9099,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "mercadolibre_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 0,
+   "price": 9099,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "liverpool_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 50,
+   "price": 10499,
+   "advertisedPreviousPrice": null,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "liverpool_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 20,
+   "price": 7499,
+   "advertisedPreviousPrice": 10999,
+   "inStock": true
+  },
+  {
+   "connector": "mock",
+   "store": "liverpool_mx",
+   "market": "MX",
+   "currency": "MXN",
+   "daysAgo": 3,
+   "price": 9299,
+   "advertisedPreviousPrice": null,
+   "inStock": true
   }
+ ],
+ "scenarios": {
+  "ancla_lanzamiento": {
+   "description": "La tienda oficial anuncia 9,499 'antes 11,999' (20.8 % de descuento anunciado). Contra el precio real de mercado (~8,999) es FALSO: el 11,999 fue precio de lanzamiento, no referencia.",
+   "offers": [
+    {
+     "connector": "mock",
+     "store": "sony_store_mx",
+     "market": "MX",
+     "currency": "MXN",
+     "price": 9499,
+     "advertisedPreviousPrice": 11999,
+     "inStock": true,
+     "url": "https://mock.local/mx/sony-store/sony-wh1000xm6",
+     "seller": "Sony Store MX (mock)"
+    }
+   ]
+  },
+  "descuento_falso": {
+   "description": "Amazon anuncia 9,199 'antes 10,999'. Igual o por encima del precio real de mercado: FALSO, y el 'antes' no es ancla inflada porque sí se vio ese precio competitivo.",
+   "offers": [
+    {
+     "connector": "mock",
+     "store": "amazon_mx",
+     "market": "MX",
+     "currency": "MXN",
+     "price": 9199,
+     "advertisedPreviousPrice": 10999,
+     "inStock": true,
+     "url": "https://mock.local/mx/amazon/sony-wh1000xm6",
+     "seller": "Amazon MX (mock)"
+    }
+   ]
+  },
+  "descuento_dudoso": {
+   "description": "8,599 'antes 9,999': por debajo del precio real pero el ahorro no alcanza el umbral de 12 %: DUDOSO.",
+   "offers": [
+    {
+     "connector": "mock",
+     "store": "amazon_mx",
+     "market": "MX",
+     "currency": "MXN",
+     "price": 8599,
+     "advertisedPreviousPrice": 9999,
+     "inStock": true,
+     "url": "https://mock.local/mx/amazon/sony-wh1000xm6",
+     "seller": "Amazon MX (mock)"
+    }
+   ]
+  },
+  "descuento_real": {
+   "description": "7,899 'antes 9,999': ahorro ≥ 12 % frente al precio real y por encima del piso (7,499): REAL. Genera propuesta.",
+   "offers": [
+    {
+     "connector": "mock",
+     "store": "amazon_mx",
+     "market": "MX",
+     "currency": "MXN",
+     "price": 7899,
+     "advertisedPreviousPrice": 9999,
+     "inStock": true,
+     "url": "https://mock.local/mx/amazon/sony-wh1000xm6",
+     "seller": "Amazon MX (mock)"
+    }
+   ]
+  },
+  "minimo_historico": {
+   "description": "5,933 'antes 9,999': iguala o mejora el mejor precio competitivo de la ventana: MÍNIMO HISTÓRICO. Genera propuesta.",
+   "offers": [
+    {
+     "connector": "mock",
+     "store": "amazon_mx",
+     "market": "MX",
+     "currency": "MXN",
+     "price": 5933,
+     "advertisedPreviousPrice": 9999,
+     "inStock": true,
+     "url": "https://mock.local/mx/amazon/sony-wh1000xm6",
+     "seller": "Amazon MX (mock)"
+    }
+   ]
+  },
+  "comparacion_internacional": {
+   "description": "Oferta US a 379 USD contra MX a 8,999 MXN. Con tipo de cambio 18.5, envío 650 e impuestos 15 % el precio aterrizado US es 8,713.22 MXN.",
+   "offers": [
+    {
+     "connector": "mock",
+     "store": "amazon_mx",
+     "market": "MX",
+     "currency": "MXN",
+     "price": 8999,
+     "advertisedPreviousPrice": 9999,
+     "inStock": true,
+     "url": "https://mock.local/mx/amazon/sony-wh1000xm6",
+     "seller": "Amazon MX (mock)"
+    },
+    {
+     "connector": "mock_us",
+     "store": "amazon_us",
+     "market": "US",
+     "currency": "USD",
+     "price": 379,
+     "advertisedPreviousPrice": 449.99,
+     "inStock": true,
+     "url": "https://mock.local/us/amazon/sony-wh1000xm6",
+     "seller": "Amazon US (mock)"
+    }
+   ]
+  }
+ }
 }

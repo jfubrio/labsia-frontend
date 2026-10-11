@@ -14,9 +14,11 @@ WITH p AS (
   VALUES ('sony-wh1000xm6', 'Sony WH-1000XM6', 'Sony', 'WH-1000XM6', 'MXN')
   RETURNING id
 )
+-- precio_lista_informativo = lanzamiento en Sony Store MX, solo informativo.
+-- precio_objetivo NULL = derivado del precio real de mercado menos el umbral.
 INSERT INTO caza_watch_configs
-  (product_id, precio_referencia, precio_objetivo, precio_maximo, umbral_descuento_pct, mercados, requiere_aprobacion, vigilancia_activa, intervalo_minutos)
-SELECT id, 9999.00, 7999.00, 8499.00, 12.00, ARRAY['MX','US'], TRUE, FALSE, 360 FROM p;
+  (product_id, precio_lista_informativo, precio_objetivo, precio_maximo, umbral_descuento_pct, mercados, requiere_aprobacion, vigilancia_activa, intervalo_minutos)
+SELECT id, 11999.00, NULL, 8499.00, 12.00, ARRAY['MX','US'], TRUE, FALSE, 360 FROM p;
 
 INSERT INTO caza_audit_log (actor, evento, product_id, payload)
 SELECT 'sistema', 'product.configured', id,
