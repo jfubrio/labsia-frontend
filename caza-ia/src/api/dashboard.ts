@@ -93,6 +93,7 @@ function render(m) {
     tile('Alertas 24 h', m.alertas.enviadas24h, 'enviadas', alSt),
     tile('Presupuesto disponible', g ? fmtMoney(g.disponible, g.monedaBase) : '—', g ? fmtMoney(g.comprometidoMes, g.monedaBase) + ' comprometido de ' + fmtMoney(g.presupuestoMensual, g.monedaBase) + ' · ' + g.compromisosMes + '/' + g.maxOrdenesMes + ' compras' : '', gastoSt),
     tile('Órdenes activas', m.compras.ordenesActivas, m.compras.ordenesTotales + ' en total', comprasSt),
+    tile('USD → MXN', m.tipoCambio ? m.tipoCambio.rate.toFixed(4) : '—', m.tipoCambio ? m.tipoCambio.fuente + ' · ' + m.tipoCambio.fecha : 'sin tipo de cambio en DB (se usa el fijo del entorno)', !m.tipoCambio ? status('warning', 'valor fijo') : m.tipoCambio.stale ? status('warning', 'desactualizado') : status('good', 'de hoy')),
   ].join('');
   $('#products').innerHTML = m.porProducto.map(productCard).join('') || '<div class="muted">Sin productos</div>';
   m.porProducto.forEach((p) => p.mercados.forEach((mk) => drawChart(p, mk)));

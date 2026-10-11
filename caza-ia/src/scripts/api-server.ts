@@ -4,9 +4,11 @@
  * Página del operador en /ui. Ningún endpoint compra.
  */
 import { createDb } from '../db/client.js'
-import { loadEnv } from '../config/env.js'
+import { loadEnv, notifierConfigFrom } from '../config/env.js'
 import { buildApp } from '../api/app.js'
 import { syncSchedulers } from '../watch/scheduler.js'
+import { defaultComparisonConfig } from '../engines/international-comparison.js'
+import { createNotifiers } from '../notify/notifier.js'
 
 const env = loadEnv()
 const db = createDb(env.DATABASE_URL)
@@ -14,6 +16,9 @@ const app = buildApp({
   db,
   apiToken: env.CAZA_API_TOKEN,
   onWatchChanged: env.REDIS_URL ? async () => { await syncSchedulers(db, env.REDIS_URL) } : undefined,
+  env,
+  comparison: defaultComparisonConfig(env.USD_MXN_RATE),
+  notifiers: createNotifiers(notifierConfigFrom(env)),
 })
 const port = env.CAZA_API_PORT
 await app.listen({ port, host: '0.0.0.0' })

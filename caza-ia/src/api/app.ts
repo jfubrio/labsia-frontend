@@ -9,6 +9,15 @@ import { decideProposal, ApprovalError } from '../services/approvals.service.js'
 import { getSpendLimit, setSpendLimit, getSpendState } from '../db/repositories/spend-limits.repo.js'
 import { listNotifications } from '../db/repositories/notifications.repo.js'
 import { getMetrics } from '../db/repositories/metrics.repo.js'
+import { listConnectors, setConnectorValidation, identifiersFor, setIdentifiers } from '../db/repositories/connectors.repo.js'
+import { buildConnectors, credentialsPresent } from '../connectors/factory.js'
+import { StaticConnector } from '../connectors/static.connector.js'
+import { runWatch } from '../watch/run-watch.js'
+import type { Env } from '../config/env.js'
+import type { ComparisonConfig } from '../engines/international-comparison.js'
+import { comparisonWithLiveRate, getCachedRate, resolveRate, providersFrom } from '../fx/service.js'
+import type { Notifier } from '../notify/notifier.js'
+import type { RawOffer } from '../types.js'
 import { operatorPage } from './ui.js'
 import { dashboardPage } from './dashboard.js'
 
@@ -20,6 +29,11 @@ export interface ApiOptions {
   onWatchChanged?: () => Promise<void>
   /** Intervalo de refresco del stream de métricas (SSE), en ms. */
   metricsIntervalMs?: number
+  /** Entorno (credenciales de conectores) para el informe de conectores y la ingesta externa. */
+  env?: Env
+  /** Configuración de comparación y canales de alerta para procesar observaciones ingresadas por la API. */
+  comparison?: ComparisonConfig
+  notifiers?: Notifier[]
 }
 
 const decideBody = z.object({
@@ -129,6 +143,98 @@ export function buildApp(opts: ApiOptions): FastifyInstance {
     return { slug: req.params.slug, vigilanciaActiva: body.data.activa }
   })
 
+  // Fase 0 y 3: estado de conectores, identificadores por tienda e ingesta externa de observaciones.
+  app.get('/api/v1/caza/connectors', async () => {
+    const rows = await listConnectors(db)
+    return rows.map((c) => ({ ...c, credenciales: opts.env ? credentialsPresent(c.clave, opts.env) : null }))
+  })
+
+  app.put<{ Params: { clave: string } }>('/api/v1/caza/connectors/:clave', async (req, reply) => {
+    const body = z.object({ estadoValidacion: z.enum(['por_validar', 'validado', 'descartado']), notas: z.string().min(1), habilitado: z.boolean().default(false), actualizadoPor: z.string().min(1) }).safeParse(req.body)
+    if (!body.success) return reply.code(400).send({ error: 'body inválido', detalles: body.error.issues })
+    try {
+      const row = await setConnectorValidation(db, req.params.clave, body.data)
+      await db.query(`INSERT INTO caza_audit_log (actor, evento, payload) VALUES ($1, 'connector.validated', $2)`, [body.data.actualizadoPor, JSON.stringify({ clave: req.params.clave, ...body.data })])
+      return row
+    } catch (err) {
+      return reply.code(404).send({ error: (err as Error).message })
+    }
+  })
+
+  app.get<{ Params: { slug: string } }>('/api/v1/caza/products/:slug/connectors', async (req, reply) => {
+    let product
+    try {
+      product = await getProductBySlug(db, req.params.slug)
+    } catch {
+      return reply.code(404).send({ error: 'producto no encontrado' })
+    }
+    if (!opts.env) return reply.code(503).send({ error: 'la API no tiene entorno de conectores configurado' })
+    const { report } = await buildConnectors(db, product, opts.env)
+    return { slug: product.slug, identificadores: await identifiersFor(db, product.id), conectores: report }
+  })
+
+  app.put<{ Params: { slug: string } }>('/api/v1/caza/products/:slug/identifiers', async (req, reply) => {
+    const body = z.object({ identificadores: z.record(z.string(), z.string()), actualizadoPor: z.string().min(1) }).safeParse(req.body)
+    if (!body.success) return reply.code(400).send({ error: 'body inválido: { identificadores: { bestbuy_us: "6505727" }, actualizadoPor }' })
+    let product
+    try {
+      product = await getProductBySlug(db, req.params.slug)
+    } catch {
+      return reply.code(404).send({ error: 'producto no encontrado' })
+    }
+    try {
+      const ids = await setIdentifiers(db, product.id, body.data.identificadores)
+      await db.query(`INSERT INTO caza_audit_log (actor, evento, product_id, payload) VALUES ($1, 'identifiers.updated', $2, $3)`, [body.data.actualizadoPor, product.id, JSON.stringify(ids)])
+      return { slug: product.slug, identificadores: ids }
+    } catch (err) {
+      return reply.code(400).send({ error: (err as Error).message })
+    }
+  })
+
+  /**
+   * Ingesta externa: changedetection.io, un escenario de Make o una captura manual envían un precio observado y CAZA IA
+   * lo procesa con el ciclo de vigilancia completo (perfil, veredicto, propuesta, alerta). Nunca compra.
+   */
+  const observationBody = z.object({
+    productSlug: z.string().min(1),
+    store: z.string().min(1),
+    market: z.enum(['MX', 'US']),
+    currency: z.enum(['MXN', 'USD']),
+    price: z.number().positive(),
+    advertisedPreviousPrice: z.number().positive().nullable().optional(),
+    inStock: z.boolean().default(true),
+    url: z.string().url(),
+    seller: z.string().optional(),
+    observedAt: z.string().datetime().optional(),
+  })
+  app.post('/api/v1/caza/observations', async (req, reply) => {
+    const body = observationBody.safeParse(req.body)
+    if (!body.success) return reply.code(400).send({ error: 'body inválido', detalles: body.error.issues })
+    if (!opts.comparison) return reply.code(503).send({ error: 'la API no tiene configuración de comparación para procesar observaciones' })
+    let product
+    try {
+      product = await getProductBySlug(db, body.data.productSlug)
+    } catch {
+      return reply.code(404).send({ error: 'producto no encontrado' })
+    }
+    if (!product.mercados.includes(body.data.market)) return reply.code(400).send({ error: `el producto no vigila el mercado ${body.data.market}` })
+    const offer: RawOffer = {
+      connector: 'webhook',
+      store: body.data.store,
+      market: body.data.market,
+      currency: body.data.currency,
+      price: body.data.price,
+      advertisedPreviousPrice: body.data.advertisedPreviousPrice ?? null,
+      inStock: body.data.inStock,
+      url: body.data.url,
+      seller: body.data.seller,
+      observedAt: body.data.observedAt ? new Date(body.data.observedAt) : new Date(),
+    }
+    const comparison = opts.env ? (await comparisonWithLiveRate(db, opts.env, offer.observedAt)).comparison : opts.comparison
+    const result = await runWatch(product, { db, connectors: [new StaticConnector([offer])], comparison, disparador: 'manual', notifiers: opts.notifiers, now: offer.observedAt })
+    return reply.code(201).send({ runId: result.runId, observaciones: result.observaciones, veredictos: result.veredictos, propuestas: result.propuestas, perfil: result.perfiles[body.data.market] ? { precioReal: result.perfiles[body.data.market]!.precioReal, confianza: result.perfiles[body.data.market]!.confianza } : null })
+  })
+
   app.get<{ Querystring: { estado?: string } }>('/api/v1/caza/proposals', async (req) => {
     return listProposals(db, req.query.estado ?? 'pendiente')
   })
@@ -153,6 +259,17 @@ export function buildApp(opts: ApiOptions): FastifyInstance {
   })
 
   app.get('/api/v1/caza/notifications', async () => listNotifications(db, 50))
+
+  // Fase 4: tipo de cambio del día con su procedencia.
+  app.get('/api/v1/caza/fx', async () => {
+    const cached = await getCachedRate(db, new Date())
+    return { cache: cached, fijo: opts.env?.USD_MXN_RATE ?? null }
+  })
+  app.post('/api/v1/caza/fx/refresh', async (_req, reply) => {
+    if (!opts.env) return reply.code(503).send({ error: 'la API no tiene entorno configurado' })
+    const rate = await resolveRate(db, providersFrom(opts.env), new Date())
+    return rate
+  })
 
   for (const decision of ['approve', 'reject'] as const) {
     app.post<{ Params: { id: string } }>(`/api/v1/caza/proposals/:id/${decision}`, async (req, reply) => {

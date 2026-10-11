@@ -13,10 +13,10 @@ import { insertObservation, countObservations } from '../db/repositories/observa
 import { countPendingProposals } from '../db/repositories/proposals.repo.js'
 import { listRuns } from '../db/repositories/runs.repo.js'
 import { latestProfile } from '../db/repositories/profiles.repo.js'
-import { connectorsFor } from '../connectors/factory.js'
+import { buildConnectors } from '../connectors/factory.js'
 import { MockConnector } from '../connectors/mock.connector.js'
 import { toObservation } from '../engines/ingest.js'
-import { defaultComparisonConfig } from '../engines/international-comparison.js'
+import { comparisonWithLiveRate } from '../fx/service.js'
 import { runWatch } from '../watch/run-watch.js'
 
 const args = process.argv.slice(2)
@@ -40,7 +40,11 @@ try {
     console.log('vigilancia_activa = true')
   }
 
-  const result = await runWatch(product, { db, connectors: connectorsFor(product.mercados), comparison: defaultComparisonConfig(env.USD_MXN_RATE), now, disparador: 'manual', notifiers: createNotifiers(notifierConfigFrom(env)) })
+  const { connectors, report } = await buildConnectors(db, product, env)
+  console.log(`conectores: ${report.map((r) => `${r.clave}=${r.estado}`).join(', ')}`)
+  const { comparison, rate } = await comparisonWithLiveRate(db, env, now)
+  console.log(`tipo de cambio USD→MXN: ${rate.rate} (${rate.fuente}, ${rate.fecha}${rate.stale ? ', desactualizado' : ''})`)
+  const result = await runWatch(product, { db, connectors, comparison, now, disparador: 'manual', notifiers: createNotifiers(notifierConfigFrom(env)) })
   console.log(`corrida ${result.runId}: ${result.observaciones} observaciones, ${result.veredictos} veredictos, ${result.propuestas} propuestas, ${result.alertas} alertas enviadas`)
   for (const [market, p] of Object.entries(result.perfiles)) {
     console.log(`  perfil ${market}: precio real ${p.precioReal} ${p.currency}, piso ${p.piso}, régimen ${p.regimen}, confianza ${p.confianza}, días observados ${p.diasObservados}, tiendas ${p.tiendas.length}`)

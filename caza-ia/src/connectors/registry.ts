@@ -6,6 +6,7 @@ import type { ConnectorMeta } from './types.js'
  */
 export const connectorCatalog: ConnectorMeta[] = [
   { clave: 'mock', nombre: 'Conector de prueba', mercado: 'MX', moneda: 'MXN', tipo: 'mock', soportaCompra: false, estadoValidacion: 'validado', habilitado: true },
+  { clave: 'webhook', nombre: 'Ingesta externa (changedetection.io, Make, manual)', mercado: 'MX', moneda: 'MXN', tipo: 'api', soportaCompra: false, estadoValidacion: 'validado', habilitado: true },
   { clave: 'amazon_mx', nombre: 'Amazon México', mercado: 'MX', moneda: 'MXN', tipo: 'api', soportaCompra: true, estadoValidacion: 'por_validar', habilitado: false },
   { clave: 'sony_store_mx', nombre: 'Sony Store México', mercado: 'MX', moneda: 'MXN', tipo: 'scraping', soportaCompra: false, estadoValidacion: 'por_validar', habilitado: false },
   { clave: 'mercadolibre_mx', nombre: 'Mercado Libre', mercado: 'MX', moneda: 'MXN', tipo: 'api', soportaCompra: false, estadoValidacion: 'por_validar', habilitado: false },

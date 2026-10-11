@@ -25,6 +25,21 @@ const schema = z.object({
   CAZA_NOTIFY_WEBHOOK_URL: z.string().default(''),
   TELEGRAM_BOT_TOKEN: z.string().default(''),
   TELEGRAM_CHAT_ID: z.string().default(''),
+  /** Fase 3: credenciales de conectores. Un conector solo se instancia si está 'validado' y habilitado en DB Y tiene credenciales. */
+  BESTBUY_API_KEY: z.string().default(''),
+  EBAY_CLIENT_ID: z.string().default(''),
+  EBAY_CLIENT_SECRET: z.string().default(''),
+  EBAY_ENV: z.enum(['production', 'sandbox']).default('production'),
+  MELI_ACCESS_TOKEN: z.string().default(''),
+  MELI_CLIENT_ID: z.string().default(''),
+  MELI_CLIENT_SECRET: z.string().default(''),
+  MELI_REFRESH_TOKEN: z.string().default(''),
+  PAAPI_ACCESS_KEY: z.string().default(''),
+  PAAPI_SECRET_KEY: z.string().default(''),
+  PAAPI_PARTNER_TAG: z.string().default(''),
+  /** Fase 4: tipo de cambio. Banxico (token gratuito) es la fuente primaria; Frankfurter el respaldo; USD_MXN_RATE el último recurso. */
+  BANXICO_TOKEN: z.string().default(''),
+  FRANKFURTER_URL: z.string().default('https://api.frankfurter.dev/v1'),
 })
 
 export type Env = z.infer<typeof schema>

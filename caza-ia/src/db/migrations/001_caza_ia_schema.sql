@@ -93,6 +93,16 @@ CREATE TABLE caza_connectors (
   creado_en          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Identificador del producto en cada tienda (SKU, ASIN, id de ítem). Sin identificador, el conector no consulta ese producto.
+CREATE TABLE caza_product_identifiers (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id      UUID NOT NULL REFERENCES caza_products(id) ON DELETE CASCADE,
+  connector_id    UUID NOT NULL REFERENCES caza_connectors(id) ON DELETE CASCADE,
+  identificador   TEXT NOT NULL,
+  actualizado_en  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (product_id, connector_id)
+);
+
 -- Observaciones de precio (historial)
 CREATE TABLE caza_price_observations (
   id                       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -244,6 +254,20 @@ CREATE TABLE caza_purchase_orders (
   creado_en          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   actualizado_en     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Tipo de cambio diario por fuente (fase 4). El valor fijo del entorno nunca se guarda: no es un dato.
+CREATE TABLE caza_fx_rates (
+  id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  fecha        DATE NOT NULL,
+  base         CHAR(3) NOT NULL,
+  quote        CHAR(3) NOT NULL,
+  tasa         NUMERIC(12,6) NOT NULL,
+  fuente       TEXT NOT NULL,                        -- banxico | frankfurter
+  obtenido_en  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (fecha, base, quote, fuente),
+  CHECK (fuente IN ('banxico', 'frankfurter'))
+);
+CREATE INDEX idx_fx_rates_lookup ON caza_fx_rates (base, quote, fecha DESC);
 
 -- Alertas enviadas al operador (evidencia de que las alertas disparan y de qué pasó con cada una)
 CREATE TABLE caza_notifications (

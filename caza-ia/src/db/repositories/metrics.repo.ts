@@ -13,6 +13,7 @@ export interface Metrics {
   vigilancia: { corridas24h: number; errores24h: number; observaciones24h: number; ultimaCorrida: string | null; ultimaCorridaEstado: string | null }
   alertas: { enviadas24h: number; fallidas24h: number; ultimas: AlertMetric[] }
   gasto: { monedaBase: string; presupuestoMensual: number; comprometidoMes: number; disponible: number; compromisosMes: number; maxOrdenesMes: number } | null
+  tipoCambio: { rate: number; fuente: string; fecha: string; stale: boolean } | null
   porProducto: ProductMetric[]
 }
 
@@ -173,6 +174,13 @@ export async function getMetrics(db: Db, now: Date = new Date()): Promise<Metric
     })
   }
 
+  const { rows: fxRows } = await db.query(
+    `SELECT fecha, tasa, fuente FROM caza_fx_rates WHERE base = 'USD' AND quote = 'MXN' ORDER BY fecha DESC, CASE fuente WHEN 'banxico' THEN 0 ELSE 1 END LIMIT 1`,
+  )
+  const fx = fxRows[0]
+  const hoy = now.toISOString().slice(0, 10)
+  const tipoCambio = fx ? { rate: num(fx.tasa)!, fuente: fx.fuente as string, fecha: new Date(fx.fecha).toISOString().slice(0, 10), stale: new Date(fx.fecha).toISOString().slice(0, 10) !== hoy } : null
+
   const lim = limit.rows[0]
   const presupuesto = lim ? num(lim.presupuesto_mensual_base)! : null
   const comprometido = num(spend.rows[0].comprometido)!
@@ -221,6 +229,7 @@ export async function getMetrics(db: Db, now: Date = new Date()): Promise<Metric
           maxOrdenesMes: lim.max_ordenes_mes,
         }
       : null,
+    tipoCambio,
     porProducto,
   }
 }

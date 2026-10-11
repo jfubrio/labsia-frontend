@@ -3,6 +3,7 @@
 
 INSERT INTO caza_connectors (clave, nombre, mercado, moneda, tipo, soporta_compra, estado_validacion, habilitado) VALUES
   ('mock',          'Conector de prueba',  'MX', 'MXN', 'mock',     FALSE, 'validado',    TRUE),
+  ('webhook',       'Ingesta externa (changedetection.io, Make, manual)', 'MX', 'MXN', 'api', FALSE, 'validado', TRUE),
   ('amazon_mx',     'Amazon México',       'MX', 'MXN', 'api',      TRUE,  'por_validar', FALSE),
   ('sony_store_mx', 'Sony Store México',   'MX', 'MXN', 'scraping', FALSE, 'por_validar', FALSE),
   ('mercadolibre_mx','Mercado Libre',      'MX', 'MXN', 'api',      FALSE, 'por_validar', FALSE),
