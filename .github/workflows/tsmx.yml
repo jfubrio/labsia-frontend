@@ -1,0 +1,42 @@
+name: tsmx
+
+on:
+  push:
+    paths: ["tsmx/**", "docs/tiktok-shop-mx/**", ".claude/skills/**", ".github/workflows/tsmx.yml", "ruff.toml"]
+  pull_request:
+    paths: ["tsmx/**", "docs/tiktok-shop-mx/**", ".claude/skills/**", ".github/workflows/tsmx.yml", "ruff.toml"]
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Linter y formato
+        run: |
+          python -m pip install --quiet ruff==0.17.0
+          ruff check .
+          ruff format --check .
+      - name: Pruebas del MVP y de los scripts de las skills
+        working-directory: tsmx
+        shell: bash
+        run: |
+          set -o pipefail
+          PYTHONPATH=src python -X dev -m unittest discover -s tests -t . -v 2>&1 | tee pruebas.log
+          if grep -q "ResourceWarning" pruebas.log; then
+            echo "::error::Hay recursos sin cerrar (ResourceWarning); revisa pruebas.log"
+            exit 1
+          fi
+      - name: Scripts de las skills
+        run: |
+          python .claude/skills/tsmx-matriz/scripts/matriz.py > /dev/null
+          python .claude/skills/tsmx-backlog/scripts/backlog.py --listar
+          python .claude/skills/tsmx-audiencia/scripts/audiencia.py

@@ -1,0 +1,19 @@
+[project]
+name = "tsmx"
+version = "0.1.0"
+description = "MVP interno del proyecto TikTok Shop México con creadores afiliados"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+tsmx = "tsmx.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+tsmx = ["schema.sql"]

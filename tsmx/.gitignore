@@ -1,0 +1,12 @@
+# Datos personales y respaldos: nunca al repositorio
+data/
+respaldos/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+__pycache__/
+*.egg-info/
+.env
+.coverage
+htmlcov/
