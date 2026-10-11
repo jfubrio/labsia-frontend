@@ -1,0 +1,47 @@
+# 00 · LEER PRIMERO
+
+**Proyecto:** TikTok Shop México mediante creadores afiliados, sin inventario propio.
+**Propietario:** Juan Fuentes.
+**Ubicación en el repositorio:** `docs/tiktok-shop-mx/`. Los archivos de LABSIA (`labsia-landing-archive/`, `uploads/`) no forman parte de este proyecto y no deben modificarse desde aquí.
+
+## Objetivo
+
+Identificar micro nichos comercialmente viables, probar contenido original y medir **comisiones liquidadas menos costos**. Las vistas por sí solas no validan el negocio.
+
+La segmentación se hará por **problema de compra, audiencia y profundidad del contenido**; no por supuesta inteligencia del público.
+
+## Orden de ejecución
+
+| Paso | Ticket | Descripción |
+|---|---|---|
+| 1 | T00 | Documentar alcance, responsables y decisiones pendientes. |
+| 2 | T01 | Verificar requisitos públicos vigentes y posibilidades de acceso. |
+| 3 | T02 | Investigar seis candidatos con evidencia trazable. |
+| 4 | — | Seleccionar candidatos **únicamente** después de comparar los resultados. |
+| 5 | T03+ | Validar productos, acceso de afiliación y economía **antes** de desarrollar automatizaciones. |
+
+## Reglas de redacción para todos los documentos
+
+1. Separa siempre **hechos observados**, **inferencias** y **propuestas**. Cada sección o tabla debe indicar a cuál de los tres pertenece.
+2. Los datos desconocidos quedan como **"no disponible"**; nunca como cero.
+3. Toda cifra lleva fuente, URL y fecha de observación.
+4. No se infieren ventas, comisiones ni rentabilidad a partir de vistas.
+5. Los permisos que solo pueden comprobarse dentro de una cuenta se registran como **no verificados** mientras no exista acceso autenticado.
+6. Nunca se guardan contraseñas, tokens ni credenciales en el repositorio.
+
+## Mapa de documentos
+
+| Archivo | Contenido |
+|---|---|
+| `00_LEER_PRIMERO.md` | Este documento. Objetivo, orden y reglas. |
+| `03_INVESTIGACION_NICHOS.md` | Protocolo de investigación de los seis candidatos y rúbrica de evaluación. |
+| `07_BACKLOG_DESARROLLADOR.md` | Tickets T00–T10, criterios de aceptación y estado. |
+| `08_REGISTRO_DECISIONES.md` | Resultado de T00: alcance, responsables, restricciones y pendientes. |
+| `09_REQUISITOS_AFILIACION_MX.md` | Resultado de T01: requisitos públicos con fuentes fechadas y permisos de cuenta no verificados. |
+| `10_MATRIZ_NICHOS.md` | Resultado de T02: matriz comparativa de los seis candidatos. |
+| `investigacion/` | Una ficha por candidato con las observaciones de T02. |
+
+## Restricciones operativas
+
+- No abrir cuentas, publicar contenido, contratar servicios ni gastar dinero durante T00–T02.
+- No ejecutar T03 en adelante sin aprobación explícita del propietario tras revisar T02.
