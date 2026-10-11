@@ -1,5 +1,6 @@
 """Conexión a SQLite, migraciones y utilidades de tiempo."""
 import datetime as _dt
+import hashlib
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -11,6 +12,14 @@ VERSION_ESQUEMA = 1
 
 def ahora() -> str:
     return _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat()
+
+
+def sha256_archivo(path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for bloque in iter(lambda: fh.read(1 << 16), b""):
+            h.update(bloque)
+    return h.hexdigest()
 
 
 def ruta_por_defecto() -> Path:

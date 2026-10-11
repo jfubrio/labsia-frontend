@@ -65,7 +65,7 @@ tsmx/src/tsmx/
 
 ## 6. Pruebas
 
-42 pruebas con `unittest`. Cada regla crítica se verificó con una mutación deliberada del código: invalidar aprobaciones, comparar versión y hash, excluir estimadas del resultado y ordenar por intención. En las cuatro, al menos una prueba falló.
+50 pruebas con `unittest`, ocho de ellas de regresión por errores hallados en una revisión de código. Cada regla crítica se verificó con una mutación deliberada del código: invalidar aprobaciones, comparar versión y hash, excluir estimadas del resultado y ordenar por intención. En las cuatro, al menos una prueba falló.
 
 ## 7. Conexión al final (pendiente)
 

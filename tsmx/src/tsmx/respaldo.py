@@ -5,7 +5,6 @@ SHA-256 y el conteo de filas de cada tabla. "Restauración comprobada" significa
 restaurado pasa integrity_check y reproduce exactamente esos conteos.
 """
 import datetime as _dt
-import hashlib
 import json
 import shutil
 import sqlite3
@@ -14,19 +13,11 @@ from pathlib import Path
 
 from . import permisos
 from .auditoria import registrar
-from .db import ahora
+from .db import ahora, sha256_archivo as _sha
 from .errores import ErrorTSMX
 
 TABLAS = ("usuarios", "candidatos", "importaciones", "productos", "contenidos", "contenido_versiones",
           "aprobaciones", "publicaciones", "metricas_video", "comisiones", "costos", "auditoria")
-
-
-def _sha(path: Path) -> str:
-    h = hashlib.sha256()
-    with open(path, "rb") as fh:
-        for bloque in iter(lambda: fh.read(1 << 16), b""):
-            h.update(bloque)
-    return h.hexdigest()
 
 
 def _conteos(con) -> dict:
@@ -91,6 +82,8 @@ def restaurar(con_actual, actor, archivo, destino, forzar=False) -> dict:
     if not rep["valido"]:
         raise ErrorTSMX("El respaldo no pasó la verificación: " + "; ".join(rep["problemas"]))
     destino = Path(destino)
+    actual = con_actual.execute("PRAGMA database_list").fetchone()[2]
+    reemplaza_actual = bool(actual) and destino.exists() and Path(actual).resolve() == destino.resolve()
     previo = None
     if destino.exists():
         if not forzar:
@@ -106,7 +99,16 @@ def restaurar(con_actual, actor, archivo, destino, forzar=False) -> dict:
     if not ok:
         tmp.unlink(missing_ok=True)
         raise ErrorTSMX("La copia restaurada no reproduce el manifiesto; no se reemplazó nada.")
+    detalle = {"destino": str(destino), "copia_previa": str(previo) if previo else None}
+    if reemplaza_actual:
+        # La base abierta deja de existir al reemplazarla: la constancia va en la base restaurada.
+        c = sqlite3.connect(str(tmp))
+        try:
+            registrar(c, actor, "respaldo_restaurado", "respaldo", Path(archivo).name, **detalle)
+            c.commit()
+        finally:
+            c.close()
     tmp.replace(destino)
-    registrar(con_actual, actor, "respaldo_restaurado", "respaldo", Path(archivo).name, destino=str(destino),
-              copia_previa=str(previo) if previo else None)
+    if not reemplaza_actual:
+        registrar(con_actual, actor, "respaldo_restaurado", "respaldo", Path(archivo).name, **detalle)
     return {"restaurado": str(destino), "copia_previa": str(previo) if previo else None, "conteos": rep["conteos"]}

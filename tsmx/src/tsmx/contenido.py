@@ -61,11 +61,11 @@ def editar(con, actor, cid, cuerpo, titulo=None):
     """Devuelve la versión nueva, o None si el cuerpo no cambió."""
     permisos.exigir(con, actor, "contenido.editar")
     c = obtener(con, cid)
-    if c["estado"] in ("publicado", "archivado"):
-        raise EstadoInvalido(f"{cid} está {c['estado']}; un contenido publicado no se edita. Crea uno nuevo.")
     h = hash_cuerpo(cuerpo)
     if h == version_actual(con, cid)["hash"] and (titulo is None or titulo == c["titulo"]):
         return None
+    if c["estado"] in ("publicado", "archivado"):
+        raise EstadoInvalido(f"{cid} está {c['estado']}; un contenido publicado no se edita. Crea uno nuevo.")
     nueva, t = c["version_actual"] + 1, ahora()
     with transaccion(con):
         con.execute("INSERT INTO contenido_versiones (contenido_id, version, cuerpo, hash, autor, creado_en) "

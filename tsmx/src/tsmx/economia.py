@@ -74,16 +74,22 @@ def registrar_comision(con, actor, d: dict, fuente: str, importacion_id=None) ->
             if abs(previa["monto_bruto_mxn"] - d["monto_bruto_mxn"]) > 0.005:
                 raise EstadoInvalido(f"{d['clave_externa']}: mismo estado '{estado}' con otro monto "
                                      f"({previa['monto_bruto_mxn']} frente a {d['monto_bruto_mxn']}). Revisa la fuente.")
+            if (previa["rfc_valido"], previa["guanajuato"]) != (int(d["rfc_valido"]), int(d.get("guanajuato", False))):
+                raise EstadoInvalido(f"{d['clave_externa']}: mismo estado '{estado}' con otro rfc_valido o guanajuato; "
+                                     "cambiaría las retenciones. Revisa la fuente.")
             return "duplicada"
         if estado not in TRANSICIONES[previa["estado"]]:
             raise EstadoInvalido(f"{d['clave_externa']}: no se puede pasar de '{previa['estado']}' a '{estado}'.")
         con.execute(
             f"UPDATE comisiones SET estado = ?, monto_bruto_mxn = ?, rfc_valido = ?, guanajuato = ?, "
             f"retencion_iva_mxn = ?, retencion_isr_mxn = ?, retencion_estatal_mxn = ?, monto_neto_mxn = ?, "
-            f"fecha_{estado} = ? WHERE clave_externa = ?",
+            f"fecha_{estado} = ?, producto_id = COALESCE(?, producto_id), publicacion_id = COALESCE(?, publicacion_id), "
+            f"candidato_num = COALESCE(?, candidato_num), fecha_pedido = COALESCE(?, fecha_pedido) "
+            f"WHERE clave_externa = ?",
             (estado, d["monto_bruto_mxn"], int(d["rfc_valido"]), int(d.get("guanajuato", False)),
              r["retencion_iva"], r["retencion_isr"], r["retencion_estatal"], r["neto"],
-             d.get("fecha_estado") or ahora(), d["clave_externa"]))
+             d.get("fecha_estado") or ahora(), d.get("producto_id"), d.get("publicacion_id"),
+             d.get("candidato_num"), d.get("fecha_pedido"), d["clave_externa"]))
         registrar(con, actor, "comision_avanzada", "comision", d["clave_externa"], de=previa["estado"], a=estado,
                   bruto_anterior=previa["monto_bruto_mxn"], bruto=d["monto_bruto_mxn"], fuente=fuente)
     return "avanzada"

@@ -80,10 +80,15 @@ def ejecutar(args, con):
         if con.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0] == 0:
             permisos.crear_usuario(con, None, args.id, args.nombre, "propietario")
             print(f"Propietario '{args.id}' creado.")
+            dueno = args.id
         else:
-            print("La base ya tenía usuarios; no se creó otro propietario.")
-        print(f"Candidatos sembrados o actualizados: {candidatos.sembrar(con, args.id)}")
-        print(f"Base lista en {args.db or ruta_por_defecto()}. Usa --usuario {args.id} o TSMX_USUARIO={args.id}.")
+            fila = con.execute("SELECT id FROM usuarios WHERE rol = 'propietario' AND activo = 1 ORDER BY creado_en LIMIT 1").fetchone()
+            if not fila:
+                raise ErrorTSMX("La base tiene usuarios pero ningún propietario activo.")
+            dueno = fila["id"]
+            print(f"La base ya tenía usuarios; no se creó otro propietario. Se usa '{dueno}'.")
+        print(f"Candidatos sembrados o actualizados: {candidatos.sembrar(con, dueno)}")
+        print(f"Base lista en {args.db or ruta_por_defecto()}. Usa --usuario {dueno} o TSMX_USUARIO={dueno}.")
         return 0
     if not actor:
         raise ErrorTSMX("Indica quién actúa con --usuario o la variable TSMX_USUARIO.")

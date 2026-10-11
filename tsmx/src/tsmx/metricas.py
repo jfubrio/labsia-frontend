@@ -6,19 +6,17 @@ Usa la lectura más reciente de cada publicación.
 
 CONSULTA = """
 WITH ultima AS (
-  SELECT m.* FROM metricas_video m
+  SELECT m.*, (m.vistas IS NOT NULL AND m.seguidores_ganados IS NOT NULL
+               AND m.comentarios_intencion_compra IS NOT NULL) AS completo
+  FROM metricas_video m
   JOIN (SELECT publicacion_id, MAX(fecha_lectura) f FROM metricas_video GROUP BY publicacion_id) u
     ON u.publicacion_id = m.publicacion_id AND u.f = m.fecha_lectura
 )
 SELECT {grupo} AS grupo, COUNT(*) AS videos,
-       SUM(CASE WHEN u.vistas IS NOT NULL AND u.seguidores_ganados IS NOT NULL
-                 AND u.comentarios_intencion_compra IS NOT NULL THEN 1 ELSE 0 END) AS con_datos,
-       SUM(CASE WHEN u.vistas IS NOT NULL AND u.seguidores_ganados IS NOT NULL
-                 AND u.comentarios_intencion_compra IS NOT NULL THEN u.vistas END) AS vistas,
-       SUM(CASE WHEN u.vistas IS NOT NULL AND u.seguidores_ganados IS NOT NULL
-                 AND u.comentarios_intencion_compra IS NOT NULL THEN u.seguidores_ganados END) AS seguidores,
-       SUM(CASE WHEN u.vistas IS NOT NULL AND u.seguidores_ganados IS NOT NULL
-                 AND u.comentarios_intencion_compra IS NOT NULL THEN u.comentarios_intencion_compra END) AS intencion
+       SUM(u.completo) AS con_datos,
+       SUM(CASE WHEN u.completo THEN u.vistas END) AS vistas,
+       SUM(CASE WHEN u.completo THEN u.seguidores_ganados END) AS seguidores,
+       SUM(CASE WHEN u.completo THEN u.comentarios_intencion_compra END) AS intencion
 FROM ultima u
 JOIN publicaciones p ON p.id = u.publicacion_id
 JOIN contenidos c ON c.id = p.contenido_id

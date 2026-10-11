@@ -8,14 +8,14 @@ Reglas comunes:
   y se rechaza: nunca se sobrescribe en silencio.
 """
 import csv
-import hashlib
 import re
+import sqlite3
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from . import contenido, economia, permisos
 from .auditoria import registrar
-from .db import ahora, transaccion
+from .db import ahora, sha256_archivo, transaccion
 from .errores import ErrorTSMX
 
 NO_DISPONIBLE = {"no disponible", "n/d", "nd"}
@@ -50,7 +50,7 @@ def numero(valor, campo, obligatorio=False, entero=False):
         return None
     if v in NO_DISPONIBLE:
         return None
-    m = re.fullmatch(r"\$?\s*([\d.]+)\s*(mil|k|m|mill|millones)?", v)
+    m = re.fullmatch(r"\$?\s*(\d+(?:\.\d*)?|\.\d+)\s*(mil|k|m|mill|millones)?", v)
     if not m:
         raise FilaInvalida(f"'{campo}' no es un número: '{valor}'")
     n = float(m.group(1)) * {None: 1, "mil": 1e3, "k": 1e3, "m": 1e6, "mill": 1e6, "millones": 1e6}[m.group(2)]
@@ -62,6 +62,8 @@ def texto(valor, campo, obligatorio=False):
     if v == "" and obligatorio:
         raise FilaInvalida(f"'{campo}' vacío")
     if v.lower() in NO_DISPONIBLE:
+        if obligatorio:
+            raise FilaInvalida(f"'{campo}' es obligatorio y no puede ser 'no disponible'")
         return None
     return v or None
 
@@ -82,12 +84,8 @@ def booleano(valor, campo):
     raise FilaInvalida(f"'{campo}' debe ser sí o no: '{valor}'")
 
 
-def _sha(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def _iniciar(con, actor, tipo, path):
-    sha = _sha(path)
+    sha = sha256_archivo(path)
     previa = con.execute("SELECT id, estado FROM importaciones WHERE tipo = ? AND sha256 = ?", (tipo, sha)).fetchone()
     if previa and previa["estado"] == "completa":
         return None
@@ -138,7 +136,7 @@ def _filas_csv(path, obligatorias):
 def _fila(res, i, fn):
     try:
         estado = fn()
-    except (FilaInvalida, ErrorTSMX) as e:
+    except (ErrorTSMX, sqlite3.IntegrityError) as e:
         res.rechazadas += 1
         res.errores.append(f"fila {i}: {e}")
         return
