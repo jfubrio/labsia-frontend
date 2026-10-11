@@ -7,8 +7,10 @@ description: Convenciones para cuidar un pull request de este repositorio. Respo
 
 ## Antes de cualquier push de corrección
 
-Desde `caza-ia/`: `npm run verify` y, si el cambio toca `src/db/`, `npm run db:check`. No hay CI configurado aún en
-este repositorio, así que estas dos órdenes son la CI local. Un push sin ellas es un push a ciegas.
+Desde `caza-ia/`: la skill `caza-verify` dice qué correr según lo que tocaste. La CI (`.github/workflows/caza-ia.yml`)
+repite todo en cada push que toca `caza-ia/`: pruebas, criterios de fase, simulacro E2E y construcción y arranque de la
+imagen Docker. Correr lo local antes de empujar ahorra un ciclo de CI; si la CI falla, reprodúcelo con el mismo
+comando de npm antes de cambiar nada.
 
 ## Convenciones
 

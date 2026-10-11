@@ -74,6 +74,9 @@ Para apagar: `UPDATE caza_settings SET valor='false'` surte efecto de inmediato 
 
 ## 6. Verificación antes de un despliegue
 
+La CI de GitHub (`.github/workflows/caza-ia.yml`) corre todo esto en cada push y además construye la imagen, la arranca
+contra PostgreSQL y comprueba `/health` y la protección por token. En local:
+
 ```bash
 npm run verify && npm run db:check && npm run test:db
 npm run phase2:worker-check   # con Redis

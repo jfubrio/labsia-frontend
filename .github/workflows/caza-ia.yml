@@ -1,0 +1,67 @@
+name: CAZA IA
+
+on:
+  push:
+    paths: ['caza-ia/**', '.github/workflows/caza-ia.yml']
+  pull_request:
+    paths: ['caza-ia/**', '.github/workflows/caza-ia.yml']
+
+defaults:
+  run:
+    working-directory: caza-ia
+
+jobs:
+  pruebas:
+    name: Pruebas y criterios de fase
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: caza-ia/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      # Typecheck, pruebas unitarias y demo sin red (termina con 0 órdenes)
+      - run: npm run verify
+      # Los scripts levantan su propio PostgreSQL temporal con el PostgreSQL que trae el ejecutor
+      - run: npm run db:check
+      - run: npm run test:db
+      - run: npm run phase2:check
+      - run: npm run phase2:worker-check
+        env:
+          REDIS_URL: redis://127.0.0.1:6379/0
+      - run: npm run phase5:check
+      - run: npm run phase6:check
+      - run: npm run phase7:check
+      - run: npm run e2e:check
+
+  imagen:
+    name: Imagen Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t caza-ia:ci .
+      # La imagen arranca y responde /health contra un PostgreSQL real con el esquema aplicado por migrate.sh
+      - name: Arranque de la imagen
+        run: |
+          docker network create caza
+          docker run -d --name pg --network caza -e POSTGRES_USER=caza -e POSTGRES_PASSWORD=caza -e POSTGRES_DB=caza postgres:16
+          for i in $(seq 1 30); do docker exec pg pg_isready -U caza -d caza && break; sleep 2; done
+          docker run --rm --network caza -e DATABASE_URL=postgres://caza:caza@pg:5432/caza caza-ia:ci bash scripts/migrate.sh
+          docker run -d --name api --network caza -p 3080:3080 \
+            -e DATABASE_URL=postgres://caza:caza@pg:5432/caza -e CAZA_API_TOKEN=ci-token-0123456789abcdefghij caza-ia:ci
+          for i in $(seq 1 30); do curl -fs localhost:3080/health && break; sleep 2; done
+          curl -fs localhost:3080/health
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:3080/api/v1/caza/metrics)" = "401"
+          curl -fs -H 'X-CAZA-Token: ci-token-0123456789abcdefghij' localhost:3080/api/v1/caza/metrics > /dev/null
+          echo "OK: la imagen arranca, aplica migraciones y protege los datos"
+      - if: failure()
+        run: docker logs api || true
