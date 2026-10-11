@@ -43,6 +43,7 @@ La segmentación se hará por **problema de compra, audiencia y profundidad del 
 | `12_GUIA_RONDA2.md` | Cómo ejecutar la ronda 2 de T02, a mano o con un agente, y plantillas CSV en `investigacion/ronda2/`. |
 | `13_ESTRATEGIA_AUDIENCIA.md` | Fase orgánica de seguidores y alcance antes de invertir (D-08, T02B); registro por video en `audiencia/`. |
 | `14_ALTA_CUENTA_TIKTOK.md` | Pasos para que el titular cree la cuenta de TikTok México (D-10) y qué registrar después. |
+| `15_ARQUITECTURA_MVP.md` | Arquitectura, esquema y pasos de conexión del MVP interno (T04–T08). Código en `tsmx/`. |
 | `investigacion/` | Una ficha por candidato con las observaciones de T02 (`01_` a `06_`). |
 
 ## Estado al 2026-10-11

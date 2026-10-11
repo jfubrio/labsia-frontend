@@ -22,6 +22,7 @@ Lee `references/convenciones.md` (en esta carpeta). Resume las reglas que todos 
 | Verificar o actualizar requisitos de afiliación (T01, `09_REQUISITOS_AFILIACION_MX.md`) | `tsmx-requisitos` |
 | Validar un producto concreto del catálogo afiliado (T03) | `tsmx-validar-producto` |
 | Planificar videos, registrar métricas de TikTok Studio o decidir con la fase de audiencia (T02B) | `tsmx-audiencia` |
+| Operar o modificar el MVP interno: aprobar guiones, importar métricas, comisiones o costos, respaldos, reporte (T04–T08) | `tsmx/README.md` y `15_ARQUITECTURA_MVP.md`; pruebas con `PYTHONPATH=src python3 -m unittest discover -s tests -t .` desde `tsmx/` |
 
 Una tarea suele tocar varias: terminar una ficha implica recalcular la matriz y anotar el estado del ticket. Encadena las skills en ese orden y deja un solo commit por entrega.
 

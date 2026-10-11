@@ -23,6 +23,9 @@ Una fila por video y por lectura en `docs/tiktok-shop-mx/audiencia/registro_vide
 
 ## Medir y decidir
 
+Con el MVP (`tsmx/`), `python3 -m tsmx importar videos ...` y `python3 -m tsmx metricas` hacen lo mismo sobre la base, con validación, aprobación y auditoría. El script de abajo sigue sirviendo para leer el CSV directamente.
+
+
 ```bash
 python3 .claude/skills/tsmx-audiencia/scripts/audiencia.py              # por candidato
 python3 .claude/skills/tsmx-audiencia/scripts/audiencia.py --por pilar   # por pilar

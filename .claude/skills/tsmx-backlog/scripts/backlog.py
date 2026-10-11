@@ -34,7 +34,7 @@ def main():
     a = ap.parse_args()
     f = root() / "07_BACKLOG_DESARROLLADOR.md"
     txt = f.read_text(encoding="utf-8")
-    filas = re.findall(r"^\|\s*(T\d{2})\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|$", txt, re.M)
+    filas = re.findall(r"^\|\s*(T\d{2}[A-Z]?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|$", txt, re.M)
     if a.listar or not a.ticket:
         for t, trabajo, _, est, _ in filas:
             print(f"{t}  {est:<11} {trabajo}")
