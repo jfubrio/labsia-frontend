@@ -3,7 +3,24 @@
 Vigilancia de precios, **precio real de mercado a partir del comportamiento de la oferta competitiva en el tiempo**, validación de descuentos, comparación internacional y compras con autorización humana. El precio de lista, el de lanzamiento y el "antes" que anuncia una tienda nunca son referencia.
 Este directorio contiene la **fase 1** del plan ([docs/PLAN_DESARROLLO.md](docs/PLAN_DESARROLLO.md)).
 
-**Estado:** fases 1, 2 y 5 cerradas; fase 7 parcial (alertas y límites de gasto). Compras deshabilitadas, vigilancia implementada pero no activada en ningún producto, conectores reales pendientes de validación (fase 0).
+**Estado:** todo el código de las fases 1 a 8 está escrito y probado. Lo que falta no es código: credenciales e identificadores de tiendas (fase 0), datos reales del buzón y la decisión de habilitar compras. Compras deshabilitadas, vigilancia implementada pero no activada en ningún producto. Operación: [docs/RUNBOOK.md](docs/RUNBOOK.md).
+
+## Qué incluye la fase 3 (conectores reales) y 4 (tipo de cambio)
+
+| Pieza | Ruta | Notas |
+| --- | --- | --- |
+| Conectores | `src/connectors/` | Best Buy (SKU), eBay Browse (OAuth client-credentials), Mercado Libre (Bearer con refresh), Amazon PA-API 5.0 (SigV4 propia, MX y US). Mapeadores puros probados con respuestas sintéticas; sin SDKs ni scraping |
+| Ingesta externa | `POST /api/v1/caza/observations`, conector `webhook` | changedetection.io, Make o captura manual envían un precio y corre el ciclo completo |
+| Fase 0 en DB | `caza_connectors`, `caza_product_identifiers`, `PUT /api/v1/caza/connectors/:clave`, `PUT .../products/:slug/identifiers` | Un conector se instancia solo si está validado y habilitado, tiene credenciales y, si las necesita, identificador. Informe con el motivo: `npm run connectors:status`; sondeo real: `npm run connector:probe -- <clave>` |
+| Tipo de cambio | `src/fx/` | Banxico SIE (SF43718) → Frankfurter → fijo del entorno, con caché diario en `caza_fx_rates` y procedencia visible en el tablero |
+
+## Qué incluye la fase 6 (compra asistida) y 8 (operación)
+
+| Pieza | Ruta | Notas |
+| --- | --- | --- |
+| Ejecutor | `src/services/orders.service.ts`, `POST /api/v1/caza/authorizations/:id/order`, `POST .../orders/:id/placed\|cancelled\|failed\|delivered` | Ninguna API de tienda compra: se registra la orden bajo las tres capas del interruptor, tope, vigencia, una activa por producto y límite de gasto; el comprador ejecuta y marca colocada con referencia; recogida en el buzón = entregada |
+| Despliegue | `Dockerfile`, `docker-compose.yml`, `scripts/migrate.sh` | PostgreSQL, Redis, migraciones idempotentes, API y worker |
+| Simulacro E2E | `scripts/e2e-check.sh` | Migraciones, API real, alerta a webhook falso, approve, compra simulada (solo en PostgreSQL temporal), colocada y entregada |
 
 ## Qué incluye la fase 7 (parcial: alertas y límites de gasto)
 
@@ -60,7 +77,9 @@ npm run test:db       # pruebas de integración de la vigilancia contra un Postg
 npm run phase2:check  # criterio de aceptación de la fase 2: dos ciclos de vigilancia persistidos
 npm run phase2:worker-check  # programador BullMQ + worker contra Redis y PostgreSQL temporales (usa REDIS_URL si existe)
 npm run phase5:check  # criterio de aceptación de la fase 5: approve en audit log, reject bloquea orden
+npm run phase6:check  # criterio de la fase 6: dos intentos concurrentes → una orden; interruptor en tres capas
 npm run phase7:check  # simulacro: alertas disparan a un webhook falso, límite de gasto bloquea, 0 órdenes
+npm run e2e:check     # simulacro completo con compra simulada en PostgreSQL temporal
 npm run profile       # imprime el perfil de precio real de mercado del fixture y su serie diaria
 npm run demo          # recorre los nueve escenarios sin red ni base de datos
 ```
@@ -108,7 +127,7 @@ Hay tres capas y las tres deben estar abiertas para que una orden exista:
 2. `caza_settings.purchases_enabled = 'true'` en la base de datos. El trigger `trg_a_purchases_enabled` aborta cualquier `INSERT` en `caza_purchase_orders` mientras sea `false`.
 3. Una autorización `approve` vigente, no consumida, para esa observación y con precio dentro del tope.
 
-## Pendientes antes de las fases 3 y 6
+## Pendientes para conectar (no es código)
 
 - Revisar [docs/HERRAMIENTAS_EXISTENTES.md](docs/HERRAMIENTAS_EXISTENTES.md) y resolver las tareas de fase 0 que lista (cuenta de Amazon Associates, Keepa, Mercado Libre, Sony Store, Banxico, Best Buy, buzón en Texas).
 - La fase 6 (ejecutor de compra) necesita la 3 (conectores reales con compra) además de la 5: no se habilita nada hasta cerrar la fase 0.

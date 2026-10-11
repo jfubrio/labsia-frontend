@@ -23,6 +23,15 @@ Ningún conector real se habilita sin pasar por aquí. Responde y deja la eviden
 Resultado: `validado` o `descartado` en `src/connectors/registry.ts` y en `003_seed_sony_wh1000xm6.sql`, con nota.
 Herramientas de evasión anti-bot (FlareSolverr, Byparr y similares) no se integran bajo ninguna circunstancia.
 
+## Lo que ya existe
+
+Implementados y probados sin red: `bestbuy_us`, `ebay_us`, `mercadolibre_mx`, `amazon_mx` y `amazon_us` (PA-API con
+firma SigV4 propia), más el conector `webhook` de ingesta externa (`POST /api/v1/caza/observations`). La fábrica
+(`src/connectors/factory.ts`) lee el estado de `caza_connectors`, las credenciales del entorno y el identificador en
+`caza_product_identifiers`; `npm run connectors:status` dice por qué cada uno está o no activo y
+`npm run connector:probe -- <clave>` hace una llamada real. Para activar uno, sigue `docs/RUNBOOK.md`, sección 3: no
+hace falta código. Para agregar una tienda nueva, sigue "Implementar".
+
 ## Implementar
 
 1. Crea `src/connectors/<clave>.connector.ts` implementando `PriceConnector` (`src/connectors/types.ts`):
@@ -32,7 +41,7 @@ Herramientas de evasión anti-bot (FlareSolverr, Byparr y similares) no se integ
 2. Credenciales por variables de entorno validadas con zod en `src/config/env.ts`; nunca en el código ni en fixtures.
 3. Llamadas HTTP con `fetch` nativo y tiempo de espera; sin SDKs abandonados (ver sección 7 de HERRAMIENTAS_EXISTENTES).
 4. Mapea el producto: el conector necesita saber el identificador de la tienda (ASIN, id de ítem, URL) por `productSlug`. Ponlo en la configuración del producto, no dentro del conector.
-5. Registra el conector en `src/connectors/registry.ts` y en la migración de datos iniciales.
+5. Registra el conector en `src/connectors/registry.ts`, en la migración de datos iniciales, en `credentialsPresent` e `instantiate` de `src/connectors/factory.ts` y, si pide identificador, en `NEEDS_IDENTIFIER`. Agrega sus variables a `src/config/env.ts` y `.env.example`.
 
 ## Probar sin red
 

@@ -8,7 +8,7 @@
  *              Apprise (/notify), ntfy, Slack/Discord incoming webhooks o un escenario de Make.
  *  - telegram: Bot API sendMessage con TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID.
  */
-export type NotifyEvent = 'proposal.created' | 'proposal.expired' | 'watch.error' | 'spend.limit'
+export type NotifyEvent = 'proposal.created' | 'proposal.expired' | 'watch.error' | 'spend.limit' | 'order.created'
 
 export interface Notification {
   evento: NotifyEvent

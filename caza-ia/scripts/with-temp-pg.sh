@@ -20,6 +20,6 @@ run_as "$PGBIN/pg_ctl" -D "$D/data" -o "-k $D -p $PORT -c listen_addresses=''" -
 sleep 1
 export PGHOST="$D" PGPORT="$PORT" PGUSER=caza
 createdb caza_check
-for f in src/db/migrations/*.sql; do psql -v ON_ERROR_STOP=1 -q -d caza_check -f "$f" >/dev/null; done
 export DATABASE_URL="postgres://caza@localhost:$PORT/caza_check?host=$D"
+bash scripts/migrate.sh >/dev/null
 "$@"

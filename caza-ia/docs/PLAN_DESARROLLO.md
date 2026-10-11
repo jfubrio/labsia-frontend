@@ -159,7 +159,9 @@ Esquema lógico implementado en `src/db/migrations/001_caza_ia_schema.sql` y `00
 | --- | --- |
 | `caza_products` | Producto vigilado, moneda base, estado |
 | `caza_watch_configs` | Precio de lista (solo informativo), objetivo manual opcional, tope duro, umbral de descuento, mercados, requiere aprobación |
-| `caza_connectors` | Conector por tienda/mercado, estado de validación de acceso (fase 0) |
+| `caza_connectors` | Conector por tienda/mercado, estado de validación de acceso (fase 0), editable por la API con evidencia |
+| `caza_product_identifiers` | SKU, ASIN o id de ítem del producto en cada tienda |
+| `caza_fx_rates` | Tipo de cambio diario por fuente (Banxico, Frankfurter) con fecha y procedencia |
 | `caza_buzones` | Buzones de recepción en el extranjero: modo de ingreso (cruce personal o paquetería), impuesto de venta, recepción, franquicia, tasa sobre excedente, reenvío |
 | `caza_reglas_importacion` | Tramos de importación por paquetería por valor (USD) entre origen y destino, con fuente y vigencia (ruta alternativa) |
 | `caza_price_observations` | Cada precio observado: tienda, precio, precio anunciado anterior, moneda, stock, URL, hash de la oferta |
@@ -220,11 +222,11 @@ Prevención de duplicados, en este orden:
 | 1 | Motor de precio real de mercado, base de datos, configuración de los Sony, conector mock | 0 (puede avanzar en paralelo con mock) | Migraciones 001–003, motor de precio real con historial multitienda, `sony-wh1000xm6.ts`, conector mock, motores con pruebas | `npm test` y `npm run typecheck` en verde; el ancla de lanzamiento se juzga `falso`; demo corre sin red; ninguna orden creada | cerrada (`npm run verify`, `npm run db:check`) |
 | 2 | Vigilancia programada | 1 | Repositorios PostgreSQL, ciclo `runWatch` (observar → perfil por mercado → veredicto → propuesta pendiente), programador BullMQ con un Job Scheduler por producto, worker, `watch:once` sin Redis | Observaciones periódicas en DB con historial consultable y perfil recalculado en cada ciclo; ninguna orden | cerrada (`npm run phase2:check`, `npm run test:db`, `npm run phase2:worker-check` con Redis y PostgreSQL temporales) |
 | 3 | Conectores reales MX | 0, 2 | Amazon MX, Sony Store MX | Precio real coincide con la página en 3 verificaciones manuales |
-| 4 | Compra en EE. UU. en vivo | 3 | Conectores US, tipo de cambio diario (Banxico), tarifa real del buzón, franquicia y tasa de excedente confirmadas | Precio aterrizado reproducible con la fórmula documentada contra un ticket real de compra y cruce | pendiente de fase 0 |
+| 4 | Compra en EE. UU. en vivo | 3 | Tipo de cambio diario (Banxico → Frankfurter → fijo) con caché y procedencia; conectores US; tarifa real del buzón, franquicia y tasa de excedente confirmadas | Precio aterrizado reproducible con la fórmula documentada contra un ticket real de compra y cruce | código cerrado; pendiente `BANXICO_TOKEN`, datos del buzón y verificación contra un ticket real |
 | 5 | Panel y flujo `approve` | 2 | API Fastify del operador (propuestas, approve/reject con tope y vigencia, activar vigilancia, resumen por producto), página `/ui`, expiración de propuestas, **tablero en tiempo real `/dashboard`** (métricas agregadas por HTTP y por SSE cada 5 s) | Aprobación registrada en audit log; rechazo bloquea orden | cerrada (`npm run phase5:check`, `tests/db/metrics.integration.test.ts`); integración en el dashboard de LABSIA pendiente |
-| 6 | Ejecución de compra (habilitable) | 3, 5 | Ejecutor por conector, `PURCHASES_ENABLED` configurable | Prueba de duplicado concurrente: 2 intentos → 1 orden | pendiente |
-| 7 | Pruebas de extremo a extremo y hardening | 6 | Suite E2E, alertas, límites de gasto | Simulacro completo sin compra real, alertas disparan | parcial: alertas (consola, webhook genérico, Telegram) y límites de gasto (presupuesto mensual y máximo de órdenes) cerrados con `npm run phase7:check`; la E2E con compra simulada espera a la fase 6 |
-| 8 | Operación | 7 | Runbook, backups, monitoreo | Primera compra real aprobada manualmente y documentada | pendiente |
+| 6 | Ejecución de compra (habilitable) | 3, 5 | Ejecutor en modo **compra asistida** (ninguna API de tienda compra): registra la orden bajo las tres capas del interruptor, tope, vigencia, una activa por producto y límite de gasto; ciclo colocada → entregada; API | Prueba de duplicado concurrente: 2 intentos → 1 orden | cerrada (`npm run phase6:check`); habilitar en producción es una decisión explícita (RUNBOOK, sección 4) |
+| 7 | Pruebas de extremo a extremo y hardening | 6 | Suite E2E, alertas, límites de gasto | Simulacro completo sin compra real, alertas disparan | cerrada (`npm run phase7:check`, `npm run e2e:check`: migraciones, API real, alerta a webhook falso, approve, orden con compra simulada, colocada y entregada) |
+| 8 | Operación | 7 | `docs/RUNBOOK.md`, Dockerfile y docker-compose (postgres, redis, migraciones, api, worker), `scripts/migrate.sh` idempotente, respaldos, monitoreo en el tablero | Primera compra real aprobada manualmente y documentada | código cerrado; la primera compra real espera a conectar (fase 0) y a habilitar compras a propósito |
 
 `[PENDIENTE: texto original — detalle de cada fase]`
 

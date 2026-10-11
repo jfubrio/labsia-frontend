@@ -16,6 +16,7 @@ import { runWatch } from '../watch/run-watch.js'
 import type { Env } from '../config/env.js'
 import type { ComparisonConfig } from '../engines/international-comparison.js'
 import { comparisonWithLiveRate, getCachedRate, resolveRate, providersFrom } from '../fx/service.js'
+import { createOrderFromAuthorization, transitionOrder, listOrders, getOrder } from '../services/orders.service.js'
 import type { Notifier } from '../notify/notifier.js'
 import type { RawOffer } from '../types.js'
 import { operatorPage } from './ui.js'
@@ -259,6 +260,36 @@ export function buildApp(opts: ApiOptions): FastifyInstance {
   })
 
   app.get('/api/v1/caza/notifications', async () => listNotifications(db, 50))
+
+  /**
+   * Fase 6, compra asistida. Registrar la orden es la única acción que compromete dinero y pasa por las tres capas del
+   * interruptor (código, base de datos, autorización). Ninguna ruta llama a una tienda para comprar: el comprador
+   * ejecuta la compra a mano y la marca como colocada con la referencia del pedido.
+   */
+  app.get('/api/v1/caza/orders', async () => listOrders(db))
+  app.get<{ Params: { id: string } }>('/api/v1/caza/orders/:id', async (req, reply) => (await getOrder(db, req.params.id)) ?? reply.code(404).send({ error: 'orden no encontrada' }))
+
+  app.post<{ Params: { id: string } }>('/api/v1/caza/authorizations/:id/order', async (req, reply) => {
+    const body = z.object({ actor: z.string().min(1), precioFinal: z.number().positive().optional() }).safeParse(req.body ?? {})
+    if (!body.success) return reply.code(400).send({ error: 'body inválido', detalles: body.error.issues })
+    if (!opts.env) return reply.code(503).send({ error: 'la API no tiene entorno configurado' })
+    const r = await createOrderFromAuthorization(db, opts.env, { authorizationId: req.params.id, ...body.data, notifiers: opts.notifiers })
+    const status = r.status === 'created' ? 201 : r.status === 'duplicate' ? 200 : r.status === 'disabled' ? 403 : 409
+    return reply.code(status).send(r)
+  })
+
+  for (const to of ['placed', 'cancelled', 'failed', 'delivered'] as const) {
+    app.post<{ Params: { id: string } }>(`/api/v1/caza/orders/:id/${to}`, async (req, reply) => {
+      const body = z.object({ actor: z.string().min(1), referenciaExterna: z.string().optional(), precioFinal: z.number().positive().optional(), guiaReenvio: z.string().optional() }).safeParse(req.body ?? {})
+      if (!body.success) return reply.code(400).send({ error: 'body inválido', detalles: body.error.issues })
+      try {
+        return await transitionOrder(db, req.params.id, to, body.data)
+      } catch (err) {
+        const msg = (err as Error).message
+        return reply.code(msg.includes('no existe') ? 404 : 409).send({ error: msg })
+      }
+    })
+  }
 
   // Fase 4: tipo de cambio del día con su procedencia.
   app.get('/api/v1/caza/fx', async () => {

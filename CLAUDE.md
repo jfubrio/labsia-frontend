@@ -16,7 +16,7 @@ humana. Plan: `caza-ia/docs/PLAN_DESARROLLO.md`. Herramientas y decisiones de in
 3. **Sin scraping de Amazon** ni herramientas de evasión anti-bot. Conectores reales solo vía API oficial o tiendas cuyos términos lo permitan, y solo tras validarlos en fase 0.
 4. **Anti-duplicados en la base de datos**, no solo en código (índice único parcial y triggers en `002_purchase_guards.sql`).
 5. Ninguna propuesta de compra con confianza `baja` o `sin_historial`.
-6. **Ningún endpoint de la API compra.** La API solo lista, aprueba, rechaza, activa vigilancia y ajusta límites; una aprobación habilita al ejecutor, no ejecuta.
+6. **Ninguna ruta llama a una tienda para comprar.** Las APIs de tiendas solo informan. El ejecutor (fase 6, compra asistida) registra la orden bajo las tres capas del interruptor y el comprador la ejecuta a mano; una aprobación habilita al ejecutor, no crea la orden.
 7. **Una alerta fallida nunca detiene la vigilancia**, y los límites de gasto se aplican al aprobar, no solo al ejecutar.
 
 ## Comandos (desde `caza-ia/`)
@@ -31,13 +31,17 @@ npm run phase2:check  # criterio de aceptación de la fase 2 (dos ciclos de vigi
 npm run phase2:worker-check  # programador BullMQ + worker con Redis temporal; obligatorio si tocaste src/watch/scheduler.ts
 npm run phase5:check  # API del operador: approve en audit log, reject bloquea orden; obligatorio si tocaste src/api o src/services
 npm run test:db -- tests/db/metrics  # métricas y SSE del tablero; obligatorio si tocaste metrics.repo.ts o dashboard.ts
+npm run phase6:check  # ejecutor de compra asistida: 2 intentos concurrentes → 1 orden; obligatorio si tocaste orders.service.ts o las guardas
 npm run phase7:check  # simulacro: alertas y límites de gasto; obligatorio si tocaste src/notify o spend-limits
+npm run e2e:check     # simulacro completo con API real y compra simulada; antes de cerrar un PR grande
+npm run connectors:status -- <slug>   # por qué cada conector está o no activo (validación, credenciales, identificador)
 npm run profile       # imprime el perfil de precio real del fixture (ajuste de parámetros)
 npm test -- tests/market-price.test.ts   # una sola suite
 ```
 
 Infraestructura: PostgreSQL vía `DATABASE_URL` (fase 2+); Redis vía `REDIS_URL` solo para el programador BullMQ
-(`npm run watch:worker`). Las pruebas no necesitan Redis.
+(`npm run watch:worker`). Las pruebas no necesitan Redis. Despliegue: `docker compose up` y `docs/RUNBOOK.md`.
+Conectores reales: se activan solo con validación en DB + credenciales en `.env` + identificador del producto (RUNBOOK, sección 3).
 
 ## Convenciones
 

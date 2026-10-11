@@ -19,7 +19,9 @@ npm run test:db     # integración de la vigilancia en PostgreSQL temporal. ~10 
 npm run phase2:check  # dos ciclos de vigilancia persistidos. Si tocaste src/watch/ o los repositorios
 npm run phase2:worker-check  # scheduler + worker con Redis temporal. Si tocaste src/watch/scheduler.ts
 npm run phase5:check  # API del operador en PostgreSQL temporal. Si tocaste src/api/ o src/services/
+npm run phase6:check  # ejecutor de compra asistida. Si tocaste orders.service.ts, 002_purchase_guards.sql o spend-limits
 npm run phase7:check  # alertas y límites de gasto con webhook falso. Si tocaste src/notify/ o spend-limits
+npm run e2e:check     # simulacro completo con API real. Antes de cerrar un PR grande
 ```
 
 Qué significa cada salida:
@@ -41,7 +43,8 @@ Busca en tu propio diff estas señales y, si aparecen, pregúntate si el usuario
 | `precioListaInformativo`, `advertisedPreviousPrice` o un precio fijo se usan como referencia de descuento | El precio real sale solo del análisis en el tiempo |
 | Un veredicto `real` o `minimo_historico` con `confianza` baja genera propuesta | Prohibido por regla 5 |
 | Aparece `amazon` junto a `fetch`, `playwright` o `cheerio` | No se scrapea Amazon |
-| Una ruta de la API inserta en `caza_purchase_orders` o llama a `executePurchase` | La API no compra; eso es del ejecutor en fase 6 |
+| Una ruta llama a una tienda con intención de comprar, o crea órdenes fuera de `orders.service.ts` | Ninguna API de tienda compra; el ejecutor registra órdenes solo bajo las tres capas del interruptor |
+| Un conector se instancia sin pasar por `buildConnectors` | El estado de fase 0 vive en la DB; saltárselo activa tiendas sin validar |
 | Una alerta que falla hace `throw` dentro de `runWatch` | Una alerta fallida nunca detiene la vigilancia |
 | Se quita `checkSpendLimit` del approve | Los límites se aplican al aprobar, no solo al ejecutar |
 | Un test se salta (`.skip`), se borra o se afloja su aserción | Nunca para poner algo en verde |

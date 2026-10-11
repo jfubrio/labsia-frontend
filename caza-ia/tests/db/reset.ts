@@ -17,6 +17,7 @@ export async function resetTestState(db: Db, now: Date): Promise<void> {
              caza_market_price_profiles, caza_watch_runs, caza_notifications, caza_price_observations, caza_audit_log
     RESTART IDENTITY CASCADE`)
   await setSpendLimit(db, { presupuestoMensualBase: 20000, maxOrdenesMes: 2, actualizadoPor: 'test-reset' })
+  await db.query(`UPDATE caza_settings SET valor = 'false' WHERE clave = 'purchases_enabled'`)
   await db.query(`UPDATE caza_watch_configs SET vigilancia_activa = FALSE`)
   const product = await getProductBySlug(db, 'sony-wh1000xm6')
   const mockId = (await connectorIdsByClave(db)).get('mock')!

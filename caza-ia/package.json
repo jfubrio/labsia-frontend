@@ -21,7 +21,10 @@
     "phase5:check": "bash scripts/phase5-check.sh",
     "phase7:check": "bash scripts/phase7-check.sh",
     "connectors:status": "tsx src/scripts/connectors-status.ts",
-    "connector:probe": "tsx src/scripts/connector-probe.ts"
+    "connector:probe": "tsx src/scripts/connector-probe.ts",
+    "phase6:check": "bash scripts/phase6-check.sh",
+    "migrate": "bash scripts/migrate.sh",
+    "e2e:check": "bash scripts/e2e-check.sh"
   },
   "dependencies": {
     "bullmq": "^6.3.12",
