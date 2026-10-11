@@ -1,0 +1,30 @@
+name: tsmx
+
+on:
+  push:
+    paths: ["tsmx/**", "docs/tiktok-shop-mx/**", ".claude/skills/**", ".github/workflows/tsmx.yml"]
+  pull_request:
+    paths: ["tsmx/**", "docs/tiktok-shop-mx/**", ".claude/skills/**", ".github/workflows/tsmx.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Pruebas del MVP
+        working-directory: tsmx
+        run: PYTHONPATH=src python -m unittest discover -s tests -t . -v
+      - name: Scripts de las skills
+        run: |
+          python .claude/skills/tsmx-matriz/scripts/matriz.py > /dev/null
+          python .claude/skills/tsmx-backlog/scripts/backlog.py --listar
+          python .claude/skills/tsmx-audiencia/scripts/audiencia.py
